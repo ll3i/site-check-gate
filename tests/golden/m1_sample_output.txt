@@ -1,0 +1,21 @@
+검증 시작: 10건 (오프라인=False)
+  [1] status=verified note=확인 완료: DOI 실존 + 제목 유사도 0.90 + 연도차 0년
+  [2] status=verified note=[OK] 확인: arXiv 1706.03762 실존, 제목 유사도 0.90
+  [3] status=verified note=[OK] 확인(검색 기반): 제목 유사도 0.90, 출처 crossref.
+  [4] status=unverified note=검색 결과 있으나 유사도 0.59 낮음.
+  [5] status=unverified note=DOI 미등록, 검색 후보 있으나 제목 유사도 낮음. DOI 10.1162/neco.1999.9.8.1735
+  [6] status=unverified note=DOI 미등록, 검색 후보 있으나 제목 유사도 낮음. DOI 10.1234/edsl.2020.0412 미등록
+  [7] status=unverified note=검색 결과 있으나 유사도 0.51 낮음.
+  [8] status=unverified note=검색 결과 있으나 유사도 0.43 낮음.
+  [9] status=verified note=[OK] 확인(검색 기반): 제목 유사도 0.90, 출처 crossref.
+  [10] status=not_applicable note=웹 문헌(kind=web)은 DOI/arXiv 대상 아님. URL 기반 별도 확인 권장.
+
+결과 JSON: work/verify.json
+보고서 Markdown: work/report.md
+
+집계 (불변식 OK: 합=10 = 총 10건):
+  [OK] 4건
+  [WARN] 0건
+  [X] 5건
+  [HOLD] 0건
+  [SKIP] 1건

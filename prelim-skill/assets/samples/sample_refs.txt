@@ -1,0 +1,13 @@
+아래 참고문헌 목록의 실존 여부와 서지 정확성을 검증해 주세요.
+제출 전 최종 점검용입니다.
+
+1. LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. Nature, 521(7553), 436–444. https://doi.org/10.1038/nature14539
+2. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). Attention is all you need. arXiv:1706.03762.
+3. Devlin, J., Chang, M.-W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of deep bidirectional transformers for language understanding. In Proceedings of NAACL-HLT 2019.
+4. Kim, S., & Park, J. (2021). Quantum-enhanced federated learning for smart city traffic prediction. Journal of Urban AI Systems.
+5. Hochreiter, S., & Schmidhuber, J. (1999). Long short-term memory. Neural Computation, 9(8), 1735–1780. https://doi.org/10.1162/neco.1999.9.8.1735
+6. Lee, M. (2020). Edge-driven semantic labeling for IoT networks. https://doi.org/10.1234/edsl.2020.0412
+7. Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep learning. MIT Press.
+8. 김철수, 이영희 (2020). 딥러닝 기반 한국어 자연어 처리의 최근 동향. 한국어 정보처리학회지, 24(3), 45–62.
+9. Silver, D., Huang, A., Maddison, C. J., Guez, A., Sifre, L., van den Driessche, G., Schrittwieser, J., Antonoglou, I., Panneershelvam, V., Lanctot, M., Dieleman, S., Grewe, D., Nham, J., Kalchbrenner, I., Sutskever, P., Lillicrap, T., Leach, M., Kavukcuoglu, K., Graepel, T., & Hassabis, D. (2016). Mastering the game of Go with deep neural networks and tree search. Nature, 529(7587), 484–489.
+10. Python Software Foundation (2024). Python 3.12 documentation. Retrieved September 1, 2024, from https://docs.python.org/3.12/
