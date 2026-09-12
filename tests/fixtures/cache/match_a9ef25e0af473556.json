@@ -1,0 +1,12 @@
+{
+  "claim": "그림 3: 옥외 배관에 부식과 누출 흔적이 발견되어 즉시 보수가 필요하다.",
+  "verdict": "뒷받침함",
+  "quote": "corrosion",
+  "reason": "주장 중 사진에 보이는 상태에 대한 서술은 '옥외 배관에 부식과 누출 흔적이 발견되어'이며, 검출 목록에 corrosion(부식) 라벨이 3건 포함되어 있어 부식 서술이 뒷받침된다. 누출 흔적에 해당하는 라벨은 검출되지 않았으나, 부식 서술은 검출 결과로 뒷받침된다.",
+  "metadata_title": "",
+  "metadata_abstract": "검출된 객체: corrosion(0.84), corrosion(0.81), corrosion(0.58)",
+  "quote_exists": true,
+  "post_processed": false,
+  "tags": [],
+  "raw_response": "{\"verdict\": \"뒷받침함\", \"quote\": \"corrosion\", \"reason\": \"주장 중 사진에 보이는 상태에 대한 서술은 '옥외 배관에 부식과 누출 흔적이 발견되어'이며, 검출 목록에 corrosion(부식) 라벨이 3건 포함되어 있어 부식 서술이 뒷받침된다. 누출 흔적에 해당하는 라벨은 검출되지 않았으나, 부식 서술은 검출 결과로 뒷받침된다.\"}"
+}

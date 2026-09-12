@@ -235,55 +235,72 @@ def run_pipeline(
     body_elements: List[Dict[str, Any]] = []
     ref_elements: List[Dict[str, Any]] = []
 
-    heading_found = False
-    prev_accepted: Optional[Dict[str, Any]] = None
-    prev_page: int = 0
-
-    for el in sorted_elements:
-        text = get_element_text(el)
-        if not text or not text.strip():
-            continue
-
-        # 헤딩 찾기 전은 모두 버림
-        if not heading_found:
-            if is_heading_element(el):
-                heading_found = True
-            continue
-
-        # category 제외
-        if is_excluded_category(el):
-            continue
-
-        page = get_el_page(el)
-        cat = get_element_category(el)
-        etype = classify_element(text, cat)
-
-        if etype in ('number_bib', 'author_year_bib'):
-            # 참고문헌 element
-            ref_elements.append(el)
-            prev_accepted = {'page': page}
-            prev_page = page
-        elif etype in ('body', 'other'):
-            # 본문 element — E11b 예외 처리 후 본문으로 분류
-            # (E11b: 직전 ref가 p에 있고 현재가 p+1 첫 본문성 element이며 표지 없음 → 병합)
-            if (prev_accepted is not None
-                    and page == prev_page + 1
-                    and etype in ('body', 'other')
-                    and not re.match(r'^\s*(\[\d+\]|\d+\.|\d+\))\s+', text)
-                    and not is_author_year_bib(text)):
-                # 직전 ref에 병합
-                if prev_accepted.get('merged_to'):
-                    prev_accepted['merged_to'] = prev_accepted['merged_to'] + ' ' + text
-                else:
-                    prev_accepted['merged_to'] = text
-                prev_accepted['source_note'] = 'merged'
+    # raw_text 경로: 합성 요소는 헤딩 없이 바로 본문으로 분류 (E10 헤딩 전제 건너뜀)
+    if raw_text is not None:
+        for el in sorted_elements:
+            text = get_element_text(el)
+            if not text or not text.strip():
                 continue
-            # 본문으로 분류
-            body_elements.append(el)
-        else:
-            body_elements.append(el)
+            cat = get_element_category(el)
+            if is_excluded_category(el):
+                continue
+            etype = classify_element(text, cat)
+            if etype in ('number_bib', 'author_year_bib'):
+                ref_elements.append(el)
+            else:
+                body_elements.append(el)
+        log("separate", f"raw_text 경로: 본문 element {len(body_elements)}개, 참고문헌 element {len(ref_elements)}개")
+    else:
+        # 기존 E10 경로: 헤딩 발견 전 요소 버림
+        heading_found = False
+        prev_accepted: Optional[Dict[str, Any]] = None
+        prev_page: int = 0
 
-    log("separate", f"본문 element {len(body_elements)}개, 참고문헌 element {len(ref_elements)}개")
+        for el in sorted_elements:
+            text = get_element_text(el)
+            if not text or not text.strip():
+                continue
+
+            # 헤딩 찾기 전은 모두 버림
+            if not heading_found:
+                if is_heading_element(el):
+                    heading_found = True
+                continue
+
+            # category 제외
+            if is_excluded_category(el):
+                continue
+
+            page = get_el_page(el)
+            cat = get_element_category(el)
+            etype = classify_element(text, cat)
+
+            if etype in ('number_bib', 'author_year_bib'):
+                # 참고문헌 element
+                ref_elements.append(el)
+                prev_accepted = {'page': page}
+                prev_page = page
+            elif etype in ('body', 'other'):
+                # 본문 element — E11b 예외 처리 후 본문으로 분류
+                # (E11b: 직전 ref가 p에 있고 현재가 p+1 첫 본문성 element이며 표지 없음 → 병합)
+                if (prev_accepted is not None
+                        and page == prev_page + 1
+                        and etype in ('body', 'other')
+                        and not re.match(r'^\s*(\[\d+\]|\d+\.|\d+\))\s+', text)
+                        and not is_author_year_bib(text)):
+                    # 직전 ref에 병합
+                    if prev_accepted.get('merged_to'):
+                        prev_accepted['merged_to'] = prev_accepted['merged_to'] + ' ' + text
+                    else:
+                        prev_accepted['merged_to'] = text
+                    prev_accepted['source_note'] = 'merged'
+                    continue
+                # 본문으로 분류
+                body_elements.append(el)
+            else:
+                body_elements.append(el)
+
+        log("separate", f"본문 element {len(body_elements)}개, 참고문헌 element {len(ref_elements)}개")
 
     result["body_elements"] = body_elements
     result["ref_elements"] = ref_elements
