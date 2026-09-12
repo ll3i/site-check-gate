@@ -81,6 +81,12 @@ GATE_SUBMITTABLE = "제출 가능"
 GATE_NEEDS_REVISION = "보완 필요"
 GATE_NEEDS_CHECK = "확인 필요"
 
+# 사진 판정 임계 (M7d)
+PHOTO_UNMATCHED_THRESHOLD = 0   # 미매칭 1건 이상이면 확인 필요
+PHOTO_NOT_SUPPORTED_THRESHOLD = 0  # 뒷받침 안 함 1건 이상이면 보완 필요
+PHOTO_CANNOT_JUDGE_THRESHOLD = 3   # 판단 불가 > 임계 → 확인 필요
+PHOTO_CRITICAL_THRESHOLD = 0        # 검출·대조 실패(⛔급) 1건 이상 → 확인 필요
+
 # 본문 category 접두어
 BODY_CATEGORY_PREFIXES = ['body', 'text', 'paragraph']
 
@@ -590,6 +596,22 @@ def run_pipeline(
     # ── (d) 게이트 종합 ─────────────────────────────────────────────────────
     log("gate", "문서 게이트 계산 (PRD §5)")
 
+    # photo 섹션 집계 (M7d)
+    photo_counts = photo_section.get("counts", {})
+    photo_total = photo_counts.get("총주장", 0)
+    photo_matched = photo_counts.get("매칭성공", 0)
+    photo_unmatched = photo_counts.get("매칭실패", 0)
+    photo_supported = photo_counts.get("뒷받침함", 0)
+    photo_not_supported = photo_counts.get("뒷받침안함", 0)
+    photo_cannot_judge = photo_counts.get("판단불가", 0)
+    photo_domain_counts = photo_counts.get("도메인", {})
+
+    # critical(⛔급): 검출 실패 + 대조 실패 건수 (matches 내 reason으로 판별)
+    photo_critical = sum(
+        1 for m in photo_section.get("matches", [])
+        if m.get("reason", "").startswith("객체 검출 실패") or m.get("reason", "").startswith("대조 실패")
+    )
+
     # 오인용(🔴) 집계: 실존 문헌에 대해 뒷받침 안 함으로 판정된 항목
     # refs_verified에서 verified/partial인 항목 ID 집합
     real_ref_ids = set()
@@ -623,36 +645,38 @@ def run_pipeline(
     gate_status = GATE_SUBMITTABLE
     gate_reason = "모든 인용 실존 확인, 대조 완료"
 
-    gate_needs_revision = False
-    gate_needs_check = False
-
+    # 보완 필요 tier
     if law_fail_count > 0:
         gate_status = GATE_NEEDS_REVISION
         gate_reason = f"❌ 법령 인용 표지 중 '해당 조 없음' {law_fail_count}건 — 보완 필요"
-        gate_needs_revision = True
     elif photo_not_supported > 0:
         gate_status = GATE_NEEDS_REVISION
         gate_reason = f"🔴 사진 대조 '뒷받침 안 함' {photo_not_supported}건 — 보완 필요"
-        gate_needs_revision = True
     elif subcontract_risk > 0:
         gate_status = GATE_NEEDS_REVISION
         gate_reason = f"⚠️ 적법도급 체크리스트 위험 신호 {subcontract_risk}건 — 보완 필요"
-        gate_needs_revision = True
-    elif photo_unmatched > 0 or (photo_section.get("counts", {}).get("도메인", {}) and photo_section["counts"]["매칭실패"] > 0):
-        # 미매칭 과다 → 확인 필요 (사진 미매칭이 하나라도 있으면 확인 필요)
-        gate_status = GATE_NEEDS_CHECK
-        gate_reason = f"사진 참조 미매칭 {photo_unmatched}건 — 확인 필요"
-        gate_needs_check = True
-    elif law_snapshot_missing > 0:
-        gate_status = GATE_NEEDS_CHECK
-        gate_reason = f"⛔ 법령 스냅샷 미보유 {law_snapshot_missing}건 — 확인 필요"
-        gate_needs_check = True
     elif counts.get('unverified', 0) > GATE_UNVERIFIED_THRESHOLD:
         gate_status = GATE_NEEDS_REVISION
         gate_reason = f"❌ 미확인 {counts['unverified']}건 존재"
     elif misquoted_count > GATE_MISQUOTED_THRESHOLD:
         gate_status = GATE_NEEDS_REVISION
         gate_reason = f"🔴 오인용 {misquoted_count}건 존재"
+    # 확인 필요 tier
+    elif photo_critical > PHOTO_CRITICAL_THRESHOLD:
+        gate_status = GATE_NEEDS_CHECK
+        gate_reason = f"⛔ 사진 검출·대조 실패 {photo_critical}건 — 확인 필요"
+    elif photo_unmatched > PHOTO_UNMATCHED_THRESHOLD:
+        gate_status = GATE_NEEDS_CHECK
+        gate_reason = f"사진 참조 미매칭 {photo_unmatched}건 — 촬영·구분 누락 의심, 확인 필요"
+    elif photo_cannot_judge > PHOTO_CANNOT_JUDGE_THRESHOLD:
+        gate_status = GATE_NEEDS_CHECK
+        gate_reason = (
+            f"사진 판단 불가 {photo_cannot_judge}건 "
+            f"(임계 {PHOTO_CANNOT_JUDGE_THRESHOLD} 초과) — 확인 필요"
+        )
+    elif law_snapshot_missing > 0:
+        gate_status = GATE_NEEDS_CHECK
+        gate_reason = f"⛔ 법령 스냅샷 미보유 {law_snapshot_missing}건 — 확인 필요"
     elif cannot_judge_count > GATE_CANNOT_JUDGE_THRESHOLD:
         gate_status = GATE_NEEDS_CHECK
         gate_reason = (
@@ -857,11 +881,35 @@ if __name__ == '__main__':
                         help='주장 대조 병렬 수')
     parser.add_argument('--no-match-cache', action='store_true',
                         help='대조 캐시 사용 안 함')
+    parser.add_argument('--photos', '-p', default=None,
+                        help='사진 파일 경로 (쉼표 구분 또는 JSON 배열 문자열)')
     args = parser.parse_args()
+
+    # 사진 목록 파싱
+    photo_files = None
+    if args.photos:
+        raw_photos = args.photos.strip()
+        # JSON 배열 형태면 json.loads
+        if raw_photos.startswith('['):
+            import json
+            parsed = json.loads(raw_photos)
+            if isinstance(parsed, list) and all(isinstance(x, str) for x in parsed):
+                photo_files = parsed
+            else:
+                print("오류: --photos JSON 배열은 문자열 리스트여야 함", file=sys.stderr)
+                sys.exit(2)
+        else:
+            # 쉼표 구분
+            photo_files = [p.strip() for p in raw_photos.split(',') if p.strip()]
+            if not all(os.path.isfile(p) for p in photo_files):
+                missing = [p for p in photo_files if not os.path.isfile(p)]
+                print(f"오류: 사진 파일 없음: {missing}", file=sys.stderr)
+                sys.exit(2)
 
     print(f"파이프라인 시작: {args.file}")
     print(f"  오프라인={args.offline}, 병렬={args.match_parallel}, "
-          f"캐시={'사용' if not args.no_match_cache else '미사용'}")
+          f"캐시={'사용' if not args.no_match_cache else '미사용'}"
+          + (f", 사진={len(photo_files)}개" if photo_files else ""))
 
     result = run_pipeline(
         file_path=args.file,
@@ -869,6 +917,7 @@ if __name__ == '__main__':
         max_verify=args.max_verify,
         match_parallel=args.match_parallel,
         match_use_cache=not args.no_match_cache,
+        photo_files=photo_files,
     )
 
     save_result(result, args.output)
