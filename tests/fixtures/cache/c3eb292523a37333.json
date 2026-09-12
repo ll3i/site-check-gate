@@ -1,0 +1,102 @@
+{
+  "api": "2.0",
+  "content": {
+    "html": "",
+    "markdown": "",
+    "text": "이 연구는 트랜스포머 아키텍처의 효율성을 분석한다. Vorontsov et al. (2024)는 대규모 언어\n모델의 스케일링 법칙을 제시하였고, Devlin et al. (2019)은 BERT를 통해 사전학습의 효과를\n입증하였다. Vaswani et al. (2017)은 Attention is All You Need에서\n트랜스포머를 처음 제안하였으며, Brown et al. (2020)은 GPT-3의 Few-shot 성능을\n보고하였다. 국내에서는 김현우 및 이영희 (2023)가 한국어 문장 분류 모델을 연구하였다.\nReferences\n1. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J.,\nJones, L, Gomez, A. N., Kaiser, U., Polosukhin, I. (2017).\nAttention is all need. Advances in Neural Information\nyou\nProcessing Systems, 30. DOI: 10.48550/arXiv.1706.03762\n3. Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D.,\nLevy, O., Lewis, M., Zettlemoyer, S., Stoyanov, V. (2019).\nRoBERTa: A robustly optimized BERT pretraining approach.\narXiv: 1907.11692\n4. Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan,\nJ., Dhariwal, P., Neelakantan, A., et al. (2020). Language\nmodels are few-shot learners. Advances in Neural Information\nProcessing Systems, 33, 1877-1901. DOI:\n10.48550/arXiv.2005.14165\n5. 김현우, 이영희 (2023). 한국어 문장 분류를 위한 트랜스포머 기반 모델 연구. 한국어 정보처리학회\n논문지, 27(3), 112-128.\n6. Vorontsov, A., Marra, F., Pufal, J. (2024). Scaling laws\nfor large language models. Journal of Machine Learning\nResearch, 25(1), 1-30. DOI: 10.1145/3627673.3679215\n2. Devlin, J., Chang, M. W., Lee, K., Toutanova, K. (2019). BERT: Pre-training of deep\nbidirectional transformers for language understanding. Proceedings of NAACL-HLT. DOI: 10.\n18653/v1/n19-1423"
+  },
+  "elements": [
+    {
+      "id": 0,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "이 연구는 트랜스포머 아키텍처의 효율성을 분석한다. Vorontsov et al. (2024)는 대규모 언어\n모델의 스케일링 법칙을 제시하였고, Devlin et al. (2019)은 BERT를 통해 사전학습의 효과를\n입증하였다. Vaswani et al. (2017)은 Attention is All You Need에서\n트랜스포머를 처음 제안하였으며, Brown et al. (2020)은 GPT-3의 Few-shot 성능을\n보고하였다. 국내에서는 김현우 및 이영희 (2023)가 한국어 문장 분류 모델을 연구하였다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0931,
+          "y": 0.0684
+        },
+        {
+          "x": 0.8932,
+          "y": 0.0684
+        },
+        {
+          "x": 0.8932,
+          "y": 0.1548
+        },
+        {
+          "x": 0.0931,
+          "y": 0.1548
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "page": 1,
+      "category": "heading1",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "References"
+      },
+      "coordinates": [
+        {
+          "x": 0.4498,
+          "y": 0.1678
+        },
+        {
+          "x": 0.5499,
+          "y": 0.1678
+        },
+        {
+          "x": 0.5499,
+          "y": 0.183
+        },
+        {
+          "x": 0.4498,
+          "y": 0.183
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "1. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J.,\nJones, L, Gomez, A. N., Kaiser, U., Polosukhin, I. (2017).\nAttention is all need. Advances in Neural Information\nyou\nProcessing Systems, 30. DOI: 10.48550/arXiv.1706.03762\n3. Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D.,\nLevy, O., Lewis, M., Zettlemoyer, S., Stoyanov, V. (2019).\nRoBERTa: A robustly optimized BERT pretraining approach.\narXiv: 1907.11692\n4. Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan,\nJ., Dhariwal, P., Neelakantan, A., et al. (2020). Language\nmodels are few-shot learners. Advances in Neural Information\nProcessing Systems, 33, 1877-1901. DOI:\n10.48550/arXiv.2005.14165\n5. 김현우, 이영희 (2023). 한국어 문장 분류를 위한 트랜스포머 기반 모델 연구. 한국어 정보처리학회\n논문지, 27(3), 112-128.\n6. Vorontsov, A., Marra, F., Pufal, J. (2024). Scaling laws\nfor large language models. Journal of Machine Learning\nResearch, 25(1), 1-30. DOI: 10.1145/3627673.3679215\n2. Devlin, J., Chang, M. W., Lee, K., Toutanova, K. (2019). BERT: Pre-training of deep\nbidirectional transformers for language understanding. Proceedings of NAACL-HLT. DOI: 10.\n18653/v1/n19-1423"
+      },
+      "coordinates": [
+        {
+          "x": 0.0917,
+          "y": 0.1841
+        },
+        {
+          "x": 0.8973,
+          "y": 0.1841
+        },
+        {
+          "x": 0.8973,
+          "y": 0.5009
+        },
+        {
+          "x": 0.0917,
+          "y": 0.5009
+        }
+      ]
+    }
+  ],
+  "model": "document-parse-260630",
+  "ocr": true,
+  "usage": {
+    "pages": 1,
+    "standard": [
+      1
+    ]
+  }
+}

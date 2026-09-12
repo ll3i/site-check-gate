@@ -1,0 +1,17 @@
+{
+  "fixture": "fixture_2page.pdf",
+  "description": "2페이지: 항목 4번(Liu et al.)이 p1끝~p2첫머리에 걸침, arXiv는 p2쪽, p2에 러닝헤더+쪽번호 푸터",
+  "expected_count": 7,
+  "expected_dois": [
+    "10.48550/arXiv.1706.03762",
+    "10.18653/v1/n19-1423",
+    "10.48550/arXiv.2005.14165",
+    "10.48550/arXiv.1901.08843"
+  ],
+  "expected_arxivs": [
+    "1907.11692"
+  ],
+  "expected_korean_count": 1,
+  "body_contamination": 0,
+  "notes": "DOI 4개(1,2,3,6번), arXiv 1개(4번 p2쪽), 한국어 1개(7번). 4번 항목은 p1-p2 경계에 걸림."
+}

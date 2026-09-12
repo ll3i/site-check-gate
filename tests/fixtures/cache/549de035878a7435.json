@@ -1,0 +1,158 @@
+{
+  "api": "2.0",
+  "content": {
+    "html": "",
+    "markdown": "",
+    "text": "본 연구에서는 여러 참고문헌을 검토하였다.\n특히 [1]과 [2]의 연구 방법이 중요한\n시사점을 제공한다.\nReferences\n[1] Vaswani, A., Shazeer, N., Parmar, N.,\nUszkoreit, J., Jones, L, Gomez, A. N., Kaiser, U.,\nPolosukhin, I. (2017). Attention is all you need.\nAdvances in Neural Information Processing\nSystems, 30. DOI: 10.48550/arXiv.1706.03762\n[2] Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M.,\nChen, D., Levy, ○., Lewis, M., Zettlemoyer, S.,\nStoyanov, V. (2019). RoBERTa: A robustly\noptimized BERT pretraining approach. arXiv:\n1907.11692\n또한 최근 연구 [3]과 [4]는 대규모 언어\n모델의 스케일링 법칙을 다루고 있다. 이러한\n배경 하에서 본 실험을 수행하였다.\n[3] Devlin, J., Chang, M. W., Lee, K., Toutanova,\nK. (2019). BERT: Pre-training of deep\nbidirectional transformers for language\nunderstanding. Proceedings of NAACL-HLT.\nDOI: 10.18653/v1/n19-1423\n[4] Brown, T. B., Mann, B., Ryder, N., Subbiah,\nM., Kaplan, J., Dhariwal, P., Neelakantan, A., et\nal. (2020). Language models are few-shot\nlearners. Advances in Neural Information\nProcessing Systems, 33, 1877-1901."
+  },
+  "elements": [
+    {
+      "id": 0,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "본 연구에서는 여러 참고문헌을 검토하였다.\n특히 [1]과 [2]의 연구 방법이 중요한\n시사점을 제공한다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0944,
+          "y": 0.0691
+        },
+        {
+          "x": 0.4779,
+          "y": 0.0691
+        },
+        {
+          "x": 0.4779,
+          "y": 0.1186
+        },
+        {
+          "x": 0.0944,
+          "y": 0.1186
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "page": 1,
+      "category": "heading1",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "References"
+      },
+      "coordinates": [
+        {
+          "x": 0.1525,
+          "y": 0.125
+        },
+        {
+          "x": 0.2515,
+          "y": 0.125
+        },
+        {
+          "x": 0.2515,
+          "y": 0.139
+        },
+        {
+          "x": 0.1525,
+          "y": 0.139
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "[1] Vaswani, A., Shazeer, N., Parmar, N.,\nUszkoreit, J., Jones, L, Gomez, A. N., Kaiser, U.,\nPolosukhin, I. (2017). Attention is all you need.\nAdvances in Neural Information Processing\nSystems, 30. DOI: 10.48550/arXiv.1706.03762\n[2] Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M.,\nChen, D., Levy, ○., Lewis, M., Zettlemoyer, S.,\nStoyanov, V. (2019). RoBERTa: A robustly\noptimized BERT pretraining approach. arXiv:\n1907.11692"
+      },
+      "coordinates": [
+        {
+          "x": 0.0935,
+          "y": 0.139
+        },
+        {
+          "x": 0.4782,
+          "y": 0.139
+        },
+        {
+          "x": 0.4782,
+          "y": 0.2859
+        },
+        {
+          "x": 0.0935,
+          "y": 0.2859
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "page": 1,
+      "category": "heading1",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "또한 최근 연구 [3]과 [4]는 대규모 언어\n모델의 스케일링 법칙을 다루고 있다. 이러한\n배경 하에서 본 실험을 수행하였다."
+      },
+      "coordinates": [
+        {
+          "x": 0.5298,
+          "y": 0.0699
+        },
+        {
+          "x": 0.9191,
+          "y": 0.0699
+        },
+        {
+          "x": 0.9191,
+          "y": 0.1195
+        },
+        {
+          "x": 0.5298,
+          "y": 0.1195
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "[3] Devlin, J., Chang, M. W., Lee, K., Toutanova,\nK. (2019). BERT: Pre-training of deep\nbidirectional transformers for language\nunderstanding. Proceedings of NAACL-HLT.\nDOI: 10.18653/v1/n19-1423\n[4] Brown, T. B., Mann, B., Ryder, N., Subbiah,\nM., Kaplan, J., Dhariwal, P., Neelakantan, A., et\nal. (2020). Language models are few-shot\nlearners. Advances in Neural Information\nProcessing Systems, 33, 1877-1901."
+      },
+      "coordinates": [
+        {
+          "x": 0.5288,
+          "y": 0.1379
+        },
+        {
+          "x": 0.9157,
+          "y": 0.1379
+        },
+        {
+          "x": 0.9157,
+          "y": 0.2863
+        },
+        {
+          "x": 0.5288,
+          "y": 0.2863
+        }
+      ]
+    }
+  ],
+  "model": "document-parse-260630",
+  "ocr": true,
+  "usage": {
+    "pages": 1,
+    "standard": [
+      1
+    ]
+  }
+}

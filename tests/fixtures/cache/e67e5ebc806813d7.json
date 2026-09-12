@@ -1,0 +1,298 @@
+{
+  "api": "2.0",
+  "content": {
+    "html": "",
+    "markdown": "",
+    "text": "최근 자연어 처리 분야에서는 트랜스포머 기반 모델이 주류를 이루고 있다. He et al. (2016)은\n심층 신경망의 효율성을 분석하였으나, 본 연구의 참고문헌 목록에는 포함되지 않았다.\nVaswani et al. (2017)은 Attention 메커니즘을 제안하였고, Devlin et al.\n(2019)은 BERT를 소개하였다. Brown et al. (2020)은 GPT-3를 보고하였으며, Liu et\nal. (2019)은 RoBERTa를 통해 성능 개선을 입증하였다.\nReferences\nBrown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.,\nDhariwal, P., Neelakantan, A., et al. (2020). Language models are\nfew-shot learners. Advances in Neural Information Processing\nSystems, 33, 1877-1901. DOI: 10.48550/arXiv.2005.14165\nDevlin, J., Chang, M. W., Lee, K., Toutanova, K. (2019). BERT:\nPre-training of deep bidirectional transformers for language\nunderstanding. Proceedings of NAACL-HLT. DOI: 10.18653/v1/n19-1423\nLiu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D., Levy,\nO., Lewis, M., Zettlemoyer, S., Stoyanov, V. (2019). RoBERTa: A\nrobustly optimized BERT pretraining approach. arXiv: 1907.11692\nVaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L,\nGomez, A. N., Kaiser, U., Polosukhin, I. (2017). Attention is all\nyou need. Advances in Neural Information Processing Systems, 30.\nDOI: 10.48550/arXiv.1706.03762\n김현우, 이영희 (2023). 한국어 문장 분류를 위한 트랜스포머 기반 모델 연구. 한국어 정보처리학회 논문지,\n27(3), 112-128."
+  },
+  "elements": [
+    {
+      "id": 0,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "최근 자연어 처리 분야에서는 트랜스포머 기반 모델이 주류를 이루고 있다. He et al. (2016)은\n심층 신경망의 효율성을 분석하였으나, 본 연구의 참고문헌 목록에는 포함되지 않았다.\nVaswani et al. (2017)은 Attention 메커니즘을 제안하였고, Devlin et al.\n(2019)은 BERT를 소개하였다. Brown et al. (2020)은 GPT-3를 보고하였으며, Liu et\nal. (2019)은 RoBERTa를 통해 성능 개선을 입증하였다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0919,
+          "y": 0.0683
+        },
+        {
+          "x": 0.9008,
+          "y": 0.0683
+        },
+        {
+          "x": 0.9008,
+          "y": 0.1537
+        },
+        {
+          "x": 0.0919,
+          "y": 0.1537
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "References"
+      },
+      "coordinates": [
+        {
+          "x": 0.45,
+          "y": 0.1652
+        },
+        {
+          "x": 0.5496,
+          "y": 0.1652
+        },
+        {
+          "x": 0.5496,
+          "y": 0.1798
+        },
+        {
+          "x": 0.45,
+          "y": 0.1798
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.,\nDhariwal, P., Neelakantan, A., et al. (2020). Language models are\nfew-shot learners. Advances in Neural Information Processing\nSystems, 33, 1877-1901. DOI: 10.48550/arXiv.2005.14165"
+      },
+      "coordinates": [
+        {
+          "x": 0.0697,
+          "y": 0.18
+        },
+        {
+          "x": 0.5796,
+          "y": 0.18
+        },
+        {
+          "x": 0.5796,
+          "y": 0.2353
+        },
+        {
+          "x": 0.0697,
+          "y": 0.2353
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "Devlin, J., Chang, M. W., Lee, K., Toutanova, K. (2019). BERT:\nPre-training of deep bidirectional transformers for language\nunderstanding. Proceedings of NAACL-HLT. DOI: 10.18653/v1/n19-1423"
+      },
+      "coordinates": [
+        {
+          "x": 0.0693,
+          "y": 0.2435
+        },
+        {
+          "x": 0.6384,
+          "y": 0.2435
+        },
+        {
+          "x": 0.6384,
+          "y": 0.2859
+        },
+        {
+          "x": 0.0693,
+          "y": 0.2859
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.0697,
+          "y": 0.18
+        },
+        {
+          "x": 0.5796,
+          "y": 0.18
+        },
+        {
+          "x": 0.5796,
+          "y": 0.2353
+        },
+        {
+          "x": 0.0697,
+          "y": 0.2353
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.0693,
+          "y": 0.2435
+        },
+        {
+          "x": 0.6384,
+          "y": 0.2435
+        },
+        {
+          "x": 0.6384,
+          "y": 0.2859
+        },
+        {
+          "x": 0.0693,
+          "y": 0.2859
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D., Levy,\nO., Lewis, M., Zettlemoyer, S., Stoyanov, V. (2019). RoBERTa: A\nrobustly optimized BERT pretraining approach. arXiv: 1907.11692"
+      },
+      "coordinates": [
+        {
+          "x": 0.0698,
+          "y": 0.2939
+        },
+        {
+          "x": 0.5869,
+          "y": 0.2939
+        },
+        {
+          "x": 0.5869,
+          "y": 0.3364
+        },
+        {
+          "x": 0.0698,
+          "y": 0.3364
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.0698,
+          "y": 0.2939
+        },
+        {
+          "x": 0.5869,
+          "y": 0.2939
+        },
+        {
+          "x": 0.5869,
+          "y": 0.3364
+        },
+        {
+          "x": 0.0698,
+          "y": 0.3364
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L,\nGomez, A. N., Kaiser, U., Polosukhin, I. (2017). Attention is all\nyou need. Advances in Neural Information Processing Systems, 30.\nDOI: 10.48550/arXiv.1706.03762"
+      },
+      "coordinates": [
+        {
+          "x": 0.0687,
+          "y": 0.3442
+        },
+        {
+          "x": 0.6008,
+          "y": 0.3442
+        },
+        {
+          "x": 0.6008,
+          "y": 0.3967
+        },
+        {
+          "x": 0.0687,
+          "y": 0.3967
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "김현우, 이영희 (2023). 한국어 문장 분류를 위한 트랜스포머 기반 모델 연구. 한국어 정보처리학회 논문지,\n27(3), 112-128."
+      },
+      "coordinates": [
+        {
+          "x": 0.0701,
+          "y": 0.4027
+        },
+        {
+          "x": 0.8352,
+          "y": 0.4027
+        },
+        {
+          "x": 0.8352,
+          "y": 0.4331
+        },
+        {
+          "x": 0.0701,
+          "y": 0.4331
+        }
+      ]
+    }
+  ],
+  "model": "document-parse-260630",
+  "ocr": true,
+  "usage": {
+    "pages": 1,
+    "standard": [
+      1
+    ]
+  }
+}

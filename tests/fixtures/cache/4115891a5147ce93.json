@@ -1,0 +1,187 @@
+{
+  "api": "2.0",
+  "content": {
+    "html": "",
+    "markdown": "",
+    "text": "이 논문은 대규모 언어 모델의 발전 과정을 정리한다. Vaswani et al. (2017)의 Attention\n메커니즘은 후속 연구의 기초가 되었다. 이후 BERT (Devlin et al., 2019)와 GPT 시리즈\n(Brown et al., 2020)가 등장하면서 자연어 처리 성능이 크게 향상되었다.\nReferences\n1. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones,\nL, Gomez, A. N., Kaiser, U., Polosukhin, I. (2017). Attention\nis all you need. Advances in Neural Information Processing\nSystems, 30. DOI: 10.48550/arXiv.1706.03762\n2. Devlin, J., Chang, M. W., Lee, K., Toutanova, K. (2019).\nBERT: Pre-training of deep bidirectional transformers for\nlanguage understanding. Proceedings of NAACL-HLT. DOI:\n10.18653/v1/n19-1423\n3. Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.,\nDhariwal, P., Neelakantan, A., et al. (2020). Language models\nare few-shot learners. Advances in Neural Information\nProcessing Systems, 33, 1877-1901. DOI:\n10.48550/arXiv.2005.14165\n4. Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D.,\nLevy, O., Lewis, M., Zettlemoyer, S., Stoyanov, V. (2019).\nRoBERTa: A robustly optimized BERT pretraining approach.\nDemo Paper - References (continued)\narXiv: 1907.11692.\n5. Zhao, W. X., Zhou, K., Li, J., Tang, T., Wang, X., Hou,\nY., Min, Y., Zhang, B., Men, C., Chen, Y. (2023). A survey\nof large language models. Transactions of the Association\nfor Computational Linguistics, 11, 1-36.\n6. Radford, A., Wu, J., Child, R., Luan, D., Amodei, D.,\nSutskever, I. (2019). Language models are unsupervised\nmultitask learners. OpenAl Technical Report. DOI:\n10.48550/arXiv.1901.08843\n7. 김현우, 이영희 (2023). 한국어 문장 분류를 위한 트랜스포머 기반 모델 연구. 한국어 정보처리학회\n논문지, 27(3), 112-128.\n- 2 -"
+  },
+  "elements": [
+    {
+      "id": 0,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "이 논문은 대규모 언어 모델의 발전 과정을 정리한다. Vaswani et al. (2017)의 Attention\n메커니즘은 후속 연구의 기초가 되었다. 이후 BERT (Devlin et al., 2019)와 GPT 시리즈\n(Brown et al., 2020)가 등장하면서 자연어 처리 성능이 크게 향상되었다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0931,
+          "y": 0.0685
+        },
+        {
+          "x": 0.8477,
+          "y": 0.0685
+        },
+        {
+          "x": 0.8477,
+          "y": 0.1212
+        },
+        {
+          "x": 0.0931,
+          "y": 0.1212
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "References"
+      },
+      "coordinates": [
+        {
+          "x": 0.4502,
+          "y": 0.1304
+        },
+        {
+          "x": 0.5494,
+          "y": 0.1304
+        },
+        {
+          "x": 0.5494,
+          "y": 0.1453
+        },
+        {
+          "x": 0.4502,
+          "y": 0.1453
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "1. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones,\nL, Gomez, A. N., Kaiser, U., Polosukhin, I. (2017). Attention\nis all you need. Advances in Neural Information Processing\nSystems, 30. DOI: 10.48550/arXiv.1706.03762\n2. Devlin, J., Chang, M. W., Lee, K., Toutanova, K. (2019).\nBERT: Pre-training of deep bidirectional transformers for\nlanguage understanding. Proceedings of NAACL-HLT. DOI:\n10.18653/v1/n19-1423\n3. Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J.,\nDhariwal, P., Neelakantan, A., et al. (2020). Language models\nare few-shot learners. Advances in Neural Information\nProcessing Systems, 33, 1877-1901. DOI:\n10.48550/arXiv.2005.14165\n4. Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D.,\nLevy, O., Lewis, M., Zettlemoyer, S., Stoyanov, V. (2019).\nRoBERTa: A robustly optimized BERT pretraining approach."
+      },
+      "coordinates": [
+        {
+          "x": 0.0923,
+          "y": 0.1438
+        },
+        {
+          "x": 0.5898,
+          "y": 0.1438
+        },
+        {
+          "x": 0.5898,
+          "y": 0.3808
+        },
+        {
+          "x": 0.0923,
+          "y": 0.3808
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "page": 2,
+      "category": "header",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "Demo Paper - References (continued)"
+      },
+      "coordinates": [
+        {
+          "x": 0.0937,
+          "y": 0.0303
+        },
+        {
+          "x": 0.4188,
+          "y": 0.0303
+        },
+        {
+          "x": 0.4188,
+          "y": 0.0468
+        },
+        {
+          "x": 0.0937,
+          "y": 0.0468
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "page": 2,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "arXiv: 1907.11692.\n5. Zhao, W. X., Zhou, K., Li, J., Tang, T., Wang, X., Hou,\nY., Min, Y., Zhang, B., Men, C., Chen, Y. (2023). A survey\nof large language models. Transactions of the Association\nfor Computational Linguistics, 11, 1-36.\n6. Radford, A., Wu, J., Child, R., Luan, D., Amodei, D.,\nSutskever, I. (2019). Language models are unsupervised\nmultitask learners. OpenAl Technical Report. DOI:\n10.48550/arXiv.1901.08843\n7. 김현우, 이영희 (2023). 한국어 문장 분류를 위한 트랜스포머 기반 모델 연구. 한국어 정보처리학회\n논문지, 27(3), 112-128."
+      },
+      "coordinates": [
+        {
+          "x": 0.0919,
+          "y": 0.0931
+        },
+        {
+          "x": 0.899,
+          "y": 0.0931
+        },
+        {
+          "x": 0.899,
+          "y": 0.2602
+        },
+        {
+          "x": 0.0919,
+          "y": 0.2602
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "page": 2,
+      "category": "footer",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "- 2 -"
+      },
+      "coordinates": [
+        {
+          "x": 0.8598,
+          "y": 0.9619
+        },
+        {
+          "x": 0.9037,
+          "y": 0.9619
+        },
+        {
+          "x": 0.9037,
+          "y": 0.9769
+        },
+        {
+          "x": 0.8598,
+          "y": 0.9769
+        }
+      ]
+    }
+  ],
+  "model": "document-parse-260630",
+  "ocr": true,
+  "usage": {
+    "pages": 2,
+    "standard": [
+      1,
+      2
+    ]
+  }
+}

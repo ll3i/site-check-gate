@@ -1,0 +1,16 @@
+{
+  "fixture": "fixture_apa.pdf",
+  "description": "APA 저자-연도형: 표지 없음 5건, 본문에 He et al. (2016) 함정",
+  "expected_count": 5,
+  "expected_dois": [
+    "10.48550/arXiv.2005.14165",
+    "10.18653/v1/n19-1423",
+    "10.48550/arXiv.1706.03762"
+  ],
+  "expected_arxivs": [
+    "1907.11692"
+  ],
+  "expected_korean_count": 1,
+  "body_contamination": 0,
+  "notes": "DOI 3개(1,2,4번), arXiv 1개(3번), 한국어 1개(5번). 본문 He et al. (2016)은 목록에 없어야 함."
+}

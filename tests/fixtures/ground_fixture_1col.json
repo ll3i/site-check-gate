@@ -1,0 +1,17 @@
+{
+  "fixture": "fixture_1col.pdf",
+  "description": "1단 번호형: 본문+참고문헌 6건, 각 항목 2~3줄",
+  "expected_count": 6,
+  "expected_dois": [
+    "10.48550/arXiv.1706.03762",
+    "10.18653/v1/n19-1423",
+    "10.48550/arXiv.2005.14165",
+    "10.1145/3627673.3679215"
+  ],
+  "expected_arxivs": [
+    "1907.11692"
+  ],
+  "expected_korean_count": 1,
+  "body_contamination": 0,
+  "notes": "DOI 4개, arXiv 1개(3번 항목), 한국어 1개(5번 항목)"
+}
