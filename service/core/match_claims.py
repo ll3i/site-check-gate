@@ -42,8 +42,10 @@ TAG_NO_QUOTE_REJECTION = "무인용 거절"
 # ── 캐시 ──────────────────────────────────────────────────────────────────────
 
 def _cache_key(claim: str, metadata_title: str, metadata_abstract: str) -> str:
-    """항목별 캐시 키 (내용 기반)."""
-    raw = f"{claim}\n{metadata_title}\n{metadata_abstract}"
+    """항목별 캐시 키 (내용 기반). 시스템 프롬프트 해시를 포함하여 프롬프트 변경 시
+    구버전 캐시가 반환되는 결함을 방지한다."""
+    prompt_hash = hashlib.sha256(SYSTEM_PROMPT.encode('utf-8')).hexdigest()[:16]
+    raw = f"{prompt_hash}\n{claim}\n{metadata_title}\n{metadata_abstract}"
     return hashlib.sha256(raw.encode('utf-8')).hexdigest()[:16]
 
 

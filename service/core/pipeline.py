@@ -22,7 +22,6 @@ sys.path.insert(0, str(ROOT))
 
 from service.core.extract_refs import (
     extract_references_from_elements,
-    load_elements,
     get_element_text,
     get_element_category,
     get_page as get_el_page,
@@ -48,8 +47,7 @@ from service.core.match_claims import (
 )
 
 # verify_refs는 수동 import (CLI 도구이므로)
-sys.path.insert(0, str(ROOT / "service" / "core"))
-import verify_refs
+from service.core import verify_refs
 from service.core.parse_refs import parse_item
 
 
