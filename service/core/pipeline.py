@@ -22,6 +22,8 @@ sys.path.insert(0, str(ROOT))
 
 from service.core.extract_refs import (
     extract_references_from_elements,
+    load_docparse_json,
+    extract_references_from_file,
     get_element_text,
     get_element_category,
     get_page as get_el_page,
@@ -50,6 +52,23 @@ from service.core.match_claims import (
 from service.core import verify_refs
 from service.core.parse_refs import parse_item
 
+# ── 새 섹션 임포트 (M7d) ──────────────────────────────────────────────────────
+from service.core.verify_law_refs import (
+    extract_law_refs,
+    lookup_article,
+    verify_law_ref,
+    verify_all_law_refs,
+)
+from service.core.subcontract_check import (
+    check_subcontract,
+    LABEL_FOUND_COMPLIANT,
+    LABEL_FOUND_RISK,
+    LABEL_NONEED,
+)
+from service.core.photo_claims import extract_photo_claims
+from service.core.photo_detect import detect_objects
+from service.core.photo_match import match_photo_claim
+
 
 # ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -69,17 +88,19 @@ BODY_CATEGORY_PREFIXES = ['body', 'text', 'paragraph']
 # ── 파이프라인 ────────────────────────────────────────────────────────────────
 
 def run_pipeline(
-    file_path: str,
+    file_path: Optional[str] = None,
     api_key_env: str = "UPSTAGE_API_KEY",
     offline: bool = False,
     max_verify: int = 60,
     match_parallel: int = 4,
     match_use_cache: bool = True,
+    photo_files: Optional[List[str]] = None,
+    raw_text: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     전체 파이프라인 실행.
 
-    ① Document Parse → elements (캐시 우선)
+    ① Document Parse → elements (캐시 우선)  [raw_text 제공 시 건너뛰고 raw_text를 본문으로 사용]
     ② 절 분리 (E10): 본문 elements / 참고문헌 elements
     ③ 참고문헌 검증 (verify_refs.py): 실존 5단계
     ④ 인용 표지 추출 (extract_claims.py): 본문 주장 + 표지
@@ -87,6 +108,14 @@ def run_pipeline(
     ⑥ 주장-근거 대조 (match_claims.py): 3분기 + quote
     ⑦ 문서 게이트 (PRD §5): 제출가능/보완필요/확인필요
     ⑧ 통합 결과 JSON 반환
+
+    M7d 게이트 통합 섹션:
+      (a) 법령 — 본문에서 표지 추출+스냅샷 조회 → law_section
+      (b) 적법도급 — 체크리스트 판정 → subcontract_section
+      (c) 사진 — photo_files 있으면 문장·사진 매칭 후 도메인 라우팅 검출·대조 → photo_section
+      (d) 게이트 종합 — 법령 ❌ 또는 사진 '뒷받침 안 함' 또는 체크리스트 위험 신호 시 '보완 필요' 이상,
+          사진 미매칭·⛔ 과다 시 '확인 필요'. 결과 JSON에 law_section, subcontract_section,
+          photo_section, gate 키 추가.
     """
     t0 = time.time()
     timeline: List[Dict[str, Any]] = []
@@ -97,7 +126,7 @@ def run_pipeline(
 
     result: Dict[str, Any] = {
         "meta": {
-            "file": file_path,
+            "file": file_path or "(raw_text)",
             "started_at": time.strftime("%Y-%m-%d %H:%M:%S"),
             "steps": [],
         },
@@ -112,42 +141,78 @@ def run_pipeline(
         "elapsed_sec": 0,
     }
 
-    # ── ① Document Parse ────────────────────────────────────────────────────
-    log("parse", "Document Parse 시작")
+    # ── ① Document Parse / 본문 확보 ──────────────────────────────────────────
+    log("parse", "Document Parse 시작" if raw_text is None else "raw_text 경로 — Document Parse 건너뛰기")
 
-    # 캐시 확인
-    from service.core.docparse_client import _cache_key as dp_cache_key, _load_cache
-    cache_key = dp_cache_key(file_path)
-    cached = _load_cache(cache_key)
-
-    if cached is not None:
-        elements = cached.get('elements', [])
-        log("parse", f"캐시 재사용 (요소 {len(elements)}개)")
+    if raw_text is not None:
+        # raw_text 경로: Document Parse 건너뛰고 본문을 raw_text로 사용
+        if not isinstance(raw_text, str) or not raw_text.strip():
+            log("parse", "raw_text가 비어 있음")
+            result["gate"] = {
+                "status": GATE_NEEDS_CHECK,
+                "reason": "raw_text가 비어 있음",
+            }
+            result["elapsed_sec"] = round(time.time() - t0, 2)
+            result["meta"]["steps"] = timeline
+            return result
+        body_text = raw_text
+        # 합성 elements (절 분리·claim 추출이 downstream에서 요소를 요구하므로 최소 요소 구성)
+        elements = []
+        for i, line in enumerate(raw_text.split("\n"), 1):
+            line = line.strip()
+            if not line:
+                continue
+            elements.append({
+                "text": line,
+                "page": 1,
+                "category": "body",
+                "boundingBox": {"x": 0.1, "y": 0.1 * i, "width": 0.8, "height": 0.05},
+            })
+        log("parse", f"raw_text 본문 사용 (요소 {len(elements)}개 합성)")
     else:
-        if offline:
-            log("parse", "오프라인 모드 — Document Parse 건너뜀")
+        # 기존 Document Parse 경로
+        if file_path is None:
+            log("parse", "file_path 없음")
             result["gate"] = {
                 "status": GATE_NEEDS_CHECK,
-                "reason": "오프라인 모드 — 문서 판독 불가",
+                "reason": "file_path 없음",
             }
             result["elapsed_sec"] = round(time.time() - t0, 2)
             result["meta"]["steps"] = timeline
             return result
 
-        from service.core.docparse_client import call_document_parse
-        try:
-            dp_response = call_document_parse(file_path)
-            elements = dp_response.get('elements', [])
-            log("parse", f"Document Parse 완료 (요소 {len(elements)}개)")
-        except Exception as e:
-            log("parse", f"Document Parse 실패: {e}")
-            result["gate"] = {
-                "status": GATE_NEEDS_CHECK,
-                "reason": f"문서 판독 실패: {e}",
-            }
-            result["elapsed_sec"] = round(time.time() - t0, 2)
-            result["meta"]["steps"] = timeline
-            return result
+        from service.core.docparse_client import _cache_key as dp_cache_key, _load_cache
+        cache_key = dp_cache_key(file_path)
+        cached = _load_cache(cache_key)
+
+        if cached is not None:
+            elements = cached.get('elements', [])
+            log("parse", f"캐시 재사용 (요소 {len(elements)}개)")
+        else:
+            if offline:
+                log("parse", "오프라인 모드 — Document Parse 건너뜀")
+                result["gate"] = {
+                    "status": GATE_NEEDS_CHECK,
+                    "reason": "오프라인 모드 — 문서 판독 불가",
+                }
+                result["elapsed_sec"] = round(time.time() - t0, 2)
+                result["meta"]["steps"] = timeline
+                return result
+
+            from service.core.docparse_client import call_document_parse
+            try:
+                dp_response = call_document_parse(file_path)
+                elements = dp_response.get('elements', [])
+                log("parse", f"Document Parse 완료 (요소 {len(elements)}개)")
+            except Exception as e:
+                log("parse", f"Document Parse 실패: {e}")
+                result["gate"] = {
+                    "status": GATE_NEEDS_CHECK,
+                    "reason": f"문서 판독 실패: {e}",
+                }
+                result["elapsed_sec"] = round(time.time() - t0, 2)
+                result["meta"]["steps"] = timeline
+                return result
 
     if not elements:
         log("parse", "요소 없음")
@@ -223,7 +288,40 @@ def run_pipeline(
     result["body_elements"] = body_elements
     result["ref_elements"] = ref_elements
 
-    # ── ③ 참고문헌 검증 (verify_refs.py) ───────────────────────────────────
+    # ── 본문 텍스트 조합 (M7d 섹션 공용) ─────────────────────────────────────
+    body_texts = []
+    for el in body_elements:
+        text = get_text(el)
+        if text:
+            body_texts.append(text)
+    body_text = '\n'.join(body_texts)
+
+    # ── (a) 법령 섹션 ────────────────────────────────────────────────────────
+    log("law", "법령 인용 표지 추출 시작")
+    law_refs = extract_law_refs(body_text)
+    law_verified_list = [verify_law_ref(r) for r in law_refs]
+    law_section = {
+        "extracted": len(law_refs),
+        "items": law_verified_list,
+        "counts": {
+            "실존": sum(1 for v in law_verified_list if v.get("verdict") == "실존"),
+            "해당조없음": sum(1 for v in law_verified_list if v.get("verdict") == "해당 조 없음"),
+            "스냅샷미보유": sum(1 for v in law_verified_list if v.get("verdict") == "스냅샷 미보유"),
+            "내용변동가능": sum(1 for v in law_verified_list if v.get("verdict") == "내용 변동 가능"),
+        },
+    }
+    log("law", f"법령 표지 {len(law_refs)}건 추출 → 실존 {law_section['counts']['실존']}, "
+                f"❌해당조없음 {law_section['counts']['해당조없음']}, ⛔스냅샷미보유 {law_section['counts']['스냅샷미보유']}")
+    result["law_section"] = law_section
+
+    # ── (b) 적법도급 섹션 ────────────────────────────────────────────────────
+    log("subcontract", "적법도급 체크리스트 판정 시작")
+    subcontract_result = check_subcontract(body_text)
+    risk_count = subcontract_result.get("axis_summary", {}).get(1, {}).get("risk_count", 0)
+    # 전체 축 합산 위험 신호
+    total_risk = sum(s.get("risk_count", 0) for s in subcontract_result.get("axis_summary", {}).values())
+    log("subcontract", f"적법도급 판정 완료: 총 {subcontract_result['total_items']}항목, 위험신호 {total_risk}건")
+    result["subcontract_section"] = subcontract_result
     log("verify", "참고문헌 검증 시작 (M1)")
 
     # parse_refs로 항목 구조화
@@ -364,7 +462,115 @@ def run_pipeline(
     ))
     result["match_results"] = match_results
 
-    # ── ⑦ 문서 게이트 (PRD §5) ────────────────────────────────────────────
+    # ── (c) 사진 섹션 ────────────────────────────────────────────────────────
+    photo_section: Dict[str, Any] = {
+        "photo_files": photo_files if photo_files else [],
+        "claims": [],
+        "matches": [],
+        "counts": {
+            "총주장": 0,
+            "매칭성공": 0,
+            "매칭실패": 0,
+            "뒷받침함": 0,
+            "뒷받침안함": 0,
+            "판단불가": 0,
+            "도메인": {},
+        },
+    }
+    if photo_files:
+        log("photo", f"사진 섹션 시작 (파일 {len(photo_files)}개)")
+        # 사진 참조 주장 추출
+        photo_claims_list = extract_photo_claims(body_text, photo_files)
+        photo_section["claims"] = photo_claims_list
+        photo_section["counts"]["총주장"] = len(photo_claims_list)
+
+        unmatched_photo_count = 0
+        domain_counts: Dict[str, int] = {}
+
+        for pc in photo_claims_list:
+            pf = pc.get("photo_file")
+            sentence = pc.get("sentence", "")
+            # 매칭 실패 카운트
+            if not pf:
+                unmatched_photo_count += 1
+                photo_section["counts"]["매칭실패"] += 1
+                log("photo", f"  사진 참조 주장 매칭 실패: {pc.get('marker')} — {sentence[:80]}")
+                continue
+
+            # 도메인 라우팅
+            lowered = sentence.lower()
+            if any(k in lowered for k in ("부식", "부식", "균열", "손상", "용접", "crack", "damage", "corrosion", "weld")):
+                domain = "defect"
+            elif any(k in lowered for k in ("계기", "수치", "gauge", "digit", "압력", "온도", "rpm", "속도", "값", "측정", "게이지")):
+                domain = "gauge"
+            elif any(k in lowered for k in ("정리", "적재", "폐기물", "청소", "폐기", "방치", "폐기물", "쓰레기", "cleaning", "cardboard", "pile", "쓰레기")):
+                domain = "cleaning"
+            else:
+                domain = "defect"  # 불명 → defect
+
+            photo_section["counts"]["도메인"][domain] = photo_section["counts"]["도메인"].get(domain, 0) + 1
+
+            try:
+                detections = detect_objects(pf, domain)
+            except Exception as e:
+                log("photo", f"  검출 실패 ({domain}/{pf}): {e}")
+                photo_section["matches"].append({
+                    "sentence": sentence,
+                    "marker": pc.get("marker"),
+                    "photo_file": pf,
+                    "verdict": "판단 불가",
+                    "reason": f"객체 검출 실패: {e}",
+                    "quote": "",
+                })
+                photo_section["counts"]["판단불가"] += 1
+                continue
+
+            try:
+                match_res = match_photo_claim(sentence, detections, use_cache=match_use_cache)
+            except Exception as e:
+                log("photo", f"  대조 실패 ({domain}/{pf}): {e}")
+                photo_section["matches"].append({
+                    "sentence": sentence,
+                    "marker": pc.get("marker"),
+                    "photo_file": pf,
+                    "verdict": "판단 불가",
+                    "reason": f"대조 실패: {e}",
+                    "quote": "",
+                })
+                photo_section["counts"]["판단불가"] += 1
+                continue
+
+            photo_section["matches"].append({
+                "sentence": sentence,
+                "marker": pc.get("marker"),
+                "photo_file": pf,
+                "domain": domain,
+                "verdict": match_res.get("verdict", "판단 불가"),
+                "quote": match_res.get("quote", ""),
+                "reason": match_res.get("reason", ""),
+                "detection_count": match_res.get("detection_count", 0),
+            })
+
+            v = match_res.get("verdict", "판단 불가")
+            if v == "뒷받침함":
+                photo_section["counts"]["뒷받침함"] += 1
+            elif v == "뒷받침 안 함":
+                photo_section["counts"]["뒷받침안함"] += 1
+            else:
+                photo_section["counts"]["판단불가"] += 1
+
+        photo_section["counts"]["매칭성공"] = photo_section["counts"]["총주장"] - unmatched_photo_count
+        log("photo", (
+            f"사진 섹션 완료: 주장 {photo_section['counts']['총주장']}건, "
+            f"매칭성공 {photo_section['counts']['매칭성공']}건, 매칭실패 {photo_section['counts']['매칭실패']}건, "
+            f"뒷받침함 {photo_section['counts']['뒷받침함']}, 뒷받침안함 {photo_section['counts']['뒷받침안함']}, "
+            f"판단불가 {photo_section['counts']['판단불가']}"
+        ))
+    else:
+        log("photo", "사진 파일 없음 — 사진 섹션 건너뜀")
+    result["photo_section"] = photo_section
+
+    # ── (d) 게이트 종합 ─────────────────────────────────────────────────────
     log("gate", "문서 게이트 계산 (PRD §5)")
 
     # 오인용(🔴) 집계: 실존 문헌에 대해 뒷받침 안 함으로 판정된 항목
@@ -383,8 +589,48 @@ def run_pipeline(
     # 판단 불가 개수
     cannot_judge_count = match_counts.get(VERDICT_CANNOT_JUDGE, 0)
 
-    # 게이트 판정
-    if counts.get('unverified', 0) > GATE_UNVERIFIED_THRESHOLD:
+    # 법령 ❌ (해당 조 없음) —게이트에 반영
+    law_fail_count = law_section.get("counts", {}).get("해당조없음", 0)
+
+    # 사진 '뒷받침 안 함' → 보완 필요 이상
+    photo_not_supported = photo_section.get("counts", {}).get("뒷받침안함", 0)
+
+    # 사진 미매칭 + ⛔(스냅샷미보유 등) 과다 → 확인 필요
+    photo_unmatched = photo_section.get("counts", {}).get("매칭실패", 0)
+    law_snapshot_missing = law_section.get("counts", {}).get("스냅샷미보유", 0)
+
+    # 적법도급 위험 신호
+    subcontract_risk = total_risk
+
+    # 게이트 판정 (우선순위: 보완 필요 > 확인 필요 > 제출 가능)
+    gate_status = GATE_SUBMITTABLE
+    gate_reason = "모든 인용 실존 확인, 대조 완료"
+
+    gate_needs_revision = False
+    gate_needs_check = False
+
+    if law_fail_count > 0:
+        gate_status = GATE_NEEDS_REVISION
+        gate_reason = f"❌ 법령 인용 표지 중 '해당 조 없음' {law_fail_count}건 — 보완 필요"
+        gate_needs_revision = True
+    elif photo_not_supported > 0:
+        gate_status = GATE_NEEDS_REVISION
+        gate_reason = f"🔴 사진 대조 '뒷받침 안 함' {photo_not_supported}건 — 보완 필요"
+        gate_needs_revision = True
+    elif subcontract_risk > 0:
+        gate_status = GATE_NEEDS_REVISION
+        gate_reason = f"⚠️ 적법도급 체크리스트 위험 신호 {subcontract_risk}건 — 보완 필요"
+        gate_needs_revision = True
+    elif photo_unmatched > 0 or (photo_section.get("counts", {}).get("도메인", {}) and photo_section["counts"]["매칭실패"] > 0):
+        # 미매칭 과다 → 확인 필요 (사진 미매칭이 하나라도 있으면 확인 필요)
+        gate_status = GATE_NEEDS_CHECK
+        gate_reason = f"사진 참조 미매칭 {photo_unmatched}건 — 확인 필요"
+        gate_needs_check = True
+    elif law_snapshot_missing > 0:
+        gate_status = GATE_NEEDS_CHECK
+        gate_reason = f"⛔ 법령 스냅샷 미보유 {law_snapshot_missing}건 — 확인 필요"
+        gate_needs_check = True
+    elif counts.get('unverified', 0) > GATE_UNVERIFIED_THRESHOLD:
         gate_status = GATE_NEEDS_REVISION
         gate_reason = f"❌ 미확인 {counts['unverified']}건 존재"
     elif misquoted_count > GATE_MISQUOTED_THRESHOLD:
@@ -410,6 +656,12 @@ def run_pipeline(
             "목록누락": link_result['summary']['missing_count'],
             "오인용": misquoted_count,
             "판단불가": cannot_judge_count,
+            "법령": law_section.get("counts", {}),
+            "적법도급": {
+                "총항목": subcontract_result.get("total_items", 0),
+                "위험신호": total_risk,
+            },
+            "사진": photo_section.get("counts", {}),
         },
     }
 
@@ -488,6 +740,77 @@ def print_summary(result: Dict[str, Any]):
             print(f"  [{i}] 주장: {nqr.get('claim', '')[:120]}...")
             print(f"      판정: {nqr.get('verdict')}")
             print(f"      근거: {nqr.get('reason', '')[:120]}...")
+
+    # ── (a) 법령 섹션 ────────────────────────────────────────────────────────
+    ls = result.get("law_section", {})
+    if ls:
+        print("\n■ 법령 인용 표지:")
+        print(f"  추출: {ls.get('extracted', 0)}건")
+        lc = ls.get("counts", {})
+        for sym, cnt in [
+            ("✅ 실존", lc.get("실존", 0)),
+            ("❌ 해당 조 없음", lc.get("해당조없음", 0)),
+            ("⛔ 스냅샷 미보유", lc.get("스냅샷미보유", 0)),
+            ("⚠️ 내용 변동 가능", lc.get("내용변동가능", 0)),
+        ]:
+            if cnt:
+                print(f"  {sym}: {cnt}건")
+        for item in ls.get("items", []):
+            icon = item.get("status_icon", "?")
+            art = item.get("article")
+            para = item.get("paragraph")
+            art_str = f"제{art}조"
+            if para:
+                art_str += f" 제{para}항"
+            print(f"    {icon} {item.get('law_name_raw','')} {art_str} — {item.get('verdict','?')}")
+            note = item.get("note", "")
+            if note:
+                print(f"       └ {note[:100]}")
+
+    # ── (b) 적법도급 섹션 ────────────────────────────────────────────────────
+    ss = result.get("subcontract_section", {})
+    if ss:
+        print("\n■ 적법도급 체크리스트:")
+        print(f"  총 항목: {ss.get('total_items', 0)}건")
+        risk_total = sum(s.get("risk_count", 0) for s in ss.get("axis_summary", {}).values())
+        compliant_total = sum(s.get("compliant_count", 0) for s in ss.get("axis_summary", {}).values())
+        noneed_total = sum(s.get("noneed_count", 0) for s in ss.get("axis_summary", {}).values())
+        print(f"  위험 신호: {risk_total}건 / 적법 방향: {compliant_total}건 / 근거 없음: {noneed_total}건")
+        for r in ss.get("results", []):
+            label = r.get("label", "?")
+            axis = r.get("axis")
+            item_no = r.get("item")
+            name = r.get("name", "")
+            print(f"    [축 {axis}·항목 {item_no}] {name}: {label}")
+            if r.get("evidence_sentences"):
+                for es in r["evidence_sentences"][:2]:
+                    print(f"       근거: {es[:100]}")
+            if r.get("risk_keywords_hit"):
+                print(f"       위험키워드: {', '.join(r['risk_keywords_hit'])}")
+            if r.get("compliant_keywords_hit"):
+                print(f"       적법키워드: {', '.join(r['compliant_keywords_hit'])}")
+
+    # ── (c) 사진 섹션 ────────────────────────────────────────────────────────
+    ps = result.get("photo_section", {})
+    if ps:
+        print("\n■ 사진 섹션:")
+        print(f"  업로드 사진: {len(ps.get('photo_files', []))}개")
+        pc = ps.get("counts", {})
+        print(f"  총 주장: {pc.get('총주장', 0)}건")
+        print(f"  매칭 성공: {pc.get('매칭성공', 0)}건 / 매칭 실패: {pc.get('매칭실패', 0)}건")
+        print(f"  뒷받침함: {pc.get('뒷받침함', 0)}건 / 뒷받침 안 함: {pc.get('뒷받침안함', 0)}건 / 판단 불가: {pc.get('판단불가', 0)}건")
+        dom = pc.get("도메인", {})
+        if dom:
+            print(f"  도메인 라우팅: {', '.join(f'{k}={v}' for k, v in dom.items())}")
+        for m in ps.get("matches", []):
+            v = m.get("verdict", "?")
+            icon = {"뒷받침함": "✅", "뒷받침 안 함": "❌", "판단 불가": "⛔"}.get(v, "?")
+            print(f"    {icon} [{m.get('domain','?')}] {m.get('marker','')} {m.get('photo_file','') or '미매칭'}")
+            print(f"       문장: {m.get('sentence','')[:100]}")
+            print(f"       판정: {v} / quote: {m.get('quote','') or '-'}")
+            reason = m.get("reason", "")
+            if reason:
+                print(f"       사유: {reason[:100]}")
 
     print(f"\n⏱ 총 소요 시간: {result.get('elapsed_sec', 0)}초")
 
