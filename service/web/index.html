@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>현장 보고 검증 게이트</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", "Malgun Gothic", sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 20px;
+  color: #1a1a1a;
+  background: #f7f7f8;
+}
+h1 {
+  font-size: 24px;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.3px;
+}
+.subtitle {
+  color: #555;
+  font-size: 15px;
+  margin: 0 0 28px 0;
+}
+.upload-section {
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.upload-section h2 {
+  font-size: 16px;
+  margin: 0 0 16px 0;
+}
+.field {
+  margin-bottom: 18px;
+}
+.field label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.field small {
+  color: #777;
+  font-size: 12px;
+  display: block;
+  margin-top: 3px;
+}
+.file-zone {
+  border: 2px dashed #bbb;
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.file-zone:hover {
+  border-color: #888;
+}
+.file-zone.dragover {
+  border-color: #333;
+  background: #f0f0f0;
+}
+.file-list {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #444;
+  max-height: 120px;
+  overflow: y: auto;
+}
+button.start-btn {
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 8px;
+}
+button.start-btn:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+.status-bar {
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: none;
+}
+.status-bar.visible {
+  display: block;
+}
+.progress-track {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.progress-fill {
+  height: 100%;
+  background: #1a1a1a;
+  width: 0%;
+  transition: width 0.3s;
+}
+.status-text {
+  font-size: 14px;
+  margin-top: 6px;
+}
+.report-section {
+  display: none;
+}
+.report-section.visible {
+  display: block;
+}
+.gate-badge {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+.gate-badge.submittable {
+  background: #d4edda;
+  color: #155724;
+}
+.gate-badge.revision {
+  background: #fff3cd;
+  color: #856404;
+}
+.gate-badge.check {
+  background: #f8d7da;
+  color: #721c24;
+}
+.card {
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.card h3 {
+  font-size: 15px;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card.law-card {
+  border-left: 4px solid #1a1a1a;
+}
+.card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.card th, .card td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+}
+.card th {
+  color: #555;
+  font-weight: 600;
+}
+.issue-icon {
+  font-size: 16px;
+}
+.risk-row {
+  background: #fff8f8;
+}
+.risk-row td {
+  border-bottom-color: #ffe0e0;
+}
+.evidence {
+  font-size: 12px;
+  color: #555;
+  margin-top: 2px;
+  max-width: 420px;
+  overflow-wrap: break-word;
+}
+.photo-match {
+  font-size: 12px;
+  margin-top: 2px;
+}
+.verdict-icon {
+  font-weight: 700;
+}
+.hide {
+  display: none !important;
+}
+.error-box {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+.mcp-panel {
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-top: 20px;
+  font-size: 13px;
+}
+.mcp-panel h4 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+}
+.mcp-tag {
+  display: inline-block;
+  background: #eee;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin: 2px;
+  font-size: 12px;
+}
+.empty-note {
+  color: #888;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<h1>현장 보고 검증 게이트</h1>
+<p class="subtitle">현장 보고서의 모든 주장에 법령·기준·사진 근거가 실제로 있는지 검사합니다.</p>
+
+<!-- 업로드 영역 -->
+<div class="upload-section" id="uploadArea">
+  <h2>제출물 준비</h2>
+
+  <div class="field">
+    <label>점검 보고서·계약 문서 업로드</label>
+    <small>PDF / DOCX / 텍스트 등 — 검증 대상 문서</small>
+    <div class="file-zone" id="docZone">
+      <div>문서를 여기에 드래그하거나 클릭해 선택하세요</div>
+    </div>
+    <input type="file" id="docInput" accept=".pdf,.docx,.txt,.hwp" style="display:none">
+    <div class="file-list" id="docList"></div>
+  </div>
+
+  <div class="field">
+    <label>현장 사진 추가 (다중)</label>
+    <small>jpg / png / webp — 보고서 주장과 대조할 현장 사진</small>
+    <div class="file-zone" id="photoZone">
+      <div>사진을 여기에 드래그하거나 클릭해 선택하세요 (여러 장 가능)</div>
+    </div>
+    <input type="file" id="photoInput" accept="image/*" multiple style="display:none">
+    <div class="file-list" id="photoList"></div>
+  </div>
+
+  <div class="field">
+    <label>(선택) 점검 지시·공고 추가</label>
+    <small>점검 지시서, 공고문 등 — 없어도 검사 진행 가능</small>
+    <div class="file-zone" id="noticeZone">
+      <div>파일을 드래그하거나 클릭해 선택하세요</div>
+    </div>
+    <input type="file" id="noticeInput" accept=".pdf,.docx,.txt" style="display:none">
+    <div class="file-list" id="noticeList"></div>
+  </div>
+
+  <button class="start-btn" id="startBtn" disabled>검사 시작</button>
+</div>
+
+<!-- 진행률 표시 -->
+<div class="status-bar" id="statusBar">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-weight:600;">검사 진행 중</span>
+    <span id="progressLabel">0%</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="status-text" id="statusText">접수 완료</div>
+</div>
+
+<!-- 결과 화면 -->
+<div class="report-section" id="reportSection">
+  <div id="gateBadge" class="gate-badge"></div>
+  <div id="errorBox" class="error-box hide"></div>
+
+  <!-- ① 적법도급 체크리스트 -->
+  <div class="card" id="subcontractCard">
+    <h3>① 적법도급 체크리스트 (5축)</h3>
+    <div id="subcontractBody"></div>
+  </div>
+
+  <!-- ② 법령 인용 검증 (가장 크게) -->
+  <div class="card law-card" id="lawCard">
+    <h3>② 법령 인용 검증 — 환각 조항·법령판 오인용</h3>
+    <div id="lawBody"></div>
+  </div>
+
+  <!-- ③ 문헌·기준 인용 (기존 verify 결과) -->
+  <div class="card" id="refCard">
+    <h3>③ 문헌·기준 인용 검증</h3>
+    <div id="refBody"></div>
+  </div>
+
+  <!-- ④ 사진·증빙 (YOLO) -->
+  <div class="card" id="photoCard">
+    <h3>④ 사진·증빙 대조 (YOLO 검출·매칭)</h3>
+    <div id="photoBody"></div>
+  </div>
+
+  <!-- ⑤ 개인정보 + ⑥ 문서 게이트 배지 -->
+  <div class="card" id="privacyCard">
+    <h3>⑤ 개인정보</h3>
+    <div id="privacyBody">
+      <p class="empty-note">개인정보 검사 모듈은 현재 파이프라인에 연결되지 않았습니다. 별도 MCP 연결을 검토하세요.</p>
+    </div>
+  </div>
+
+  <!-- 연결된 MCP 상태 패널 -->
+  <div class="mcp-panel">
+    <h4>연결된 MCP 11개</h4>
+    <div>
+      <span class="mcp-tag">① 적법도급 체크리스트</span>
+      <span class="mcp-tag">② 법령 인용 검증</span>
+      <span class="mcp-tag">③ 문헌·기준 인용</span>
+      <span class="mcp-tag">④ 사진·증빙(YOLO)</span>
+      <span class="mcp-tag">⑤ 개인정보</span>
+      <span class="mcp-tag">⑥ 문서 게이트</span>
+      <span class="mcp-tag">문서 판독(Document Parse)</span>
+      <span class="mcp-tag">절 분리(E10)</span>
+      <span class="mcp-tag">인용 표지 추출</span>
+      <span class="mcp-tag">연결 검사</span>
+      <span class="mcp-tag">주장-근거 대조</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── 파일 선택 상태 ──────────────────────────────────────────────────────
+  const state = {
+    doc: null,
+    photos: [],
+    notice: null,
+  };
+
+  function renderFileList(el, files, label) {
+    if (!files || files.length === 0) {
+      el.textContent = '';
+      return;
+    }
+    const list = Array.from(files).map(f => {
+      const size = f.size > 1024 * 1024
+        ? (f.size / (1024*1024)).toFixed(1) + 'MB'
+        : (f.size / 1024).toFixed(0) + 'KB';
+      return `${f.name} (${size})`;
+    }).join('\n');
+    el.textContent = list;
+  }
+
+  function updateStartButton() {
+    const btn = document.getElementById('startBtn');
+    btn.disabled = !(state.doc && state.photos.length > 0);
+  }
+
+  // 문서
+  const docZone = document.getElementById('docZone');
+  const docInput = document.getElementById('docInput');
+  docZone.addEventListener('click', () => docInput.click());
+  docZone.addEventListener('dragover', e => { e.preventDefault(); docZone.classList.add('dragover'); });
+  docZone.addEventListener('dragleave', () => docZone.classList.remove('dragover'));
+  docZone.addEventListener('drop', e => { e.preventDefault(); docZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleDoc(e.dataTransfer.files[0]); });
+  docInput.addEventListener('change', () => { if (docInput.files.length) handleDoc(docInput.files[0]); });
+
+  function handleDoc(file) {
+    state.doc = file;
+    renderFileList(document.getElementById('docList'), [file], '문서');
+    updateStartButton();
+  }
+
+  // 사진
+  const photoZone = document.getElementById('photoZone');
+  const photoInput = document.getElementById('photoInput');
+  photoZone.addEventListener('click', () => photoInput.click());
+  photoZone.addEventListener('dragover', e => { e.preventDefault(); photoZone.classList.add('dragover'); });
+  photoZone.addEventListener('dragleave', () => photoZone.classList.remove('dragover'));
+  photoZone.addEventListener('drop', e => { e.preventDefault(); photoZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handlePhotos(Array.from(e.dataTransfer.files)); });
+  photoInput.addEventListener('change', () => { if (photoInput.files.length) handlePhotos(Array.from(photoInput.files)); });
+
+  function handlePhotos(files) {
+    state.photos = state.photos.concat(files);
+    renderFileList(document.getElementById('photoList'), state.photos, '사진');
+    updateStartButton();
+  }
+
+  // 공고문
+  const noticeZone = document.getElementById('noticeZone');
+  const noticeInput = document.getElementById('noticeInput');
+  noticeZone.addEventListener('click', () => noticeInput.click());
+  noticeZone.addEventListener('dragover', e => { e.preventDefault(); noticeZone.classList.add('dragover'); });
+  noticeZone.addEventListener('dragleave', () => noticeZone.classList.remove('dragover'));
+  noticeZone.addEventListener('drop', e => { e.preventDefault(); noticeZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleNotice(e.dataTransfer.files[0]); });
+  noticeInput.addEventListener('change', () => { if (noticeInput.files.length) handleNotice(noticeInput.files[0]); });
+
+  function handleNotice(file) {
+    state.notice = file;
+    renderFileList(document.getElementById('noticeList'), [file], '공고문');
+  }
+
+  // ── 검사 시작 ────────────────────────────────────────────────────────────
+  document.getElementById('startBtn').addEventListener('click', startJob);
+
+  let jobId = null;
+  let pollTimer = null;
+
+  function startJob() {
+    if (!state.doc) return;
+
+    const formData = new FormData();
+    formData.append('document', state.doc);
+    state.photos.forEach(p => formData.append('photos', p));
+    if (state.notice) formData.append('notice', state.notice);
+
+    const statusBar = document.getElementById('statusBar');
+    statusBar.classList.add('visible');
+    document.getElementById('startBtn').disabled = true;
+    document.getElementById('reportSection').classList.remove('visible');
+
+    fetch('/jobs', { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error || data.detail) {
+          showError(data.error || data.detail);
+          return;
+        }
+        jobId = data.job_id;
+        pollJob();
+      })
+      .catch(err => showError('요청 실패: ' + err.message));
+  }
+
+  function pollJob() {
+    fetch('/jobs/' + jobId)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { showError(data.error); return; }
+        document.getElementById('progressFill').style.width = data.progress + '%';
+        document.getElementById('progressLabel').textContent = data.progress + '%';
+        document.getElementById('statusText').textContent = data.step || '대기 중';
+
+        if (data.status === 'done') {
+          clearInterval(pollTimer);
+          showReport();
+        } else if (data.status === 'error') {
+          clearInterval(pollTimer);
+          showError(data.error || '처리 중 오류가 발생했습니다.');
+        } else {
+          pollTimer = setInterval(pollJob, 800);
+        }
+      })
+      .catch(err => showError('상태 확인 실패: ' + err.message));
+  }
+
+  function showError(msg) {
+    const bar = document.getElementById('statusBar');
+    bar.classList.remove('visible');
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.classList.remove('hide');
+    document.getElementById('startBtn').disabled = false;
+  }
+
+  // ── 결과 화면 ────────────────────────────────────────────────────────────
+  function showReport() {
+    fetch('/jobs/' + jobId + '/report')
+      .then(r => r.json())
+      .then(report => renderReport(report))
+      .catch(err => showError('리포트 로드 실패: ' + err.message));
+  }
+
+  function renderReport(r) {
+    // 게이트 배지
+    const gate = r.gate || {};
+    const status = gate.status || '확인 필요';
+    const badge = document.getElementById('gateBadge');
+    badge.textContent = '게이트 판정: ' + status;
+    badge.className = 'gate-badge ' +
+      (status === '제출 가능' ? 'submittable' :
+       status === '보완 필요' ? 'revision' : 'check');
+    badge.textContent += ' — ' + (gate.reason || '');
+
+    // ① 적법도급
+    const sc = r.subcontract_section || {};
+    const scBody = document.getElementById('subcontractBody');
+    const scResults = sc.results || [];
+    const riskTotal = scResults.filter(x => x.label === '위험 신호').length;
+
+    if (scResults.length === 0) {
+      scBody.innerHTML = '<p class="empty-note">적법도급 체크리스트 결과가 없습니다.</p>';
+    } else {
+      let html = '<table><thead><tr><th>축</th><th>항목</th><th>판정</th><th>근거 문장</th></tr></thead><tbody>';
+      scResults.forEach(item => {
+        const isRisk = item.label === '위험 신호';
+        const rowClass = isRisk ? 'risk-row' : '';
+        const evidence = (item.evidence_sentences || []).slice(0, 2).map(s =>
+          '<div class="evidence">' + escapeHtml(s) + '</div>'
+        ).join('');
+        const riskKw = item.risk_keywords_hit ? '<br><small style="color:#c00;">위험 키워드: ' + escapeHtml(item.risk_keywords_hit.join(', ')) + '</small>' : '';
+        html += `<tr class="${rowClass}">
+          <td>축 ${item.axis}</td>
+          <td>${escapeHtml(item.name || '')}</td>
+          <td><b>${escapeHtml(item.label)}</b>${riskKw}</td>
+          <td>${evidence}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      if (riskTotal > 0) {
+        html += `<p style="color:#c00;margin-top:10px;"><b>⚠️ 위험 신호 ${riskTotal}건 — 보완 필요</b></p>`;
+      }
+      scBody.innerHTML = html;
+    }
+
+    // ② 법령 인용 검증
+    const law = r.law_section || {};
+    const lawBody = document.getElementById('lawBody');
+    const lawItems = law.items || [];
+    const counts = law.counts || {};
+
+    let lawHtml = '';
+    if (lawItems.length > 0) {
+      lawHtml = '<table><thead><tr><th>아이콘</th><th>법령·조문</th><th>판정</th><th>근거</th></tr></thead><tbody>';
+      lawItems.forEach(item => {
+        const icon = item.status_icon || '?';
+        const art = item.article || '?';
+        const para = item.paragraph ? ' 제' + item.paragraph + '항' : '';
+        const artStr = '제' + art + '조' + para;
+        const note = item.note ? escapeHtml(item.note) : '-';
+        lawHtml += `<tr>
+          <td><span class="issue-icon">${icon}</span></td>
+          <td>${escapeHtml(item.law_name_raw || '')} ${artStr}</td>
+          <td><b>${escapeHtml(item.verdict || '?')}</b></td>
+          <td class="evidence">${note}</td>
+        </tr>`;
+      });
+      lawHtml += '</tbody></table>';
+    } else {
+      lawHtml = '<p class="empty-note">본문에서 법령 인용 표지가 추출되지 않았습니다.</p>';
+    }
+    lawHtml += '<p style="margin-top:10px;font-size:13px;">';
+    lawHtml += '추출 ' + law.extracted + '건 &nbsp;|&nbsp; ';
+    lawHtml += '✅ 실존: ' + (counts.실존 || 0) + ' &nbsp;|&nbsp; ';
+    lawHtml += '❌ 해당 조 없음: ' + (counts.해조절없음 || 0) + ' &nbsp;|&nbsp; ';
+    lawHtml += '⛔ 스냅샷 미보유: ' + (counts.스냅샷미보유 || 0) + ' &nbsp;|&nbsp; ';
+    lawHtml += '⚠️ 내용 변동 가능: ' + (counts.내용변동가능 || 0);
+    lawHtml += '</p>';
+
+    // 오인용 강조
+    const misquoted = (r.match_results || []).filter(m =>
+      m.verdict === '뒷받침 안 함' &&
+      (m.tags || []).includes('오인용')
+    );
+    if (misquoted.length > 0) {
+      lawHtml += '<p style="color:#c00;margin-top:12px;"><b>🔴 오인용 검출:</b></p><ul style="color:#c00;font-size:13px;">';
+      misquoted.forEach(m => {
+        lawHtml += '<li>' + escapeHtml((m.claim || '').slice(0, 100)) + '</li>';
+      });
+      lawHtml += '</ul>';
+    }
+
+    lawBody.innerHTML = lawHtml;
+
+    // ③ 문헌·기준 인용 (기존 verify 결과)
+    const refBody = document.getElementById('refBody');
+    const refs = r.refs_verified || [];
+    if (refs.length === 0) {
+      refBody.innerHTML = '<p class="empty-note">검증된 문헌이 없습니다.</p>';
+    } else {
+      let refHtml = '<table><thead><tr><th>번호</th><th>상태</th><th>문헌</th><th>근거/노트</th></tr></thead><tbody>';
+      refs.forEach(rv => {
+        const sym = {
+          'verified': '✅',
+          'partial': '⚠️',
+          'unverified': '❌',
+          'unreachable': '⛔',
+          'not_applicable': '➖',
+        } [rv.status] || '?';
+        const title = (rv.matched && rv.matched.title) ? escapeHtml(rv.matched.title) : escapeHtml(rv.raw || '');
+        const note = rv.note ? escapeHtml(rv.note.slice(0, 120)) : '-';
+        refHtml += `<tr>
+          <td>${rv.id}</td>
+          <td>${sym} ${rv.status}</td>
+          <td style="max-width:260px;overflow-wrap:break-word;">${title}</td>
+          <td class="evidence">${note}</td>
+        </tr>`;
+      });
+      refHtml += '</tbody></table>';
+
+      // 대체 문헌 제안 (❌·🔴 아래)
+      const failedRefs = refs.filter(rv => rv.status === 'unverified' || rv.status === 'unreachable');
+      if (failedRefs.length > 0) {
+        refHtml += '<div style="margin-top:12px;padding:10px;background:#fff8f8;border:1px solid #ffe0e0;border-radius:4px;">';
+        refHtml += '<p style="font-weight:600;margin:0 0 6px 0;">대체 문헌 제안</p>';
+        failedRefs.forEach(rv => {
+          refHtml += `<div style="margin-bottom:6px;font-size:13px;">`;
+          refHtml += `<b>${escapeHtml(rv.raw || '')}</b> — 대체 문헌을 찾지 못함 — 주장 수정 필요`;
+          refHtml += '</div>';
+        });
+        refHtml += '</div>';
+      }
+
+      refBody.innerHTML = refHtml;
+    }
+
+    // ④ 사진·증빙
+    const photo = r.photo_section || {};
+    const photoBody = document.getElementById('photoBody');
+    const matches = photo.matches || [];
+
+    if (matches.length === 0) {
+      photoBody.innerHTML = '<p class="empty-note">사진이 업로드되지 않았거나 사진 대조 결과가 없습니다.</p>';
+    } else {
+      let photoHtml = '<table><thead><tr><th>문장</th><th>매칭 파일</th><th>도메인</th><th>판정</th><th>quote</th><th>근거</th></tr></thead><tbody>';
+      matches.forEach(m => {
+        const v = m.verdict || '?';
+        const icon = {
+          '뒷받침함': '✅',
+          '뒷받침 안 함': '❌',
+          '판단 불가': '⛔',
+        } [v] || '?';
+        const fileDisp = m.photo_file ? m.photo_file.split('/').pop() : '(미매칭)';
+        const quote = m.quote ? escapeHtml(m.quote.slice(0, 80)) : '-';
+        const reason = m.reason ? escapeHtml(m.reason.slice(0, 100)) : '';
+        photoHtml += `<tr>
+          <td style="max-width:200px;overflow-wrap:break-word;">${escapeHtml((m.sentence || '').slice(0, 80))}</td>
+          <td>${escapeHtml(fileDisp)}</td>
+          <td>${m.domain || '-'}</td>
+          <td><span class="verdict-icon">${icon} ${v}</span></td>
+          <td class="photo-match">${quote}</td>
+          <td class="evidence">${reason}</td>
+        </tr>`;
+      });
+      photoHtml += '</tbody></table>';
+
+      const pc = photo.counts || {};
+      photoHtml += '<p style="margin-top:10px;font-size:13px;">';
+      photoHtml += '총 주장: ' + (pc.총주장 || 0) + ' &nbsp;|&nbsp; ';
+      photoHtml += '매칭 성공: ' + (pc.매칭성공 || 0) + ' &nbsp;|&nbsp; ';
+      photoHtml += '매칭 실패: ' + (pc.매칭실패 || 0) + ' &nbsp;|&nbsp; ';
+      photoHtml += '뒷받침함: ' + (pc.뒷받침함 || 0) + ' &nbsp;|&nbsp; ';
+      photoHtml += '뒷받침 안 함: ' + (pc.뒷받침안함 || 0) + ' &nbsp;|&nbsp; ';
+      photoHtml += '판단 불가: ' + (pc.판단불가 || 0);
+      photoHtml += '</p>';
+
+      // 사진 '뒷받침 안 함' 강조
+      const notSupported = matches.filter(m => m.verdict === '뒷받침 안 함');
+      if (notSupported.length > 0) {
+        photoHtml += '<p style="color:#c00;margin-top:12px;"><b>🔴 사진 대조 "뒷받침 안 함" ' + notSupported.length + '건 — 보완 필요</b></p>';
+      }
+
+      photoBody.innerHTML = photoHtml;
+    }
+
+    // 개인정보 카드
+    const privacyBody = document.getElementById('privacyBody');
+    privacyBody.innerHTML = '<p class="empty-note">개인정보 검사 모듈은 현재 파이프라인에 연결되지 않았습니다. 별도 MCP 연결을 검토하세요.</p>';
+
+    document.getElementById('reportSection').classList.add('visible');
+    document.getElementById('statusBar').classList.remove('visible');
+    document.getElementById('startBtn').disabled = false;
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+})();
+</script>
+
+</body>
+</html>

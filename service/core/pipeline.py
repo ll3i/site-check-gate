@@ -34,6 +34,7 @@ from service.core.extract_refs import (
     split_by_number_mark,
     merge_lines_in_element,
     is_author_year_bib,
+    is_number_marked,
 )
 from service.core.extract_claims import (
     extract_claims_from_elements,
@@ -241,72 +242,55 @@ def run_pipeline(
     body_elements: List[Dict[str, Any]] = []
     ref_elements: List[Dict[str, Any]] = []
 
-    # raw_text 경로: 합성 요소는 헤딩 없이 바로 본문으로 분류 (E10 헤딩 전제 건너뜀)
-    if raw_text is not None:
-        for el in sorted_elements:
+    # 참고문헌 헤딩 위치 파악
+    heading_idx: int = -1
+    for idx, el in enumerate(sorted_elements):
+        text = get_element_text(el)
+        if text and is_heading_element(el):
+            heading_idx = idx
+            log("separate", f"참고문헌 헤딩 발견: 요소 id={el.get('id')} text='{text[:40]}'")
+            break
+
+    if heading_idx >= 0:
+        # 헤딩 이전: 본문 element (제외 category만 걸러냄)
+        for el in sorted_elements[:heading_idx]:
             text = get_element_text(el)
             if not text or not text.strip():
                 continue
-            cat = get_element_category(el)
             if is_excluded_category(el):
                 continue
+            body_elements.append(el)
+        log("separate", f"헤딩 이전 본문 element {len(body_elements)}개 수집")
+
+        # 헤딩 이후: 참고문헌 element + 나머지 본문
+        for el in sorted_elements[heading_idx + 1:]:
+            text = get_element_text(el)
+            if not text or not text.strip():
+                continue
+            if is_excluded_category(el):
+                continue
+            cat = get_element_category(el)
             etype = classify_element(text, cat)
             if etype in ('number_bib', 'author_year_bib'):
                 ref_elements.append(el)
             else:
                 body_elements.append(el)
-        log("separate", f"raw_text 경로: 본문 element {len(body_elements)}개, 참고문헌 element {len(ref_elements)}개")
+        log("separate", f"헤딩 이후: 본문 element {len([e for e in body_elements if get_element_text(e) and not is_author_year_bib(get_element_text(e)) and not is_number_marked(get_element_text(e))])}개, 참고문헌 element {len(ref_elements)}개")
     else:
-        # 기존 E10 경로: 헤딩 발견 전 요소 버림
-        heading_found = False
-        prev_accepted: Optional[Dict[str, Any]] = None
-        prev_page: int = 0
-
+        # 헤딩 미발견: 모든 요소를 본문으로 간주 (참고문헌 패턴 있는 요소만 ref로 분리)
         for el in sorted_elements:
             text = get_element_text(el)
             if not text or not text.strip():
                 continue
-
-            # 헤딩 찾기 전은 모두 버림
-            if not heading_found:
-                if is_heading_element(el):
-                    heading_found = True
-                continue
-
-            # category 제외
+            cat = get_element_category(el)
             if is_excluded_category(el):
                 continue
-
-            page = get_el_page(el)
-            cat = get_element_category(el)
             etype = classify_element(text, cat)
-
             if etype in ('number_bib', 'author_year_bib'):
-                # 참고문헌 element
                 ref_elements.append(el)
-                prev_accepted = {'page': page}
-                prev_page = page
-            elif etype in ('body', 'other'):
-                # 본문 element — E11b 예외 처리 후 본문으로 분류
-                # (E11b: 직전 ref가 p에 있고 현재가 p+1 첫 본문성 element이며 표지 없음 → 병합)
-                if (prev_accepted is not None
-                        and page == prev_page + 1
-                        and etype in ('body', 'other')
-                        and not re.match(r'^\s*(\[\d+\]|\d+\.|\d+\))\s+', text)
-                        and not is_author_year_bib(text)):
-                    # 직전 ref에 병합
-                    if prev_accepted.get('merged_to'):
-                        prev_accepted['merged_to'] = prev_accepted['merged_to'] + ' ' + text
-                    else:
-                        prev_accepted['merged_to'] = text
-                    prev_accepted['source_note'] = 'merged'
-                    continue
-                # 본문으로 분류
-                body_elements.append(el)
             else:
                 body_elements.append(el)
-
-        log("separate", f"본문 element {len(body_elements)}개, 참고문헌 element {len(ref_elements)}개")
+        log("separate", f"헤딩 미발견: 본문 element {len(body_elements)}개, 참고문헌 element {len(ref_elements)}개")
 
     result["body_elements"] = body_elements
     result["ref_elements"] = ref_elements
