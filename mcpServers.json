@@ -1,0 +1,70 @@
+{
+  "mcpServers": {
+    "cite_core": {
+      "command": "python",
+      "args": ["service/mcp_servers/cite_core_server.py"],
+      "enabled": true,
+      "description": "참고문헌 검증 + 주장 대조 (cite_core)"
+    },
+    "pii_guard": {
+      "command": "python",
+      "args": ["service/mcp_servers/pii_guard_server.py"],
+      "enabled": true,
+      "description": "텍스트 내 개인정보·비밀키 스캔 (pii_guard)"
+    },
+    "law_registry": {
+      "command": "python",
+      "args": ["service/mcp_servers/law_registry_server.py"],
+      "enabled": true,
+      "description": "법령 스냅샷 조회·검색 (law_registry)"
+    },
+    "site_rules": {
+      "command": "python",
+      "args": ["service/mcp_servers/site_rules_server.py"],
+      "enabled": true,
+      "description": "적법도급 체크리스트 점검 (site_rules)"
+    },
+    "scholar_search": {
+      "command": "python",
+      "args": ["service/mcp_servers/scholar_search_server.py"],
+      "enabled": true,
+      "description": "논문 검색 (arXiv + Crossref) (scholar_search)"
+    },
+    "retraction_check": {
+      "command": "python",
+      "args": ["service/mcp_servers/retraction_check_server.py"],
+      "enabled": true,
+      "description": "논문 철회 여부 확인 (retraction_check)"
+    },
+    "url_check": {
+      "command": "python",
+      "args": ["service/mcp_servers/url_check_server.py"],
+      "enabled": true,
+      "description": "URL 상태 확인 (url_check)"
+    },
+    "wayback": {
+      "command": "python",
+      "args": ["service/mcp_servers/wayback_server.py"],
+      "enabled": true,
+      "description": "archive.org Wayback Machine 스냅샷 검색 (wayback)"
+    },
+    "doc_parse": {
+      "command": "python",
+      "args": ["service/mcp_servers/doc_parse_server.py"],
+      "enabled": true,
+      "description": "문서 파싱 (Upstage Document Parse API) (doc_parse)"
+    },
+    "photo_inspect": {
+      "command": "python",
+      "args": ["service/mcp_servers/photo_inspect_server.py"],
+      "enabled": true,
+      "description": "YOLO 객체 검출 (photo_inspect)"
+    },
+    "contest_brief": {
+      "command": "python",
+      "args": ["service/mcp_servers/contest_brief_server.py"],
+      "enabled": false,
+      "description": "대회 브리핑 요약 (contest_brief) — 다음 세션에서 구현 예정"
+    }
+  }
+}
