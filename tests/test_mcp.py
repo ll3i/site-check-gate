@@ -29,6 +29,11 @@ SERVERS: List[tuple[str, Path]] = [
     ("pii_guard",    SERVER_DIR / "pii_guard_server.py"),
     ("law_registry", SERVER_DIR / "law_registry_server.py"),
     ("site_rules",   SERVER_DIR / "site_rules_server.py"),
+    ("scholar_search", SERVER_DIR / "scholar_search_server.py"),
+    ("retraction_check", SERVER_DIR / "retraction_check_server.py"),
+    ("url_check",    SERVER_DIR / "url_check_server.py"),
+    ("wayback",      SERVER_DIR / "wayback_server.py"),
+    ("doc_parse",    SERVER_DIR / "doc_parse_server.py"),
 ]
 
 # ── 테스트 입력 ────────────────────────────────────────────────────────────────
@@ -263,6 +268,19 @@ def _make_test_args(server_name: str, tool_name: str) -> Optional[Dict[str, Any]
     elif server_name == "site_rules":
         if tool_name == "check_subcontract":
             return {"text": SAMPLE_SUBCONTRACT_TEXT}
+    elif server_name == "scholar_search":
+        if tool_name == "search_papers":
+            return {"query": "deep learning", "max_results": 1}
+    elif server_name == "retraction_check":
+        if tool_name == "check_retraction":
+            return {"doi": "10.1109/CVPR.2016.90"}
+    elif server_name == "url_check":
+        if tool_name == "check_url":
+            return {"url": "https://example.com"}
+    elif server_name == "wayback":
+        if tool_name == "find_snapshot":
+            return {"url": "https://example.com"}
+    # doc_parse: tools/list 까지만 (tools/call 스킵)
     return None
 
 
@@ -358,6 +376,11 @@ import pytest
     ("pii_guard",    SERVER_DIR / "pii_guard_server.py"),
     ("law_registry", SERVER_DIR / "law_registry_server.py"),
     ("site_rules",   SERVER_DIR / "site_rules_server.py"),
+    ("scholar_search", SERVER_DIR / "scholar_search_server.py"),
+    ("retraction_check", SERVER_DIR / "retraction_check_server.py"),
+    ("url_check",    SERVER_DIR / "url_check_server.py"),
+    ("wayback",      SERVER_DIR / "wayback_server.py"),
+    ("doc_parse",    SERVER_DIR / "doc_parse_server.py"),
 ])
 def server_target(request):
     return request.param
@@ -384,6 +407,11 @@ def test_roundtrip_site_rules():
     ("pii_guard",    SERVER_DIR / "pii_guard_server.py"),
     ("law_registry", SERVER_DIR / "law_registry_server.py"),
     ("site_rules",   SERVER_DIR / "site_rules_server.py"),
+    ("scholar_search", SERVER_DIR / "scholar_search_server.py"),
+    ("retraction_check", SERVER_DIR / "retraction_check_server.py"),
+    ("url_check",    SERVER_DIR / "url_check_server.py"),
+    ("wayback",      SERVER_DIR / "wayback_server.py"),
+    ("doc_parse",    SERVER_DIR / "doc_parse_server.py"),
 ])
 def test_roundtrip_parametrized(name, script):
     _roundtrip_server(name, script)
