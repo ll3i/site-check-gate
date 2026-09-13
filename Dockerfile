@@ -12,6 +12,11 @@ RUN apt-get update && \
         gcc \
         libjpeg-dev \
         zlib1g-dev \
+        libgl1 \
+        libglib2.0-0 \
+        libxcb1 \
+        libsm6 \
+        libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
 # ---- 애플리케이션 의존성 (레이어 캐시 활용) ------------------------------------
