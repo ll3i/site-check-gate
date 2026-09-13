@@ -1,0 +1,8 @@
+# 비전 추론 의존성
+#
+# ultralytics + torch 는 CPU 전용 환경(컨테이너·저사양 머신)을 가정한다.
+# PyTorch CPU 휠을 사용하려면 아래 명령으로 설치한다 (Dockerfile 참조):
+#   pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-vision.txt
+#
+ultralytics
+torch
