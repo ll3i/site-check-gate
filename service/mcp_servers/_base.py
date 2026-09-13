@@ -262,11 +262,13 @@ class MCPServer:
         stdin에서 줄 단위 JSON을 읽고, 처리 후 stdout에 응답을 쓴다.
         stderr는 로그 용도로만 사용.
         """
-        # stdin/stdout을 라인 버퍼링 없이 unbuffered로 설정
+        # stdin/stdout을 항상 UTF-8로 설정 (Windows 기본 인코딩 문제 방지)
+        if hasattr(sys.stdin, "reconfigure"):
+            sys.stdin.reconfigure(encoding="utf-8")
         if hasattr(sys.stdout, "reconfigure"):
-            sys.stdout.reconfigure(line_buffering=True)
+            sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
         if hasattr(sys.stderr, "reconfigure"):
-            sys.stderr.reconfigure(line_buffering=True)
+            sys.stderr.reconfigure(encoding="utf-8", line_buffering=True)
 
         for raw_line in sys.stdin:
             line = raw_line.strip()

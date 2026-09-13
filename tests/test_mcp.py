@@ -149,6 +149,7 @@ def start_server(script_path: Path) -> subprocess.Popen:
     Path.resolve() 로 얻은 네이티브 Windows 경로를 사용한다.
     """
     env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
     python_exe = sys.executable or "python3"
 
     # 프로젝트 루트를 PYTHONPATH에 추가
@@ -165,6 +166,7 @@ def start_server(script_path: Path) -> subprocess.Popen:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        encoding="utf-8",
         bufsize=1,
         env=env,
         cwd=str(PROJECT_ROOT.resolve()),
@@ -185,7 +187,7 @@ def stop_server(proc: subprocess.Popen) -> None:
 
 # ── 서버별 왕복 테스트 ──────────────────────────────────────────────────────────
 
-def test_server(name: str, script_path: Path) -> Dict[str, Any]:
+def _roundtrip_server(name: str, script_path: Path) -> Dict[str, Any]:
     result: Dict[str, Any] = {
         "name": name,
         "script": str(script_path),
@@ -304,7 +306,7 @@ def run_tests() -> int:
             continue
 
         print(f"\n--- {name} ({script.name}) ---")
-        result = test_server(name, script)
+        result = _roundtrip_server(name, script)
 
         if result["error"]:
             print(f"  [FAIL] 오류: {result['error']}")
@@ -344,6 +346,47 @@ def run_tests() -> int:
         print("결과: SOME FAIL")
     print("=" * 60)
     return 0 if all_ok else 1
+
+
+# ── pytest 용 테스트 함수 ────────────────────────────────────────────────────────
+
+import pytest
+
+
+@pytest.fixture(params=[
+    ("cite_core",    SERVER_DIR / "cite_core_server.py"),
+    ("pii_guard",    SERVER_DIR / "pii_guard_server.py"),
+    ("law_registry", SERVER_DIR / "law_registry_server.py"),
+    ("site_rules",   SERVER_DIR / "site_rules_server.py"),
+])
+def server_target(request):
+    return request.param
+
+
+def test_roundtrip_cite_core():
+    _roundtrip_server("cite_core", SERVER_DIR / "cite_core_server.py")
+
+
+def test_roundtrip_pii_guard():
+    _roundtrip_server("pii_guard", SERVER_DIR / "pii_guard_server.py")
+
+
+def test_roundtrip_law_registry():
+    _roundtrip_server("law_registry", SERVER_DIR / "law_registry_server.py")
+
+
+def test_roundtrip_site_rules():
+    _roundtrip_server("site_rules", SERVER_DIR / "site_rules_server.py")
+
+
+@pytest.mark.parametrize("name, script", [
+    ("cite_core",    SERVER_DIR / "cite_core_server.py"),
+    ("pii_guard",    SERVER_DIR / "pii_guard_server.py"),
+    ("law_registry", SERVER_DIR / "law_registry_server.py"),
+    ("site_rules",   SERVER_DIR / "site_rules_server.py"),
+])
+def test_roundtrip_parametrized(name, script):
+    _roundtrip_server(name, script)
 
 
 if __name__ == "__main__":
