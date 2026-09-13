@@ -1195,7 +1195,7 @@ body {
     verifyBtn.textContent = '이 초안을 보고서 검증에 넣기';
     verifyBtn.addEventListener('click', function () {
       if (!draft_md) {
-        alert('보고서 초안이 없어 검증 흐름으로 보낼 수 없습니다. (UPSTAGE_API_KEY 미설정 시 생성되지 않습니다)');
+        showErrorBanner('초안이 없어 검증 흐름으로 보낼 수 없습니다. (UPSTAGE_API_KEY 미설정 시 생성되지 않습니다)');
         return;
       }
       // 초안을 텍스트로 기존 검증 흐름(/jobs)에 투입: 문서 대신 초안 텍스트를 임시 파일로 제출
@@ -1208,15 +1208,16 @@ body {
         .then(r => r.json())
         .then(data => {
           if (data.error || data.detail) {
-            alert('검증 흐름 투입 실패: ' + (data.error || data.detail));
+            showErrorBanner('검증 흐름 투입 실패: ' + (data.error || data.detail));
             return;
           }
           jobId = data.job_id;
+          mode.kind = 'verify';
           enterProgress();
           pollJob();
         })
         .catch(err => {
-          alert('요청 실패: ' + err.message);
+          showErrorBanner('요청 실패: ' + err.message);
         });
     });
     actions.appendChild(verifyBtn);
