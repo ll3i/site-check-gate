@@ -17,6 +17,9 @@ from typing import Any, Dict, List, Optional, Tuple
 LAW_SNAPSHOT_DIR = Path("assets/law")
 """법령 스냅샷이 저장된 디렉토리."""
 
+LAW_MANIFEST_PATH = LAW_SNAPSHOT_DIR / "manifest.json"
+"""한글 법령명 → ASCII 파일명 매핑 (Cloud Run 배포 안정화용)."""
+
 # 판정 어휘 (cite-check 원칙 유지)
 VERDICT_EXISTS = "실존"          # ✅ 실존·현행
 VERDICT_NO_ARTICLE = "해당 조 없음"  # ❌ 환각 조항
@@ -39,26 +42,74 @@ _SNAPSHOT_ALIASES: Dict[str, str] = {}    # 별칭 → 정규화 키
 
 # 파일명에서 인식한 법령명(아직 조문 비어 있음)을 키로 등록한다.
 # 파일명 예: "노동조합_및_노동관계조정법.json" → JSON의 "법령명" 값으로 키 삼음.
+# 파일명 → 법령명(원본) 역매핑 (manifest.json 기반, glob 대체)
+_LAW_FILENAME_MAP: Dict[str, str] = {}  # ASCII 파일명 → JSON 법령명(원본)
+
+
 def _load_snapshot_meta() -> None:
-    """assets/law/ 의 JSON 파일들을 훑어 법령명 키·별칭 지도를 구축한다."""
+    """assets/law/ 의 JSON 파일들을 훑어 법령명 키·별칭 지도를 구축한다.
+
+    manifest.json(한글 법령명 → ASCII 파일명) 매핑을 우선 사용하며,
+    manifest가 없거나 매핑에 없는 파일은 glob으로 발견한 후 기억한다.
+    """
+    global _LAW_FILENAME_MAP
     if _SNAPSHOT_LAW_NAMES:
         return  # 이미 구축됨
     if not LAW_SNAPSHOT_DIR.exists():
         return
+
+    # manifest.json에서 명시적 매핑 로드
+    manifest = _load_law_manifest()
+    manifest_mapping = {}
+    if manifest and isinstance(manifest.get("mapping"), dict):
+        manifest_mapping = manifest["mapping"]
+
+    # manifest에 등록된 파일들은 직접 로드
+    for full_name, filename in manifest_mapping.items():
+        candidate = LAW_SNAPSHOT_DIR / filename
+        if not candidate.exists():
+            continue
+        try:
+            with open(candidate, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            continue
+        name = data.get("법령명") or ""
+        if not name or not isinstance(name, str):
+            continue
+        key = re.sub(r"\s+", "", name.strip())
+        _SNAPSHOT_LAW_NAMES[key] = name
+        _LAW_FILENAME_MAP[filename] = name
+        _register_aliases(name, key)
+
+    # manifest에 없는 나머지 JSON 파일들 (glob fallback)
+    seen_files = set(manifest_mapping.values())
     for path in sorted(LAW_SNAPSHOT_DIR.glob("*.json")):
+        if path.name in seen_files:
+            continue
         try:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except (json.JSONDecodeError, OSError):
             continue
-        name = data.get("법령명") or data.get("법령명") or ""
+        name = data.get("법령명") or ""
         if not name or not isinstance(name, str):
             continue
-        # 정규화 키: 공백 제거·개행 제거 후 사용
         key = re.sub(r"\s+", "", name.strip())
         _SNAPSHOT_LAW_NAMES[key] = name
-        # 파일명에서 흔히 쓰이는 약칭도 별칭으로 등록
+        _LAW_FILENAME_MAP[path.name] = name
         _register_aliases(name, key)
+
+
+def _load_law_manifest() -> Optional[Dict[str, Any]]:
+    """assets/law/manifest.json 을 로드해 매핑 dict를 반환. 없으면 None."""
+    if not LAW_MANIFEST_PATH.exists():
+        return None
+    try:
+        with open(LAW_MANIFEST_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
 
 
 def _register_aliases(full_name: str, key: str) -> None:
@@ -269,13 +320,30 @@ def _normalize_law_name(raw: str) -> str:
 def _load_snapshot(law_key: str) -> Optional[Dict[str, Any]]:
     """
     assets/law/ 에서 정규화 키(법령명 공백제거)에 해당하는 스냅샷을 로드.
+    manifest.json의 매핑(한글 법령명 → ASCII 파일명)을 우선 사용하고,
+    없으면 기존 glob fallback을 사용한다.
     없으면 None.
     """
     _load_snapshot_meta()
-    if law_key not in _SNAPSHOT_LAW_NAMES:
+    # 방어적 정규화: 호출자가 미리 정규화하지 않은 경우 흡수
+    norm_key = re.sub(r"\s+", "", law_key.strip())
+    if norm_key not in _SNAPSHOT_LAW_NAMES:
         return None
-    full_name = _SNAPSHOT_LAW_NAMES[law_key]
-    # 파일 검색: 파일명에 법용명이 언더스코어화된 형태
+    full_name = _SNAPSHOT_LAW_NAMES[norm_key]
+
+    # 1) manifest.json 매핑으로 파일명 결정 (Cloud Run 비ASCII 방지)
+    manifest = _load_law_manifest()
+    if manifest and full_name in manifest.get("mapping", {}):
+        filename = manifest["mapping"][full_name]
+        candidate = LAW_SNAPSHOT_DIR / filename
+        if candidate.exists():
+            try:
+                with open(candidate, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                return None
+
+    # 2) 기존 glob 방식 ( manifest 없거나 매핑에 없는 경우 )
     candidates = list(LAW_SNAPSHOT_DIR.glob(f"{full_name}*.json"))
     if not candidates:
         # 언더스코어화 변형 탐색

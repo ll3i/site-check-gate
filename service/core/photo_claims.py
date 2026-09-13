@@ -6,7 +6,9 @@ photo_claims.py — 사진 참조 주장 추출 (결정론 모듈, LLM 미사용
     extract_photo_claims(text, photo_files) -> List[Dict]
 """
 
+import json
 import re
+from pathlib import Path
 from typing import List, Dict, Optional, Any
 
 # ---------------------------------------------------------------------------
@@ -42,6 +44,28 @@ _LOCATION_HINTS = (
     "A동", "B동", "C동", "로프", "사다리", "비계",
     "점검표", "소화전", "비상구", "안전관리자",
 )
+
+# demo_photos 위치어 메타 경로 (선택적 폴백)
+_DEMO_LOCATIONS_PATH = Path("assets/vision/demo_photos/locations.json")
+"""파일명 → 위치어 목록 매핑. 사진 파일명이 ASCII로 renamed된 경우 폴백용."""
+
+
+def _load_demo_locations() -> Dict[str, List[str]]:
+    """assets/vision/demo_photos/locations.json 을 로드한 매핑을 반환.
+
+    파일이 없거나 파싱에 실패하면 빈 dict를 반환한다 (폴백 비활성).
+    """
+    if not _DEMO_LOCATIONS_PATH.exists():
+        return {}
+    try:
+        with open(_DEMO_LOCATIONS_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        mapping = data.get("mapping", {})
+        if isinstance(mapping, dict):
+            return {k: list(v) for k, v in mapping.items()}
+    except (json.JSONDecodeError, OSError):
+        pass
+    return {}
 
 
 def _split_sentences(text: str) -> List[str]:
@@ -95,10 +119,29 @@ def _match_priority1(number: int, photo_files: List[str]) -> Optional[str]:
 def _match_priority2(
     location_hints: List[str], photo_files: List[str]
 ) -> Optional[str]:
-    """2순위: 문장 속 위치어가 파일명에 포함된 파일로 보정."""
+    """2순위: 문장 속 위치어가 파일명에 포함된 파일로 보정.
+
+    파일명이 ASCII로 renamed된 경우 locations.json의 매핑을 폴백으로 사용한다.
+    런타임 업로드 파일명은 그대로 동작 (힌트 in 파일명 검사).
+    """
+    # 1) 기존 방식: 위치어가 파일명에 포함된 파일 탐색
     for hint in location_hints:
         for pf in photo_files:
             if hint in pf:
+                return pf
+
+    # 2) locations.json 폴백: 업로드 파일명이 demo 사진이고,
+    #    해당 파일에 매핑된 위치어 중 문장에 포함된 것이 있으면 매칭
+    demo_locs = _load_demo_locations()
+    if not demo_locs:
+        return None
+    for pf in photo_files:
+        pf_basename = Path(pf).name
+        locs = demo_locs.get(pf_basename)
+        if not locs:
+            continue
+        for hint in location_hints:
+            if hint in locs:
                 return pf
     return None
 
@@ -177,13 +220,13 @@ def extract_photo_claims(
 if __name__ == "__main__":
     import os
 
-    # demo_photos 파일명: "R1_"로 시작하는 5개 파일만 사용
+    # demo_photos 파일명: "r1_l"로 시작하는 5개 파일만 사용
     # (점검표 파일 제외 — 사진 참조 대상이 아님)
     DEMO_PHOTOS_DIR = "assets/vision/demo_photos"
     demo_photos: List[str] = []
     if os.path.isdir(DEMO_PHOTOS_DIR):
         for fn in sorted(os.listdir(DEMO_PHOTOS_DIR)):
-            if fn.startswith("R1_") and fn.lower().endswith(".jpg"):
+            if fn.startswith("r1_l") and fn.lower().endswith(".jpg"):
                 demo_photos.append(fn)
 
     # 합성 텍스트 — 4문장 (사진 1~3 참조 + 위치어 포함, 1건은 사진 4 참조)

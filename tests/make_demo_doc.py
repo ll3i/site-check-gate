@@ -268,7 +268,7 @@ def make_demo_report():
     y += 6
 
     # ── 저장 ──────────────────────────────────────────────────────────────────
-    pdf_path = DEMO_DIR / "현장점검보고서_가온물류센터.pdf"
+    pdf_path = DEMO_DIR / "demo_report_gaon.pdf"
     img.save(pdf_path, "PDF", resolution=150.0)
     print(f"보고서 저장: {pdf_path}")
     return pdf_path

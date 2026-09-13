@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "created_at": "2026-09-13",
+  "description": "한글 법령명 → assets/law/ 파일명 매핑. Cloud Run 배포 시 비ASCII 파일명 문제 방지용.",
+  "mapping": {
+    "근로기준법": "labor_standards.json",
+    "노동조합 및 노동관계조정법": "trade_union.json",
+    "산업안전보건법": "industrial_safety.json",
+    "중대재해 처벌 등에 관한 법률": "serious_accidents.json",
+    "중대재해처벌법": "serious_accidents_act.json",
+    "파견근로자 보호 등에 관한 법률": "dispatch_workers.json"
+  }
+}

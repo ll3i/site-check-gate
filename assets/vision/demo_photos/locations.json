@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "description": "demo 사진 파일명 → 위치어 매핑. photo_claims.py의 위치어 기반 매칭 폴백용.",
+  "mapping": {
+    "r1_l1_electrical.jpg": ["전기실", "A동", "3층"],
+    "r1_l2_loading.jpg": ["하역장", "A동", "1층"],
+    "r1_l3_pipe.jpg": ["옥외 배관", "B동"],
+    "r1_l4_storage.jpg": ["창고", "B동", "2층"],
+    "r1_l5_workzone.jpg": ["하역장", "작업구역", "A동"]
+  }
+}

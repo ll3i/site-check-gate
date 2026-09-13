@@ -1,0 +1,9 @@
+.git
+.gitignore
+__pycache__/
+**/__pycache__/
+work/
+_instructions/
+tests/fixtures/cache/
+.pytest_cache/
+*.md.bak
