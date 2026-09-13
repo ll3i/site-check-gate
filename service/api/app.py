@@ -8,6 +8,8 @@ from typing import List, Optional
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 from service.core.pipeline import run_pipeline
+from service.core.inspect_mode import inspect_photos
+from service.core.draft_report import generate_draft
 
 app = FastAPI(title="현장 보고 검증 게이트")
 
@@ -317,3 +319,107 @@ async def index():
             status_code=500,
         )
     return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
+
+
+# ── GET /inspect/demo ────────────────────────────────────────────────────────
+@app.get("/inspect/demo", include_in_schema=False)
+async def inspect_demo():
+    """데모 사진 3장으로 사진 기반 안전 점검 체험을 제공한다. (캐시 재생)"""
+    api_key = os.environ.get("UPSTAGE_API_KEY")
+    if not api_key:
+        return {
+            "status": "skipped_api",
+            "note": "UPSTAGE_API_KEY가 없어 초안(draft_report) 생성은 건너뛰었습니다. "
+                    "inspect_result(점검 엔진 결과)는 정상 제공됩니다.",
+        }
+
+    demo_dir = ASSETS_DIR / "vision" / "demo_photos"
+    photo_names = ["r1_l3_pipe.jpg", "r1_l2_loading.jpg", "r1_l1_electrical.jpg"]
+    photo_files = [str(demo_dir / name) for name in photo_names]
+    missing = [pf for pf in photo_files if not os.path.isfile(pf)]
+    if missing:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "데모 사진 누락", "missing": missing},
+        )
+
+    inspect_result = inspect_photos(photo_files)
+    draft_md = generate_draft(inspect_result)
+
+    return {
+        "status": "ok",
+        "inspect_result": inspect_result,
+        "draft_md": draft_md,
+    }
+
+
+# ── POST /inspect ────────────────────────────────────────────────────────────
+@app.post("/inspect")
+async def create_inspect_job(
+    background_tasks: BackgroundTasks,
+    files: List[UploadFile] = File(..., description="현장 사진 (다중 선택 가능)"),
+    gauge: bool = False,
+):
+    """사진 여러 장으로 사진 기반 안전 점검을 실행한다.
+
+    결과 JSON에 사진별 카드 + 종합 + draft_report(md)를 포함한다.
+    (초안 생성에는 UPSTAGE_API_KEY가 필요하며, 없으면 inspect_result만 반환한다.)
+    """
+    job_id = str(uuid.uuid4())
+    jobs[job_id] = {
+        "status": "queued",
+        "progress": 0,
+        "step": "접수 완료",
+        "result": None,
+        "error": None,
+        "photo_paths": [],
+    }
+
+    tmpdir = tempfile.mkdtemp(prefix="mabc_inspect_")
+    photo_paths: list[str] = []
+
+    for f in files:
+        p = _safe_save_path(tmpdir, f.filename)
+        data = await f.read()
+        with open(p, "wb") as out:
+            out.write(data)
+        photo_paths.append(p)
+
+    jobs[job_id]["photo_paths"] = photo_paths
+
+    def _run_inspect():
+        try:
+            jobs[job_id]["status"] = "running"
+            jobs[job_id]["progress"] = 20
+            jobs[job_id]["step"] = "사진 점검 중"
+
+            inspect_result = inspect_photos(photo_paths, gauge=gauge)
+
+            api_key = os.environ.get("UPSTAGE_API_KEY")
+            draft_md: Optional[str] = None
+            if api_key:
+                jobs[job_id]["step"] = "보고서 초안 생성 중"
+                draft_md = generate_draft(inspect_result)
+            else:
+                draft_md = None
+
+            jobs[job_id]["result"] = {
+                "inspect_result": inspect_result,
+                "draft_md": draft_md,
+            }
+            jobs[job_id]["status"] = "done"
+            jobs[job_id]["progress"] = 100
+            jobs[job_id]["step"] = "완료"
+        except Exception as exc:
+            jobs[job_id]["status"] = "error"
+            jobs[job_id]["error"] = str(exc)
+            jobs[job_id]["step"] = "오류 발생"
+            jobs[job_id]["progress"] = 100
+
+    background_tasks.add_task(_run_inspect)
+
+    return {
+        "job_id": job_id,
+        "status": "queued",
+        "message": "점검 작업을 시작했습니다. 진행 상황은 GET /jobs/{job_id} 에서 확인하세요.",
+    }

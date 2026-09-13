@@ -1,0 +1,12 @@
+{
+  "claim": "[사진 2] A동 1층 하역장은 적재물이 정리되어 양호하다.",
+  "verdict": "판단 불가",
+  "quote": "",
+  "reason": "",
+  "metadata_title": "",
+  "metadata_abstract": "검출된 객체: paper(0.49), paper(0.33)",
+  "quote_exists": false,
+  "post_processed": false,
+  "tags": [],
+  "raw_response": ""
+}

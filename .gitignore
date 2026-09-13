@@ -17,3 +17,6 @@ __pycache__/
 
 # 국가법령정보센터 raw 원본 (파싱 전 소스)
 assets/law/raw/
+
+# API 키 (절대 커밋 금지)
+.env
