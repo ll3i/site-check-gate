@@ -9,6 +9,8 @@ __pycache__/
 work/
 tmp/
 temp/
+_tmp/
+tests/fixtures/cache/
 
 # IDE
 .vscode/
