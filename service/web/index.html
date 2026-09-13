@@ -975,7 +975,7 @@ body {
           pollTimer = null;
           showFatalError(data.error || '처리 중 오류가 발생했습니다.');
         } else {
-          pollTimer = setInterval(pollJob, 800);
+          pollTimer = setTimeout(pollJob, 800);
         }
       })
       .catch(err => {
