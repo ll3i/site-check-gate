@@ -9,3 +9,11 @@ _tmp/
 
 # hermes-verify 관련
 hermes-verify*
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# 국가법령정보센터 raw 원본 (파싱 전 소스)
+assets/law/raw/

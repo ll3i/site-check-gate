@@ -453,7 +453,7 @@ def lookup_article(
                 "paragraph": paragraph,
                 "verdict": VERDICT_NO_ARTICLE,
                 "status_icon": "❌",
-                "article_body": found,
+                "article_body": found.get("full_text") or found,
                 "note": (
                     f"'{law_name}' 제{article}조는 있으나 "
                     f"제{paragraph}항이 없거나 범위를 벗어남."
@@ -463,13 +463,15 @@ def lookup_article(
 
     # ✅ 실존. 본문에 변동 가능성이 있으면 ⚠️로 강등할 수 있으나,
     # 현재는 개정 정보ㆍ수준 부재로 기본 ✅ 처리. (⚠️ 판정은 상위 로직에서 결정)
+    # article_body는 full_text(원문 전체)를 우선하고, 없으면 기존 항 배열 구조 사용.
+    article_body: Any = found.get("full_text") or found
     return {
         "law_name": law_name,
         "article": article,
         "paragraph": paragraph,
         "verdict": VERDICT_EXISTS,
         "status_icon": "✅",
-        "article_body": found,
+        "article_body": article_body,
         "note": (
             "'{}' 제{}조{} 실존 확인 (스냅샷 확보일: {}).".format(
                 law_name,

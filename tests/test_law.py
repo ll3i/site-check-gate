@@ -168,59 +168,60 @@ class TestLawRefExtraction(unittest.TestCase):
         self.assertIn("산업안전보건법", names)
 
 
-# ── ② ⛔ 동작 (assets/law/ 조문 비어 있음 → 전부 ⛔) ────────────────────────────────
+# ── ② 스냅샷 조회 동작 (assets/law/ 조문 채워짐 → ✅/❌/⛔ 판정) ──────────────────────
 
-class TestLawLookupNoSnapshot(unittest.TestCase):
+class TestLawLookupWithSnapshot(unittest.TestCase):
     """
-    현재 assets/law/ 의 모든 법령 스냅샷은 조문이 비어 있음.
-    → lookup_article 은 등록 법령이라도 조문 본문을 제공할 수 없으므로 ⛔(스냅샷 미보유)로 반환.
-    미등록 법령이나 환각 조항도 동일하게 ⛔.
+    assets/law/ 스냅샷에 조문이 채워진 상태에서의 lookup_article 동작 검증.
+
+    등록된 법령 + 실존 조문 → ✅ 실존
+    등록된 법령 + 없는 조문 → ❌ 해당 조 없음
+    등록되지 않은 법령 → ⛔ 스냅샷 미보유
     """
 
-    def _check_hold(self, name: str, art: int, para: Optional[int] = None) -> Dict[str, Any]:
+    def _check(self, name: str, art: int, para: Optional[int] = None) -> Dict[str, Any]:
         return lookup_article(name, art, para)
 
-    def test_registered_law_but_empty_articles_hold(self):
-        """등록된 법령(노동조합법 제2조)이지만 스냅샷 조문이 비었음 → ⛔."""
-        r = self._check_hold("노동조합 및 노동관계조정법", 2, 1)
-        self.assertEqual(r["verdict"], VERDICT_NO_SNAPSHOT)
-        self.assertEqual(r["status_icon"], "⛔")
-        self.assertIsNone(r["article_body"])
-        self.assertIn("조문이 비어", r["note"])
+    def test_registered_law_real_article_with_para(self):
+        """노동조합법 제2조 제1호 → ✅ 실존 (실질적 지배 문구 포함)."""
+        r = self._check("노동조합 및 노동관계조정법", 2, 1)
+        self.assertEqual(r["verdict"], VERDICT_EXISTS)
+        self.assertEqual(r["status_icon"], "✅")
+        self.assertIsNotNone(r["article_body"])
+        # article_body는 full_text(원문 전체 문자열) 또는 항 dict
+        body = r["article_body"]
+        if isinstance(body, str):
+            body_text = body
+        else:
+            body_text = (body["항"][0] if body.get("항") else "")
+        self.assertIn("실질적이고 구체적으로 지배", body_text)
 
-    def test_registered_law_no_para_hold(self):
-        """등록된 법령(산업안전보건법 제38조) 항 없음 → ⛔."""
-        r = self._check_hold("산업안전보건법", 38)
-        self.assertEqual(r["verdict"], VERDICT_NO_SNAPSHOT)
-        self.assertEqual(r["status_icon"], "⛔")
+    def test_registered_law_real_article_no_para(self):
+        """산업안전보건법 제38조 → ✅ 실존."""
+        r = self._check("산업안전보건법", 38)
+        self.assertEqual(r["verdict"], VERDICT_EXISTS)
+        self.assertEqual(r["status_icon"], "✅")
+        self.assertIsNotNone(r["article_body"])
 
-    def test_registered_law_emergency_hold(self):
-        """등록된 법령(중대재해처벌법 제4조) → ⛔."""
-        r = self._check_hold("중대재해 처벌 등에 관한 법률", 4)
-        self.assertEqual(r["verdict"], VERDICT_NO_SNAPSHOT)
-        self.assertEqual(r["status_icon"], "⛔")
+    def test_registered_law_emergency_exists(self):
+        """중대재해처벌법 제4조 → ✅ 실존."""
+        r = self._check("중대재해 처벌 등에 관한 법률", 4)
+        self.assertEqual(r["verdict"], VERDICT_EXISTS)
+        self.assertEqual(r["status_icon"], "✅")
 
-    def test_registered_law_nosuch_article_hold(self):
-        """등록된 법령이지만 존재하지 않는 조(예: 근로기준법 제999조) → ⛔."""
-        # 법 자체는 등록돼 있지만 조문 배열이 비었으므로 제999조 매칭 자체가 불가.
-        # 현행 구현: 조문 리스트 비어 있음 → "스냅샷 미보유"로 ⛔.
-        r = self._check_hold("근로기준법", 999)
-        self.assertEqual(r["verdict"], VERDICT_NO_SNAPSHOT)
-        self.assertEqual(r["status_icon"], "⛔")
+    def test_registered_law_nonexistent_article(self):
+        """근로기준법 제999조 → ❌ 해당 조 없음."""
+        r = self._check("근로기준법", 999)
+        self.assertEqual(r["verdict"], VERDICT_NO_ARTICLE)
+        self.assertEqual(r["status_icon"], "❌")
+        self.assertIn("999조", r["note"])
 
-    def test_unregistered_law_hold(self):
-        """아예 등록되지 않은 법령 → ⛔."""
-        r = self._check_hold("존재하지 않는 가상의 법률", 1)
+    def test_unregistered_law_still_hold(self):
+        """등록되지 않은 법령 → ⛔ 스냅샷 미보유."""
+        r = self._check("존재하지 않는 가상의 법률", 1)
         self.assertEqual(r["verdict"], VERDICT_NO_SNAPSHOT)
         self.assertEqual(r["status_icon"], "⛔")
         self.assertIn("등록되지 않았음", r["note"])
-
-    def test_verify_all_holds_every_ref(self):
-        """verify_all_law_refs 가 합성 문서에서 모든 인용을 ⛔로 판정."""
-        refs = verify_all_law_refs(SYNTHETIC_DOC)
-        for r in refs:
-            self.assertEqual(r["verdict"], VERDICT_NO_SNAPSHOT)
-            self.assertEqual(r["status_icon"], "⛔")
 
     def test_law_claim_vs_article_empty_body_could_not_judge(self):
         """조문 본문이 없으면 law_claim_vs_article → 판단 불가."""
@@ -229,7 +230,7 @@ class TestLawLookupNoSnapshot(unittest.TestCase):
         self.assertFalse(c["quote_exists"])
 
     def test_law_claim_vs_article_empty_dict_could_not_judge(self):
-        """빈 dict 도 본문 없음 → 판단 불가."""
+        """빈 dict도 본문 없음 → 판단 불가."""
         c = law_claim_vs_article("원청이 직접 작업 지시를 해도 적법하다", {})
         self.assertEqual(c["verdict"], "판단 불가")
         self.assertFalse(c["quote_exists"])
@@ -347,18 +348,20 @@ class TestSubcontractChecklist(unittest.TestCase):
         합성 문서에서 5가지 상황이 모두 올바르게 판정된다 (M8_message.md §5 검수 기준).
 
         상황:
-          ① 실존 조항 정상 인용 2건 → 추출됨, ⛔ 판정 (조문 미보유)
-          ② 환각 조항 인용 1건 → 추출됨, ⛔ 판정
-          ③ 실존하나 무관한 조항 인용 1건 → 추출됨, ⛔ 판정 (본문 대조 불가)
+          ① 실존 조항 정상 인용 2건 → 추출됨, ✅ 판정 (조문 실존, 본문 있음)
+          ② 환각 조항 인용 1건 → 추출됨, ❌ 판정
+          ③ 실존하나 무관한 조항 인용 1건 → 추출됨, ✅ 판정 (본문 대조 가능)
           ④ 지휘·명령 위험 신호 문장 1건 → 근거 있음-위험 신호
           ⑤ 근거 없는 적법 주장 1건 → 근거 없음-확인 필요
         """
-        # ①~③: 법령 인용 표지 추출 & ⛔ 판정
+        # ①~③: 법령 인용 표지 추출 및 판정
         refs = verify_all_law_refs(SYNTHETIC_DOC)
         self.assertGreaterEqual(len(refs), 4,
                                 "합성 문서에서 충분한 법령 인용 표지가 추출되지 않음")
-        for r in refs:
-            self.assertEqual(r["verdict"], VERDICT_NO_SNAPSHOT)
+        # ① 실존 2건 + ② 환각 1건 + ③ 실존 1건 = 최소 4건
+        verdicts = {r["verdict"] for r in refs}
+        self.assertIn(VERDICT_EXISTS, verdicts, "실존 판정이 하나도 없음")
+        self.assertIn(VERDICT_NO_ARTICLE, verdicts, "해당 조 없음 판정이 없음")
 
         # ④: 원청 직접 지시 → 위험 신호
         results = check_subcontract(SYNTHETIC_DOC)["results"]
@@ -372,7 +375,6 @@ class TestSubcontractChecklist(unittest.TestCase):
         noneed_items = [r for r in results if r["label"] == LABEL_NONEED]
         self.assertGreaterEqual(len(noneed_items), 1,
                                 "근거 없음 항목이 최소 1개 이상 검출되어야 함")
-
 
 class TestEvaluateItem(unittest.TestCase):
     """evaluate_item 단위 동작."""
