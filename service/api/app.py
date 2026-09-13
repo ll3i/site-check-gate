@@ -324,15 +324,11 @@ async def index():
 # ── GET /inspect/demo ────────────────────────────────────────────────────────
 @app.get("/inspect/demo", include_in_schema=False)
 async def inspect_demo():
-    """데모 사진 3장으로 사진 기반 안전 점검 체험을 제공한다. (캐시 재생)"""
-    api_key = os.environ.get("UPSTAGE_API_KEY")
-    if not api_key:
-        return {
-            "status": "skipped_api",
-            "note": "UPSTAGE_API_KEY가 없어 초안(draft_report) 생성은 건너뛰었습니다. "
-                    "inspect_result(점검 엔진 결과)는 정상 제공됩니다.",
-        }
+    """데모 사진 3장으로 사진 기반 안전 점검 체험을 제공한다. (캐시 재생)
 
+    UPSTAGE_API_KEY가 없어도 inspect_result(점검 엔진 결과)는 항상 반환한다.
+    draft_md는 키가 있을 때만 생성한다.
+    """
     demo_dir = ASSETS_DIR / "vision" / "demo_photos"
     photo_names = ["r1_l3_pipe.jpg", "r1_l2_loading.jpg", "r1_l1_electrical.jpg"]
     photo_files = [str(demo_dir / name) for name in photo_names]
@@ -344,7 +340,11 @@ async def inspect_demo():
         )
 
     inspect_result = inspect_photos(photo_files)
-    draft_md = generate_draft(inspect_result)
+
+    api_key = os.environ.get("UPSTAGE_API_KEY")
+    draft_md: Optional[str] = None
+    if api_key:
+        draft_md = generate_draft(inspect_result)
 
     return {
         "status": "ok",
