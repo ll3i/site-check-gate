@@ -519,15 +519,19 @@ def run_pipeline(
 
             try:
                 detections = detect_objects(pf, domain)
+                detections_count = len(detections)
             except Exception as e:
                 log("photo", f"  검출 실패 ({domain}/{pf}): {e}")
                 photo_section["matches"].append({
                     "sentence": sentence,
                     "marker": pc.get("marker"),
                     "photo_file": pf,
+                    "domain": domain,
                     "verdict": "판단 불가",
                     "reason": f"객체 검출 실패: {e}",
                     "quote": "",
+                    "detections_count": 0,
+                    "error": str(e),
                 })
                 photo_section["counts"]["판단불가"] += 1
                 continue
@@ -540,9 +544,12 @@ def run_pipeline(
                     "sentence": sentence,
                     "marker": pc.get("marker"),
                     "photo_file": pf,
+                    "domain": domain,
                     "verdict": "판단 불가",
                     "reason": f"대조 실패: {e}",
                     "quote": "",
+                    "detections_count": detections_count,
+                    "error": str(e),
                 })
                 photo_section["counts"]["판단불가"] += 1
                 continue
@@ -555,7 +562,7 @@ def run_pipeline(
                 "verdict": match_res.get("verdict", "판단 불가"),
                 "quote": match_res.get("quote", ""),
                 "reason": match_res.get("reason", ""),
-                "detection_count": match_res.get("detection_count", 0),
+                "detections_count": match_res.get("detection_count", detections_count),
             })
 
             v = match_res.get("verdict", "판단 불가")

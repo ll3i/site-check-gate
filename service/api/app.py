@@ -17,6 +17,39 @@ jobs: dict[str, dict] = {}
 STATIC_DIR = Path(__file__).resolve().parent.parent / "web"
 
 
+# ── 경로 안전화 헬퍼 ─────────────────────────────────────────────────────────
+def _safe_save_path(tmpdir: str, original_filename: str) -> str:
+    """원본 파일명을 보존하되 경로 안전화만 수행하여 저장 경로를 반환한다.
+
+    - 디렉터리 구분자(`/`, `\\`) 및 널문자 제거
+    - 한글 등 비ASCII 문자 보존
+    - 확장자 보존
+    - 이름 충돌 시 뒤에 `_1`, `_2` 등 접미사 추가
+    """
+    # 널문자 제거
+    name = original_filename.replace("\x00", "")
+    # 디렉터리 구분자 제거
+    name = name.replace("/", "_").replace("\\", "_")
+    # 경로 트래버설 방지: '..' 제거
+    name = name.replace("..", "")
+    # 빈 이름이 되면 기본값 사용
+    if not name.strip():
+        name = "unnamed"
+    # 중복 처리
+    base_path = os.path.join(tmpdir, name)
+    if not os.path.exists(base_path):
+        return base_path
+    # 확장자 분리
+    base, ext = os.path.splitext(name)
+    counter = 1
+    while True:
+        new_name = f"{base}_{counter}{ext}"
+        new_path = os.path.join(tmpdir, new_name)
+        if not os.path.exists(new_path):
+            return new_path
+        counter += 1
+
+
 # ── health ───────────────────────────────────────────────────────────────────
 @app.get("/health")
 async def health():
@@ -53,7 +86,7 @@ async def create_job(
     tmpdir = tempfile.mkdtemp(prefix="mabc_job_")
 
     # 문서 저장
-    doc_path = os.path.join(tmpdir, "document")
+    doc_path = _safe_save_path(tmpdir, document.filename)
     doc_bytes = await document.read()
     with open(doc_path, "wb") as f:
         f.write(doc_bytes)
@@ -61,7 +94,7 @@ async def create_job(
     # 사진 저장
     photo_paths: list[str] = []
     for i, photo in enumerate(photos):
-        p = os.path.join(tmpdir, f"photo_{i}.bin")
+        p = _safe_save_path(tmpdir, photo.filename)
         data = await photo.read()
         with open(p, "wb") as f:
             f.write(data)
