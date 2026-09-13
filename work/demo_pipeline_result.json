@@ -1,0 +1,1692 @@
+{
+  "meta": {
+    "file": "assets/demo/현장점검보고서_가온물류센터.pdf",
+    "started_at": "2026-09-13 08:22:47",
+    "steps": [
+      {
+        "step": "parse",
+        "elapsed_sec": 0.0,
+        "msg": "Document Parse 시작"
+      },
+      {
+        "step": "parse",
+        "elapsed_sec": 0.01,
+        "msg": "캐시 재사용 (요소 18개)"
+      },
+      {
+        "step": "separate",
+        "elapsed_sec": 0.01,
+        "msg": "절 분리 시작 (E10)"
+      },
+      {
+        "step": "separate",
+        "elapsed_sec": 0.01,
+        "msg": "참고문헌 헤딩 발견: 요소 id=16 text='참고문헌'"
+      },
+      {
+        "step": "separate",
+        "elapsed_sec": 0.01,
+        "msg": "헤딩 이전 본문 element 14개 수집"
+      },
+      {
+        "step": "separate",
+        "elapsed_sec": 0.01,
+        "msg": "헤딩 이후: 본문 element 10개, 참고문헌 element 1개"
+      },
+      {
+        "step": "law",
+        "elapsed_sec": 0.01,
+        "msg": "법령 인용 표지 추출 시작"
+      },
+      {
+        "step": "law",
+        "elapsed_sec": 0.01,
+        "msg": "법령 표지 4건 추출 → 실존 0, ❌해당조없음 0, ⛔스냅샷미보유 4"
+      },
+      {
+        "step": "subcontract",
+        "elapsed_sec": 0.01,
+        "msg": "적법도급 체크리스트 판정 시작"
+      },
+      {
+        "step": "subcontract",
+        "elapsed_sec": 0.01,
+        "msg": "적법도급 판정 완료: 총 18항목, 위험신호 1건"
+      },
+      {
+        "step": "verify",
+        "elapsed_sec": 0.01,
+        "msg": "참고문헌 검증 시작 (M1)"
+      },
+      {
+        "step": "verify",
+        "elapsed_sec": 0.02,
+        "msg": "참고문헌 1건 파싱 완료"
+      },
+      {
+        "step": "verify",
+        "elapsed_sec": 2.29,
+        "msg": "  [1] unverified: DOI 미등록, 검색 후보 있으나 제목 유사도 낮음. 국문 문헌 — KCI/RISS/DBpia 수동 확인 권"
+      },
+      {
+        "step": "extract_claims",
+        "elapsed_sec": 2.29,
+        "msg": "본문 주장 추출 시작 (⑥)"
+      },
+      {
+        "step": "extract_claims",
+        "elapsed_sec": 2.29,
+        "msg": "주장 1건 추출"
+      },
+      {
+        "step": "link_check",
+        "elapsed_sec": 2.29,
+        "msg": "연결 검사 시작 (⑦)"
+      },
+      {
+        "step": "link_check",
+        "elapsed_sec": 2.3,
+        "msg": "미인용 1건, 목록 누락 1건"
+      },
+      {
+        "step": "match",
+        "elapsed_sec": 2.3,
+        "msg": "주장-근거 대조 시작 (⑧)"
+      },
+      {
+        "step": "match",
+        "elapsed_sec": 3.17,
+        "msg": "대조 완료: 뒷받침함 0, 뒷받침 안 함 0, 판단 불가 1"
+      },
+      {
+        "step": "photo",
+        "elapsed_sec": 3.17,
+        "msg": "사진 섹션 시작 (파일 2개)"
+      },
+      {
+        "step": "photo",
+        "elapsed_sec": 18.68,
+        "msg": "  사진 참조 주장 매칭 실패: [사진 3] — [사진 3] 전기실 내 누전차단기 설치 상태가 양호하며, 모든 분전반에 적절한 표지판이\n부착되어 있다."
+      },
+      {
+        "step": "photo",
+        "elapsed_sec": 18.68,
+        "msg": "사진 섹션 완료: 주장 3건, 매칭성공 2건, 매칭실패 1건, 뒷받침함 1, 뒷받침안함 1, 판단불가 0"
+      },
+      {
+        "step": "gate",
+        "elapsed_sec": 18.68,
+        "msg": "문서 게이트 계산 (PRD §5)"
+      },
+      {
+        "step": "gate",
+        "elapsed_sec": 18.68,
+        "msg": "문서 게이트: 보완 필요 — 🔴 사진 대조 '뒷받침 안 함' 1건 — 보완 필요"
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": 0,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "현장점검 보고서"
+      },
+      "coordinates": [
+        {
+          "x": 0.4267,
+          "y": 0.0697
+        },
+        {
+          "x": 0.5729,
+          "y": 0.0697
+        },
+        {
+          "x": 0.5729,
+          "y": 0.0861
+        },
+        {
+          "x": 0.4267,
+          "y": 0.0861
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "가온물류센터\n점검일시: 2026년 9월 12일\n점검자: 김안전 (산업안전보건지도사)"
+      },
+      "coordinates": [
+        {
+          "x": 0.3488,
+          "y": 0.0903
+        },
+        {
+          "x": 0.6506,
+          "y": 0.0903
+        },
+        {
+          "x": 0.6506,
+          "y": 0.1377
+        },
+        {
+          "x": 0.3488,
+          "y": 0.1377
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "1. 점검 개요"
+      },
+      "coordinates": [
+        {
+          "x": 0.4448,
+          "y": 0.1505
+        },
+        {
+          "x": 0.5534,
+          "y": 0.1505
+        },
+        {
+          "x": 0.5534,
+          "y": 0.1665
+        },
+        {
+          "x": 0.4448,
+          "y": 0.1665
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "본 점검은 가온물류센터의 산업안전보건법 준수 여부를 확인하기 위하여 실시되었다. 점검\n범위는 창고동(A동, B동), 하역장, 전기실, 옥외 배관을 포함하며, 도급 작업과 관련된 적법성\n검토를 병행하였다."
+      },
+      "coordinates": [
+        {
+          "x": 0.094,
+          "y": 0.1685
+        },
+        {
+          "x": 0.8835,
+          "y": 0.1685
+        },
+        {
+          "x": 0.8835,
+          "y": 0.2185
+        },
+        {
+          "x": 0.094,
+          "y": 0.2185
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "2. 법령 준수 현황"
+      },
+      "coordinates": [
+        {
+          "x": 0.4213,
+          "y": 0.228
+        },
+        {
+          "x": 0.5765,
+          "y": 0.228
+        },
+        {
+          "x": 0.5765,
+          "y": 0.2445
+        },
+        {
+          "x": 0.4213,
+          "y": 0.2445
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "2.1 「산업안전보건법」 제38조(안전보건관리체제의 구축)에 따라, 당 현장은\n안전보건관리책임자를 지정하고 정기적인 안전보건교육을 실시하고 있다. 이는 동법에서\n요구하는 안전보건관리체제의 기본 요건을 충족한다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0927,
+          "y": 0.2464
+        },
+        {
+          "x": 0.8655,
+          "y": 0.2464
+        },
+        {
+          "x": 0.8655,
+          "y": 0.295
+        },
+        {
+          "x": 0.0927,
+          "y": 0.295
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "2.2 「산업안전보건법」 제999조(물류창고 특별안전관리)에 따라, 가온물류센터는 물류창고\n특별안전관리 구역으로 지정되어 있으며, 분기별 특별안전점검을 시행하고 있다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0933,
+          "y": 0.2986
+        },
+        {
+          "x": 0.8698,
+          "y": 0.2986
+        },
+        {
+          "x": 0.8698,
+          "y": 0.3323
+        },
+        {
+          "x": 0.0933,
+          "y": 0.3323
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "page": 1,
+      "category": "heading1",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "3. 도급 작업 적법성 검토"
+      },
+      "coordinates": [
+        {
+          "x": 0.3886,
+          "y": 0.3364
+        },
+        {
+          "x": 0.608,
+          "y": 0.3364
+        },
+        {
+          "x": 0.608,
+          "y": 0.3519
+        },
+        {
+          "x": 0.3886,
+          "y": 0.3519
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "3.1 하역 작업과 관련하여, 원청인 가온물류센터 직원의 직접 작업 지시로 인하여 수급인\n근로자 A가 포장 라인을 정리하도록 지시받은 사실이 서면으로 확인되었다. 이는 도급인\n직원이 수급인 근로자에게 직접 작업 지시를 한 사례로서 적법도급 요건에 위배될 소지가\n있다.\n3.2 당 현장은 모든 항목에서 적법 도급 기준을 충족한다. 도급 계약은 명확히 확정되어\n있으며, 수급인은 독자적인 사업체로 운영되고 있다. 이에 따라 당 현장의 도급 구조는 완전히\n적법하다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0937,
+          "y": 0.3548
+        },
+        {
+          "x": 0.8988,
+          "y": 0.3548
+        },
+        {
+          "x": 0.8988,
+          "y": 0.4695
+        },
+        {
+          "x": 0.0937,
+          "y": 0.4695
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "page": 1,
+      "category": "heading1",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "4. 현장 사진 참조"
+      },
+      "coordinates": [
+        {
+          "x": 0.4208,
+          "y": 0.4749
+        },
+        {
+          "x": 0.576,
+          "y": 0.4749
+        },
+        {
+          "x": 0.576,
+          "y": 0.4913
+        },
+        {
+          "x": 0.4208,
+          "y": 0.4913
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "[사진 1] B동 옥외 배관에서 부식이 확인되어 즉시 보수가 필요한 상태이다. 배관 표면에\n적갈색 산화물이 광범위하게 관찰되며, 일부 구간에서는 부식으로 인한 두께 감소가\n우려된다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0931,
+          "y": 0.4932
+        },
+        {
+          "x": 0.8528,
+          "y": 0.4932
+        },
+        {
+          "x": 0.8528,
+          "y": 0.5425
+        },
+        {
+          "x": 0.0931,
+          "y": 0.5425
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "[사진 2] A동 1층 하역장은 적재물이 정리되어 양호하다. 모든 자재가 designated 구역에\n정돈되어 있으며, 통로 확보도 적절히 이루어지고 있다.\n[사진 3] 전기실 내 누전차단기 설치 상태가 양호하며, 모든 분전반에 적절한 표지판이\n부착되어 있다. 전기실 바닥은 청결하게 유지되고 있다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0939,
+          "y": 0.5459
+        },
+        {
+          "x": 0.8559,
+          "y": 0.5459
+        },
+        {
+          "x": 0.8559,
+          "y": 0.618
+        },
+        {
+          "x": 0.0939,
+          "y": 0.618
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "5. 특이사항"
+      },
+      "coordinates": [
+        {
+          "x": 0.4471,
+          "y": 0.6232
+        },
+        {
+          "x": 0.5504,
+          "y": 0.6232
+        },
+        {
+          "x": 0.5504,
+          "y": 0.6396
+        },
+        {
+          "x": 0.4471,
+          "y": 0.6396
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "5.1 현장 관계자 문의: 김안전 지도사 (연락처: 010-9876-5432). 추가 확인이 필요한 사항에\n대해서는 위 연락처로 문의할 수 있다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0934,
+          "y": 0.6417
+        },
+        {
+          "x": 0.8718,
+          "y": 0.6417
+        },
+        {
+          "x": 0.8718,
+          "y": 0.6756
+        },
+        {
+          "x": 0.0934,
+          "y": 0.6756
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "6. 결론"
+      },
+      "coordinates": [
+        {
+          "x": 0.4661,
+          "y": 0.6784
+        },
+        {
+          "x": 0.5315,
+          "y": 0.6784
+        },
+        {
+          "x": 0.5315,
+          "y": 0.6948
+        },
+        {
+          "x": 0.4661,
+          "y": 0.6948
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "본 점검 결과, 가온물류센터는 전반적으로 산업안전보건법을 준수하고 있으나, 일부 도급\n작업 관련 사항에 대해서는 추가 확인이 필요하다. 특히 법령 제999조에 따른 특별안전관리는\n향후 보강이 권장된다."
+      },
+      "coordinates": [
+        {
+          "x": 0.094,
+          "y": 0.6962
+        },
+        {
+          "x": 0.9011,
+          "y": 0.6962
+        },
+        {
+          "x": 0.9011,
+          "y": 0.7454
+        },
+        {
+          "x": 0.094,
+          "y": 0.7454
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "참고문헌"
+      },
+      "coordinates": [
+        {
+          "x": 0.4593,
+          "y": 0.7635
+        },
+        {
+          "x": 0.5414,
+          "y": 0.7635
+        },
+        {
+          "x": 0.5414,
+          "y": 0.7807
+        },
+        {
+          "x": 0.4593,
+          "y": 0.7807
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "1. Smith, J., Johnson, R., Lee, K. (2024). A survey of\nsafety management systems in logistics warehouses. arXiv:\n2401.12345\n2. 가온물류센터 안전관리팀 (2026). 2026년 상반기 물류창고 안전관리 백서. DOI:\n10.9999/fake/logistics-safety-2026"
+      },
+      "coordinates": [
+        {
+          "x": 0.0932,
+          "y": 0.7827
+        },
+        {
+          "x": 0.7472,
+          "y": 0.7827
+        },
+        {
+          "x": 0.7472,
+          "y": 0.8582
+        },
+        {
+          "x": 0.0932,
+          "y": 0.8582
+        }
+      ]
+    }
+  ],
+  "body_elements": [
+    {
+      "id": 0,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "현장점검 보고서"
+      },
+      "coordinates": [
+        {
+          "x": 0.4267,
+          "y": 0.0697
+        },
+        {
+          "x": 0.5729,
+          "y": 0.0697
+        },
+        {
+          "x": 0.5729,
+          "y": 0.0861
+        },
+        {
+          "x": 0.4267,
+          "y": 0.0861
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "가온물류센터\n점검일시: 2026년 9월 12일\n점검자: 김안전 (산업안전보건지도사)"
+      },
+      "coordinates": [
+        {
+          "x": 0.3488,
+          "y": 0.0903
+        },
+        {
+          "x": 0.6506,
+          "y": 0.0903
+        },
+        {
+          "x": 0.6506,
+          "y": 0.1377
+        },
+        {
+          "x": 0.3488,
+          "y": 0.1377
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "1. 점검 개요"
+      },
+      "coordinates": [
+        {
+          "x": 0.4448,
+          "y": 0.1505
+        },
+        {
+          "x": 0.5534,
+          "y": 0.1505
+        },
+        {
+          "x": 0.5534,
+          "y": 0.1665
+        },
+        {
+          "x": 0.4448,
+          "y": 0.1665
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "본 점검은 가온물류센터의 산업안전보건법 준수 여부를 확인하기 위하여 실시되었다. 점검\n범위는 창고동(A동, B동), 하역장, 전기실, 옥외 배관을 포함하며, 도급 작업과 관련된 적법성\n검토를 병행하였다."
+      },
+      "coordinates": [
+        {
+          "x": 0.094,
+          "y": 0.1685
+        },
+        {
+          "x": 0.8835,
+          "y": 0.1685
+        },
+        {
+          "x": 0.8835,
+          "y": 0.2185
+        },
+        {
+          "x": 0.094,
+          "y": 0.2185
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "2. 법령 준수 현황"
+      },
+      "coordinates": [
+        {
+          "x": 0.4213,
+          "y": 0.228
+        },
+        {
+          "x": 0.5765,
+          "y": 0.228
+        },
+        {
+          "x": 0.5765,
+          "y": 0.2445
+        },
+        {
+          "x": 0.4213,
+          "y": 0.2445
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "2.1 「산업안전보건법」 제38조(안전보건관리체제의 구축)에 따라, 당 현장은\n안전보건관리책임자를 지정하고 정기적인 안전보건교육을 실시하고 있다. 이는 동법에서\n요구하는 안전보건관리체제의 기본 요건을 충족한다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0927,
+          "y": 0.2464
+        },
+        {
+          "x": 0.8655,
+          "y": 0.2464
+        },
+        {
+          "x": 0.8655,
+          "y": 0.295
+        },
+        {
+          "x": 0.0927,
+          "y": 0.295
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "2.2 「산업안전보건법」 제999조(물류창고 특별안전관리)에 따라, 가온물류센터는 물류창고\n특별안전관리 구역으로 지정되어 있으며, 분기별 특별안전점검을 시행하고 있다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0933,
+          "y": 0.2986
+        },
+        {
+          "x": 0.8698,
+          "y": 0.2986
+        },
+        {
+          "x": 0.8698,
+          "y": 0.3323
+        },
+        {
+          "x": 0.0933,
+          "y": 0.3323
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "3.1 하역 작업과 관련하여, 원청인 가온물류센터 직원의 직접 작업 지시로 인하여 수급인\n근로자 A가 포장 라인을 정리하도록 지시받은 사실이 서면으로 확인되었다. 이는 도급인\n직원이 수급인 근로자에게 직접 작업 지시를 한 사례로서 적법도급 요건에 위배될 소지가\n있다.\n3.2 당 현장은 모든 항목에서 적법 도급 기준을 충족한다. 도급 계약은 명확히 확정되어\n있으며, 수급인은 독자적인 사업체로 운영되고 있다. 이에 따라 당 현장의 도급 구조는 완전히\n적법하다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0937,
+          "y": 0.3548
+        },
+        {
+          "x": 0.8988,
+          "y": 0.3548
+        },
+        {
+          "x": 0.8988,
+          "y": 0.4695
+        },
+        {
+          "x": 0.0937,
+          "y": 0.4695
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "[사진 1] B동 옥외 배관에서 부식이 확인되어 즉시 보수가 필요한 상태이다. 배관 표면에\n적갈색 산화물이 광범위하게 관찰되며, 일부 구간에서는 부식으로 인한 두께 감소가\n우려된다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0931,
+          "y": 0.4932
+        },
+        {
+          "x": 0.8528,
+          "y": 0.4932
+        },
+        {
+          "x": 0.8528,
+          "y": 0.5425
+        },
+        {
+          "x": 0.0931,
+          "y": 0.5425
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "[사진 2] A동 1층 하역장은 적재물이 정리되어 양호하다. 모든 자재가 designated 구역에\n정돈되어 있으며, 통로 확보도 적절히 이루어지고 있다.\n[사진 3] 전기실 내 누전차단기 설치 상태가 양호하며, 모든 분전반에 적절한 표지판이\n부착되어 있다. 전기실 바닥은 청결하게 유지되고 있다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0939,
+          "y": 0.5459
+        },
+        {
+          "x": 0.8559,
+          "y": 0.5459
+        },
+        {
+          "x": 0.8559,
+          "y": 0.618
+        },
+        {
+          "x": 0.0939,
+          "y": 0.618
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "5. 특이사항"
+      },
+      "coordinates": [
+        {
+          "x": 0.4471,
+          "y": 0.6232
+        },
+        {
+          "x": 0.5504,
+          "y": 0.6232
+        },
+        {
+          "x": 0.5504,
+          "y": 0.6396
+        },
+        {
+          "x": 0.4471,
+          "y": 0.6396
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "5.1 현장 관계자 문의: 김안전 지도사 (연락처: 010-9876-5432). 추가 확인이 필요한 사항에\n대해서는 위 연락처로 문의할 수 있다."
+      },
+      "coordinates": [
+        {
+          "x": 0.0934,
+          "y": 0.6417
+        },
+        {
+          "x": 0.8718,
+          "y": 0.6417
+        },
+        {
+          "x": 0.8718,
+          "y": 0.6756
+        },
+        {
+          "x": 0.0934,
+          "y": 0.6756
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "6. 결론"
+      },
+      "coordinates": [
+        {
+          "x": 0.4661,
+          "y": 0.6784
+        },
+        {
+          "x": 0.5315,
+          "y": 0.6784
+        },
+        {
+          "x": 0.5315,
+          "y": 0.6948
+        },
+        {
+          "x": 0.4661,
+          "y": 0.6948
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "본 점검 결과, 가온물류센터는 전반적으로 산업안전보건법을 준수하고 있으나, 일부 도급\n작업 관련 사항에 대해서는 추가 확인이 필요하다. 특히 법령 제999조에 따른 특별안전관리는\n향후 보강이 권장된다."
+      },
+      "coordinates": [
+        {
+          "x": 0.094,
+          "y": 0.6962
+        },
+        {
+          "x": 0.9011,
+          "y": 0.6962
+        },
+        {
+          "x": 0.9011,
+          "y": 0.7454
+        },
+        {
+          "x": 0.094,
+          "y": 0.7454
+        }
+      ]
+    }
+  ],
+  "ref_elements": [
+    {
+      "id": 17,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "",
+        "markdown": "",
+        "text": "1. Smith, J., Johnson, R., Lee, K. (2024). A survey of\nsafety management systems in logistics warehouses. arXiv:\n2401.12345\n2. 가온물류센터 안전관리팀 (2026). 2026년 상반기 물류창고 안전관리 백서. DOI:\n10.9999/fake/logistics-safety-2026"
+      },
+      "coordinates": [
+        {
+          "x": 0.0932,
+          "y": 0.7827
+        },
+        {
+          "x": 0.7472,
+          "y": 0.7827
+        },
+        {
+          "x": 0.7472,
+          "y": 0.8582
+        },
+        {
+          "x": 0.0932,
+          "y": 0.8582
+        }
+      ]
+    }
+  ],
+  "refs_verified": [
+    {
+      "id": 1,
+      "raw": "1. Smith, J., Johnson, R., Lee, K. (2024). A survey ofsafety management systems in logistics warehouses. arXiv: 2401.123452. 가온물류센터 안전관리팀 (2026). 2026년 상반기 물류창고 안전관리 백서. DOI: 10.9999/fake/logistics-safety-2026",
+      "status": "unverified",
+      "evidence": [
+        "DOI 핸들 확인: 미등록"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [
+        {
+          "source": "crossref",
+          "data": {
+            "DOI": "10.32562/mkk.2019.3.8",
+            "title": [
+              "Safety of Dangerous Goods Logistics Warehouses"
+            ],
+            "author": [
+              {
+                "given": "Maxim",
+                "family": "Kátai-Urbán",
+                "sequence": "first",
+                "affiliation": [],
+                "role": [
+                  {
+                    "role": "author",
+                    "vocabulary": "crossref"
+                  }
+                ]
+              }
+            ],
+            "issued": {
+              "date-parts": [
+                [
+                  2019
+                ]
+              ]
+            },
+            "container-title": [
+              "Műszaki Katonai Közlöny"
+            ],
+            "URL": "https://doi.org/10.32562/mkk.2019.3.8"
+          }
+        },
+        {
+          "source": "crossref",
+          "data": {
+            "DOI": "10.46684/2687-1033.2026.2.202-209",
+            "title": [
+              "Innovations in warehouse logistics abroad (2026)"
+            ],
+            "author": [
+              {
+                "ORCID": "https://orcid.org/0000-0003-4114-9525",
+                "authenticated-orcid": true,
+                "given": "V. I.",
+                "family": "Tiverovsky",
+                "sequence": "first",
+                "affiliation": [
+                  {
+                    "name": "All-Russian Institute of Scientific and Technical Information"
+                  }
+                ],
+                "role": [
+                  {
+                    "vocabulary": "crossref",
+                    "role": "author"
+                  }
+                ]
+              }
+            ],
+            "issued": {
+              "date-parts": [
+                [
+                  2026,
+                  6,
+                  2
+                ]
+              ]
+            },
+            "container-title": [
+              "Transport Technician: Education and Practice"
+            ],
+            "URL": "https://doi.org/10.46684/2687-1033.2026.2.202-209"
+          }
+        },
+        {
+          "source": "crossref",
+          "data": {
+            "DOI": "10.2139/ssrn.7236538",
+            "title": [
+              "KDI 경제전망, 2026 상반기 (KDI Economic Outlook, 2026 1st Half)"
+            ],
+            "author": [
+              {
+                "given": "Korea Development Institute",
+                "family": "Submitter",
+                "sequence": "first",
+                "affiliation": [],
+                "role": [
+                  {
+                    "vocabulary": "crossref",
+                    "role": "author"
+                  }
+                ]
+              }
+            ],
+            "issued": {
+              "date-parts": [
+                [
+                  2026
+                ]
+              ]
+            },
+            "URL": "https://doi.org/10.2139/ssrn.7236538"
+          }
+        }
+      ],
+      "note": "DOI 미등록, 검색 후보 있으나 제목 유사도 낮음. 국문 문헌 — KCI/RISS/DBpia 수동 확인 권장",
+      "_offline": false
+    }
+  ],
+  "claims": [
+    {
+      "claim": "5.1 현장 관계자 문의: 김안전 지도사 (연락처: 010-9876-5432).",
+      "marker_type": "author_year",
+      "marker_value": "연락처: 010-9876-, 5432",
+      "marker_raw": "(연락처: 010-9876-5432)",
+      "page": 1
+    }
+  ],
+  "link_check": {
+    "body_number_markers": [],
+    "body_author_year_markers": [
+      "연락처: 010-9876-, 5432"
+    ],
+    "ref_number_markers": [
+      "1"
+    ],
+    "ref_author_year_markers": [],
+    "uncited": [
+      {
+        "type": "number",
+        "value": "1",
+        "ref_id": 1,
+        "ref_text": "1. Smith, J., Johnson, R., Lee, K. (2024). A survey ofsafety management systems in logistics warehouses. arXiv: 2401.123452. 가온물류센터 안전관리팀 (2026). 2026년 상반기 물류창고 안전관리 백서. DOI: 10.9999/fake/logistics-sa"
+      }
+    ],
+    "missing_from_refs": [
+      {
+        "type": "author_year",
+        "value": "연락처: 010-9876-, 5432",
+        "raw": "(연락처: 010-9876-5432)",
+        "spans": [
+          [
+            961,
+            981
+          ]
+        ]
+      }
+    ],
+    "summary": {
+      "body_numbers": 0,
+      "body_author_years": 1,
+      "ref_numbers": 1,
+      "ref_author_years": 0,
+      "uncited_count": 1,
+      "missing_count": 1
+    }
+  },
+  "match_results": [
+    {
+      "claim": "5.1 현장 관계자 문의: 김안전 지도사 (연락처: 010-9876-5432).",
+      "verdict": "판단 불가",
+      "quote": "",
+      "reason": "제공된 문헌 메타데이터에 제목과 초록이 모두 비어 있어, 주장 문장(현장 관계자 문의 및 연락처 정보)을 뒷받침하거나 반박할 수 있는 근거가 전혀 없습니다.",
+      "metadata_title": "",
+      "metadata_abstract": "",
+      "quote_exists": false,
+      "post_processed": false,
+      "tags": [],
+      "raw_response": "{\"verdict\": \"판단 불가\", \"quote\": \"\", \"reason\": \"제공된 문헌 메타데이터에 제목과 초록이 모두 비어 있어, 주장 문장(현장 관계자 문의 및 연락처 정보)을 뒷받침하거나 반박할 수 있는 근거가 전혀 없습니다.\"}",
+      "ref_id": null
+    }
+  ],
+  "gate": {
+    "status": "보완 필요",
+    "reason": "🔴 사진 대조 '뒷받침 안 함' 1건 — 보완 필요",
+    "counts": {
+      "실존": {
+        "verified": 0,
+        "partial": 0,
+        "unverified": 1,
+        "unreachable": 0,
+        "not_applicable": 0
+      },
+      "대조": {
+        "뒷받침함": 0,
+        "뒷받침 안 함": 0,
+        "판단 불가": 1
+      },
+      "미인용": 1,
+      "목록누락": 1,
+      "오인용": 0,
+      "판단불가": 1,
+      "법령": {
+        "실존": 0,
+        "해당조없음": 0,
+        "스냅샷미보유": 4,
+        "내용변동가능": 0
+      },
+      "적법도급": {
+        "총항목": 18,
+        "위험신호": 1
+      },
+      "사진": {
+        "총주장": 3,
+        "매칭성공": 2,
+        "매칭실패": 1,
+        "뒷받침함": 1,
+        "뒷받침안함": 1,
+        "판단불가": 0,
+        "도메인": {
+          "defect": 1,
+          "cleaning": 1
+        }
+      }
+    }
+  },
+  "elapsed_sec": 18.68,
+  "law_section": {
+    "extracted": 4,
+    "items": [
+      {
+        "law_name": "산업안전보건법",
+        "article": 38,
+        "paragraph": null,
+        "verdict": "스냅샷 미보유",
+        "status_icon": "⛔",
+        "article_body": null,
+        "note": "'산업안전보건법'(조 38조)의 스냅샷은 있으나 조문이 비어 있어 조문 본문을 제공할 수 없음 (확보일: 2026-09-13).",
+        "snapshot": {
+          "법령명": "산업안전보건법",
+          "시행일": "미상",
+          "법률번호": "법률 제5454호",
+          "조문": [],
+          "출처URL": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=0000001501&chrClsCD=010102",
+          "확보일": "2026-09-13",
+          "비고": "조문 본문 미확보 (HTML에서 iframe 외 영역만 파싱됨)"
+        },
+        "raw": "「산업안전보건법」 제38조",
+        "start": 195,
+        "end": 209,
+        "law_name_raw": "산업안전보건법",
+        "law_name_norm": "산업안전보건법"
+      },
+      {
+        "law_name": "산업안전보건법",
+        "article": 999,
+        "paragraph": null,
+        "verdict": "스냅샷 미보유",
+        "status_icon": "⛔",
+        "article_body": null,
+        "note": "'산업안전보건법'(조 999조)의 스냅샷은 있으나 조문이 비어 있어 조문 본문을 제공할 수 없음 (확보일: 2026-09-13).",
+        "snapshot": {
+          "법령명": "산업안전보건법",
+          "시행일": "미상",
+          "법률번호": "법률 제5454호",
+          "조문": [],
+          "출처URL": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=0000001501&chrClsCD=010102",
+          "확보일": "2026-09-13",
+          "비고": "조문 본문 미확보 (HTML에서 iframe 외 영역만 파싱됨)"
+        },
+        "raw": "「산업안전보건법」 제999조",
+        "start": 313,
+        "end": 328,
+        "law_name_raw": "산업안전보건법",
+        "law_name_norm": "산업안전보건법"
+      },
+      {
+        "law_name": "점검 개요\n본 점검은 가온물류센터의 산업안전보건법",
+        "article": 38,
+        "paragraph": null,
+        "verdict": "스냅샷 미보유",
+        "status_icon": "⛔",
+        "article_body": null,
+        "note": "'점검 개요\n본 점검은 가온물류센터의 산업안전보건법'(조 38조)의 스냅샷이 assets/law/에 등록되지 않았음.",
+        "snapshot": null,
+        "raw": "점검 개요\n본 점검은 가온물류센터의 산업안전보건법 준수 여부를 확인하기 위하여 실시되었다. 점검\n범위는 창고동(A동, B동), 하역장, 전기실, 옥외 배관을 포함하며, 도급 작업과 관련된 적법성\n검토를 병행하였다.\n2. 법령 준수 현황\n2.1 「산업안전보건법」 제38조",
+        "start": 59,
+        "end": 209,
+        "law_name_raw": "점검 개요\n본 점검은 가온물류센터의 산업안전보건법",
+        "law_name_norm": "점검개요본점검은가온물류센터의산업안전보건법"
+      },
+      {
+        "law_name": "당 현장은 모든 항목에서 적법",
+        "article": 999,
+        "paragraph": null,
+        "verdict": "스냅샷 미보유",
+        "status_icon": "⛔",
+        "article_body": null,
+        "note": "'당 현장은 모든 항목에서 적법'(조 999조)의 스냅샷이 assets/law/에 등록되지 않았음.",
+        "snapshot": null,
+        "raw": "당 현장은 모든 항목에서 적법 도급 기준을 충족한다. 도급 계약은 명확히 확정되어\n있으며, 수급인은 독자적인 사업체로 운영되고 있다. 이에 따라 당 현장의 도급 구조는 완전히\n적법하다.\n[사진 1] B동 옥외 배관에서 부식이 확인되어 즉시 보수가 필요한 상태이다. 배관 표면에\n적갈색 산화물이 광범위하게 관찰되며, 일부 구간에서는 부식으로 인한 두께 감소가\n우려된다.\n[사진 2] A동 1층 하역장은 적재물이 정리되어 양호하다. 모든 자재가 designated 구역에\n정돈되어 있으며, 통로 확보도 적절히 이루어지고 있다.\n[사진 3] 전기실 내 누전차단기 설치 상태가 양호하며, 모든 분전반에 적절한 표지판이\n부착되어 있다. 전기실 바닥은 청결하게 유지되고 있다.\n5. 특이사항\n5.1 현장 관계자 문의: 김안전 지도사 (연락처: 010-9876-5432). 추가 확인이 필요한 사항에\n대해서는 위 연락처로 문의할 수 있다.\n6. 결론\n본 점검 결과, 가온물류센터는 전반적으로 산업안전보건법을 준수하고 있으나, 일부 도급\n작업 관련 사항에 대해서는 추가 확인이 필요하다. 특히 법령 제999조",
+        "start": 557,
+        "end": 1113,
+        "law_name_raw": "당 현장은 모든 항목에서 적법",
+        "law_name_norm": "당현장은모든항목에서적법"
+      }
+    ],
+    "counts": {
+      "실존": 0,
+      "해당조없음": 0,
+      "스냅샷미보유": 4,
+      "내용변동가능": 0
+    }
+  },
+  "subcontract_section": {
+    "total_items": 18,
+    "results": [
+      {
+        "axis": 1,
+        "item": 1,
+        "name": "작업 지시·명령의 원청 직접성",
+        "desc": "원청(도급인)이 수급인 근로자에게 직접 작업 지시를 하는가.",
+        "label": "근거 있음-위험 신호",
+        "evidence_sentences": [
+          "1 하역 작업과 관련하여, 원청인 가온물류센터 직원의 직접 작업 지시로 인하여 수급인",
+          "직원이 수급인 근로자에게 직접 작업 지시를 한 사례로서 적법도급 요건에 위배될 소지가"
+        ],
+        "matched_patterns": [
+          "직접\\s*(지시|명령|작업\\s*지시|업무\\s*지시)"
+        ],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": [
+          "직접 작업 지시"
+        ]
+      },
+      {
+        "axis": 1,
+        "item": 2,
+        "name": "작업 방법·순서·공정의 원청 관여",
+        "desc": "작업 방법, 순서, 공정 수행에 원청이 구체적 지시를 하는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 1,
+        "item": 3,
+        "name": "원청의 근태·근무시간 통제",
+        "desc": "원청이 출퇴근, 휴게, 근무시간을 직접 통제하는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 1,
+        "item": 4,
+        "name": "원청의 징계·주의·시정 지시",
+        "desc": "작업 태도·절차에 대한 징계·주의를 원청이 직접 하는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 2,
+        "item": 1,
+        "name": "혼재 작업·동일 장소 공동 작업 여부",
+        "desc": "수급인 근로자가 원청 근로자와 같은 장소·라인에서 혼재되어 작업하는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 2,
+        "item": 2,
+        "name": "원청 업무 프로세스·조회·보고 체계 편입",
+        "desc": "수급인 근로자가 원청의 조회, 보고 체계, 회의에 직접 참여하는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 2,
+        "item": 3,
+        "name": "원청 조직·코드·계정·자산 사용 여부",
+        "desc": "수급인 근로자가 원청의 조직 코드, 사내 계정, 자산(명찰·시스템 등)을 사용하는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 3,
+        "item": 1,
+        "name": "채용·선발 권한 소재",
+        "desc": "근로자 채용·선발이 원청에 의해 이루어지거나 원청의 승인을 받는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 3,
+        "item": 2,
+        "name": "배치·작업 배치 전환 권한 소재",
+        "desc": "작업 현장 배치, 조 편성, 작업 전환이 원청에 의해 결정되는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 3,
+        "item": 3,
+        "name": "임금·수당·처우 결정권 소재",
+        "desc": "임금, 수당, 처우 조건이 원청에 의해 직접 결정되는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 3,
+        "item": 4,
+        "name": "징계·해고·인사 조치 권한 소재",
+        "desc": "징계, 해고, 인사 조치가 원청에 의해 이루어지는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 4,
+        "item": 1,
+        "name": "계약 목적·업무의 구체적 확정성",
+        "desc": "도급 계약 목적이 특정 업무·결과물로 명확히 확정되어 있는가.",
+        "label": "근거 있음-적법 방향",
+        "evidence_sentences": [
+          "도급 계약은 명확히 확정되어"
+        ],
+        "matched_patterns": [
+          "도급\\s*계약|계약\\s*목적|업무\\s*범위|과업\\s*내용|계약\\s*내역|수급\\s*업무"
+        ],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 4,
+        "item": 2,
+        "name": "전문 기술·특수 장비·독자적 노하우 요구",
+        "desc": "위탁 업무가 전문 기술, 특수 장비, 독자적 노하우를 요구하는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 4,
+        "item": 3,
+        "name": "결과 중심 계약 vs 과정·인력 중심 계약",
+        "desc": "계약이 결과(목적물) 기준인지, 아니면 인력 공급·작업 시간 기준인지.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 5,
+        "item": 1,
+        "name": "수급인의 장비·공구·시설 보유",
+        "desc": "수급인이 자기 장비·공구·시설을 보유하고 작업에 투입하는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 5,
+        "item": 2,
+        "name": "수급인의 자금·사업 독립성",
+        "desc": "수급인이 자기 자본과 사업체로 독립적으로 운영되는가.",
+        "label": "근거 있음-적법 방향",
+        "evidence_sentences": [
+          "있으며, 수급인은 독자적인 사업체로 운영되고 있다"
+        ],
+        "matched_patterns": [
+          "독립\\s*법인|별도\\s*사업체|수급인\\s*사업|자체\\s*사업|매출|자본금|사업체"
+        ],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 5,
+        "item": 3,
+        "name": "수급인의 법적 책임 소재",
+        "desc": "안전·품질·법적 책임이 수급인에게 귀속되는가.",
+        "label": "근거 있음-적법 방향",
+        "evidence_sentences": [
+          "안전보건관리책임자를 지정하고 정기적인 안전보건교육을 실시하고 있다"
+        ],
+        "matched_patterns": [
+          "책임|법적\\s*책임|안전\\s*책임|품질\\s*책임|민형사상\\s*책임|책임\\s*소재"
+        ],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      },
+      {
+        "axis": 5,
+        "item": 4,
+        "name": "수급인의 사업주로서 조직·관리 체계",
+        "desc": "수급인이 사업주로서 현장 관리자, 조직 체계, 관리 규정을 갖추고 있는가.",
+        "label": "근거 없음-확인 필요",
+        "evidence_sentences": [],
+        "matched_patterns": [],
+        "compliant_keywords_hit": [],
+        "risk_keywords_hit": []
+      }
+    ],
+    "axis_summary": {
+      "1": {
+        "item_count": 4,
+        "risk_count": 1,
+        "compliant_count": 0,
+        "noneed_count": 3
+      },
+      "2": {
+        "item_count": 3,
+        "risk_count": 0,
+        "compliant_count": 0,
+        "noneed_count": 3
+      },
+      "3": {
+        "item_count": 4,
+        "risk_count": 0,
+        "compliant_count": 0,
+        "noneed_count": 4
+      },
+      "4": {
+        "item_count": 3,
+        "risk_count": 0,
+        "compliant_count": 1,
+        "noneed_count": 2
+      },
+      "5": {
+        "item_count": 4,
+        "risk_count": 0,
+        "compliant_count": 2,
+        "noneed_count": 2
+      }
+    },
+    "text_length": 1138
+  },
+  "photo_section": {
+    "photo_files": [
+      "assets/vision/demo_photos/R1_L3_B동_옥외_배관.jpg",
+      "assets/vision/demo_photos/R1_L2_A동_1층_하역장.jpg"
+    ],
+    "claims": [
+      {
+        "sentence": "[사진 1] B동 옥외 배관에서 부식이 확인되어 즉시 보수가 필요한 상태이다.",
+        "marker": "[사진 1]",
+        "photo_file": "assets/vision/demo_photos/R1_L3_B동_옥외_배관.jpg",
+        "location_hint": "옥외 배관"
+      },
+      {
+        "sentence": "[사진 2] A동 1층 하역장은 적재물이 정리되어 양호하다.",
+        "marker": "[사진 2]",
+        "photo_file": "assets/vision/demo_photos/R1_L2_A동_1층_하역장.jpg",
+        "location_hint": "하역장"
+      },
+      {
+        "sentence": "[사진 3] 전기실 내 누전차단기 설치 상태가 양호하며, 모든 분전반에 적절한 표지판이\n부착되어 있다.",
+        "marker": "[사진 3]",
+        "photo_file": null,
+        "location_hint": "전기실"
+      }
+    ],
+    "matches": [
+      {
+        "sentence": "[사진 1] B동 옥외 배관에서 부식이 확인되어 즉시 보수가 필요한 상태이다.",
+        "marker": "[사진 1]",
+        "photo_file": "assets/vision/demo_photos/R1_L3_B동_옥외_배관.jpg",
+        "domain": "defect",
+        "verdict": "뒷받침함",
+        "quote": "corrosion",
+        "reason": "주장 중 사진에 보이는 상태에 대한 서술은 '부식이 확인되어'이며, 검출된 객체 목록에 corrosion 라벨이 존재하므로 해당 서술을 뒷받침한다. 위치명 'B동'과 조치 '즉시 보수가 필요한 상태'는 검증 대상이 아니다.",
+        "detection_count": 3
+      },
+      {
+        "sentence": "[사진 2] A동 1층 하역장은 적재물이 정리되어 양호하다.",
+        "marker": "[사진 2]",
+        "photo_file": "assets/vision/demo_photos/R1_L2_A동_1층_하역장.jpg",
+        "domain": "cleaning",
+        "verdict": "뒷받침 안 함",
+        "quote": "cardboard",
+        "reason": "주장 중 사진에 보이는 상태에 대한 서술은 '적재물이 정리되어 양호하다'입니다. 그러나 검출된 객체 목록에 방치된 적재물·폐기물로 해석 가능한 cardboard가 2건 검출되어, 서술과 모순됩니다. 위치명 'A동 1층 하역장'은 검증 대상이 아닙니다.",
+        "detection_count": 2
+      }
+    ],
+    "counts": {
+      "총주장": 3,
+      "매칭성공": 2,
+      "매칭실패": 1,
+      "뒷받침함": 1,
+      "뒷받침안함": 1,
+      "판단불가": 0,
+      "도메인": {
+        "defect": 1,
+        "cleaning": 1
+      }
+    }
+  }
+}

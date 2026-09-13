@@ -1,0 +1,150 @@
+{
+  "meta": {
+    "when": "2026-09-12 20:51:29",
+    "count": 10,
+    "truncated": false,
+    "offline": true
+  },
+  "results": [
+    {
+      "id": 1,
+      "raw": "1. LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. Nature, 521(7553), 436–444. https://doi.org/10.1038/nature14539",
+      "status": "unreachable",
+      "evidence": [
+        "오프라인 모드 — 외부 호출 차단됨"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [],
+      "note": "오프라인 모드로 생성됨 — 모든 항목이 확인불가 처리됨.",
+      "_offline": true
+    },
+    {
+      "id": 2,
+      "raw": "2. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). Attention is all you need. arXiv:1706.03762.",
+      "status": "unreachable",
+      "evidence": [
+        "오프라인 모드 — 외부 호출 차단됨"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [],
+      "note": "오프라인 모드로 생성됨 — 모든 항목이 확인불가 처리됨.",
+      "_offline": true
+    },
+    {
+      "id": 3,
+      "raw": "3. Devlin, J., Chang, M.-W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of deep bidirectional transformers for language understanding. In Proceedings of NAACL-HLT 2019.",
+      "status": "unreachable",
+      "evidence": [
+        "오프라인 모드 — 외부 호출 차단됨"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [],
+      "note": "오프라인 모드로 생성됨 — 모든 항목이 확인불가 처리됨.",
+      "_offline": true
+    },
+    {
+      "id": 4,
+      "raw": "4. Kim, S., & Park, J. (2021). Quantum-enhanced federated learning for smart city traffic prediction. Journal of Urban AI Systems.",
+      "status": "unreachable",
+      "evidence": [
+        "오프라인 모드 — 외부 호출 차단됨"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [],
+      "note": "오프라인 모드로 생성됨 — 모든 항목이 확인불가 처리됨.",
+      "_offline": true
+    },
+    {
+      "id": 5,
+      "raw": "5. Hochreiter, S., & Schmidhuber, J. (1999). Long short-term memory. Neural Computation, 9(8), 1735–1780. https://doi.org/10.1162/neco.1999.9.8.1735",
+      "status": "unreachable",
+      "evidence": [
+        "오프라인 모드 — 외부 호출 차단됨"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [],
+      "note": "오프라인 모드로 생성됨 — 모든 항목이 확인불가 처리됨.",
+      "_offline": true
+    },
+    {
+      "id": 6,
+      "raw": "6. Lee, M. (2020). Edge-driven semantic labeling for IoT networks. https://doi.org/10.1234/edsl.2020.0412",
+      "status": "unreachable",
+      "evidence": [
+        "오프라인 모드 — 외부 호출 차단됨"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [],
+      "note": "오프라인 모드로 생성됨 — 모든 항목이 확인불가 처리됨.",
+      "_offline": true
+    },
+    {
+      "id": 7,
+      "raw": "7. Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep learning. MIT Press.",
+      "status": "unreachable",
+      "evidence": [
+        "오프라인 모드 — 외부 호출 차단됨"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [],
+      "note": "오프라인 모드로 생성됨 — 모든 항목이 확인불가 처리됨.",
+      "_offline": true
+    },
+    {
+      "id": 8,
+      "raw": "8. 김철수, 이영희 (2020). 딥러닝 기반 한국어 자연어 처리의 최근 동향. 한국어 정보처리학회지, 24(3), 45–62.",
+      "status": "unreachable",
+      "evidence": [
+        "오프라인 모드 — 외부 호출 차단됨"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [],
+      "note": "오프라인 모드로 생성됨 — 모든 항목이 확인불가 처리됨.",
+      "_offline": true
+    },
+    {
+      "id": 9,
+      "raw": "9. Silver, D., Huang, A., Maddison, C. J., Guez, A., Sifre, L., van den Driessche, G., Schrittwieser, J., Antonoglou, I., Panneershelvam, V., Lanctot, M., Dieleman, S., Grewe, D., Nham, J., Kalchbrenner, I., Sutskever, P., Lillicrap, T., Leach, M., Kavukcuoglu, K., Graepel, T., & Hassabis, D. (2016). Mastering the game of Go with deep neural networks and tree search. Nature, 529(7587), 484–489.",
+      "status": "unreachable",
+      "evidence": [
+        "오프라인 모드 — 외부 호출 차단됨"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [],
+      "note": "오프라인 모드로 생성됨 — 모든 항목이 확인불가 처리됨.",
+      "_offline": true
+    },
+    {
+      "id": 10,
+      "raw": "10. Python Software Foundation (2024). Python 3.12 documentation. Retrieved September 1, 2024, from https://docs.python.org/3.12/",
+      "status": "unreachable",
+      "evidence": [
+        "오프라인 모드 — 외부 호출 차단됨"
+      ],
+      "matched": null,
+      "title_similarity": null,
+      "diffs": [],
+      "candidates": [],
+      "note": "오프라인 모드로 생성됨 — 모든 항목이 확인불가 처리됨.",
+      "_offline": true
+    }
+  ]
+}

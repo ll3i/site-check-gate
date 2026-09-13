@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "source": "prelim-skill/assets/samples/sample_refs.txt",
+    "mode": "auto",
+    "count": 10
+  },
+  "items": [
+    {
+      "id": 1,
+      "raw": "1. LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. Nature, 521(7553), 436–444. https://doi.org/10.1038/nature14539",
+      "doi": "10.1038/nature14539",
+      "arxiv": null,
+      "url": null,
+      "year": "2015",
+      "title": "Deep learning. Nature, 521(7553), 436–444. https://doi.org/10.1038/nature14539",
+      "first_author": null,
+      "kind": "article",
+      "confidence": 0.7,
+      "notes": [
+        "DOI 발견",
+        "연도 발견(괄호): 2015",
+        "제목 발견(APA 패턴)",
+        "종류: 논문(저널/학회 언급)"
+      ]
+    },
+    {
+      "id": 2,
+      "raw": "2. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). Attention is all you need. arXiv:1706.03762.",
+      "doi": null,
+      "arxiv": "1706.03762",
+      "url": null,
+      "year": "2017",
+      "title": "Attention is all you need. arXiv:1706.03762",
+      "first_author": null,
+      "kind": "article",
+      "confidence": 0.85,
+      "notes": [
+        "arXiv ID 발견 (접두어)",
+        "연도 발견(괄호): 2017",
+        "제목 발견(APA 패턴)",
+        "종류: 논문(arXiv/preprint)"
+      ]
+    },
+    {
+      "id": 3,
+      "raw": "3. Devlin, J., Chang, M.-W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of deep bidirectional transformers for language understanding. In Proceedings of NAACL-HLT 2019.",
+      "doi": null,
+      "arxiv": null,
+      "url": null,
+      "year": "2019",
+      "title": "BERT: Pre-training of deep bidirectional transformers for language understanding. In Proceedings of NAACL-HLT 2019",
+      "first_author": null,
+      "kind": "article",
+      "confidence": 0.65,
+      "notes": [
+        "연도 발견(괄호): 2019",
+        "제목 발견(APA 패턴)",
+        "종류: 논문(저널/학회 언급)"
+      ]
+    },
+    {
+      "id": 4,
+      "raw": "4. Kim, S., & Park, J. (2021). Quantum-enhanced federated learning for smart city traffic prediction. Journal of Urban AI Systems.",
+      "doi": null,
+      "arxiv": null,
+      "url": null,
+      "year": "2021",
+      "title": "Quantum-enhanced federated learning for smart city traffic prediction. Journal of Urban AI Systems",
+      "first_author": null,
+      "kind": "article",
+      "confidence": 0.65,
+      "notes": [
+        "연도 발견(괄호): 2021",
+        "제목 발견(APA 패턴)",
+        "종류: 논문(저널/학회 언급)"
+      ]
+    },
+    {
+      "id": 5,
+      "raw": "5. Hochreiter, S., & Schmidhuber, J. (1999). Long short-term memory. Neural Computation, 9(8), 1735–1780. https://doi.org/10.1162/neco.1999.9.8.1735",
+      "doi": "10.1162/neco.1999.9.8.1735",
+      "arxiv": null,
+      "url": null,
+      "year": "1999",
+      "title": "Long short-term memory. Neural Computation, 9(8), 1735–1780. https://doi.org/10.1162/neco.1999.9.8.1735",
+      "first_author": null,
+      "kind": "article",
+      "confidence": 0.7,
+      "notes": [
+        "DOI 발견",
+        "연도 발견(괄호): 1999",
+        "제목 발견(APA 패턴)",
+        "종류: 논문(저널/학회 언급)"
+      ]
+    },
+    {
+      "id": 6,
+      "raw": "6. Lee, M. (2020). Edge-driven semantic labeling for IoT networks. https://doi.org/10.1234/edsl.2020.0412",
+      "doi": "10.1234/edsl.2020.0412",
+      "arxiv": null,
+      "url": null,
+      "year": "2020",
+      "title": "Edge-driven semantic labeling for IoT networks. https://doi.org/10.1234/edsl.2020.0412",
+      "first_author": null,
+      "kind": "article",
+      "confidence": 0.7,
+      "notes": [
+        "DOI 발견",
+        "연도 발견(괄호): 2020",
+        "제목 발견(APA 패턴)",
+        "종류: 논문(저널/학회 언급)"
+      ]
+    },
+    {
+      "id": 7,
+      "raw": "7. Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep learning. MIT Press.",
+      "doi": null,
+      "arxiv": null,
+      "url": null,
+      "year": "2016",
+      "title": "Deep learning. MIT Press",
+      "first_author": null,
+      "kind": "book",
+      "confidence": 0.65,
+      "notes": [
+        "연도 발견(괄호): 2016",
+        "제목 발견(APA 패턴)",
+        "종류: 단행본(출판사 언급)"
+      ]
+    },
+    {
+      "id": 8,
+      "raw": "8. 김철수, 이영희 (2020). 딥러닝 기반 한국어 자연어 처리의 최근 동향. 한국어 정보처리학회지, 24(3), 45–62.",
+      "doi": null,
+      "arxiv": null,
+      "url": null,
+      "year": "2020",
+      "title": "딥러닝 기반 한국어 자연어 처리의 최근 동향. 한국어 정보처리학회지, 24(3), 45–62",
+      "first_author": null,
+      "kind": null,
+      "confidence": 0.65,
+      "notes": [
+        "연도 발견(괄호): 2020",
+        "제목 발견(APA 패턴)"
+      ]
+    },
+    {
+      "id": 9,
+      "raw": "9. Silver, D., Huang, A., Maddison, C. J., Guez, A., Sifre, L., van den Driessche, G., Schrittwieser, J., Antonoglou, I., Panneershelvam, V., Lanctot, M., Dieleman, S., Grewe, D., Nham, J., Kalchbrenner, I., Sutskever, P., Lillicrap, T., Leach, M., Kavukcuoglu, K., Graepel, T., & Hassabis, D. (2016). Mastering the game of Go with deep neural networks and tree search. Nature, 529(7587), 484–489.",
+      "doi": null,
+      "arxiv": null,
+      "url": null,
+      "year": "2016",
+      "title": "Mastering the game of Go with deep neural networks and tree search. Nature, 529(7587), 484–489",
+      "first_author": null,
+      "kind": null,
+      "confidence": 0.65,
+      "notes": [
+        "연도 발견(괄호): 2016",
+        "제목 발견(APA 패턴)"
+      ]
+    },
+    {
+      "id": 10,
+      "raw": "10. Python Software Foundation (2024). Python 3.12 documentation. Retrieved September 1, 2024, from https://docs.python.org/3.12/",
+      "doi": null,
+      "arxiv": null,
+      "url": "https://docs.python.org/3.12/",
+      "year": "2024",
+      "title": "Python 3.12 documentation. Retrieved September 1, 2024, from https://docs.python.org/3.12",
+      "first_author": null,
+      "kind": "web",
+      "confidence": 0.65,
+      "notes": [
+        "URL 발견",
+        "연도 발견(괄호): 2024",
+        "제목 발견(APA 패턴)",
+        "종류: 웹(접속일 언급)"
+      ]
+    }
+  ]
+}

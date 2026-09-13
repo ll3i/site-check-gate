@@ -1,0 +1,12 @@
+{
+  "claim": "[사진 1] B동 옥외 배관에서 부식이 확인되어 즉시 보수가 필요한 상태이다.",
+  "verdict": "판단 불가",
+  "quote": "",
+  "reason": "주장 문장에서 사진에 보이는 상태에 대한 서술은 '부식이 확인되어'이지만, 검출된 객체는 cable_damage(0.60)뿐입니다. cable_damage는 케이블 손상에 해당하며 부식(corrosion) 여부를 이 검출 결과로는 알 수 없으므로 판단 불가입니다.",
+  "metadata_title": "",
+  "metadata_abstract": "검출된 객체: cable_damage(0.60)",
+  "quote_exists": false,
+  "post_processed": false,
+  "tags": [],
+  "raw_response": "{\n  \"verdict\": \"판단 불가\",\n  \"quote\": \"\",\n  \"reason\": \"주장 문장에서 사진에 보이는 상태에 대한 서술은 '부식이 확인되어'이지만, 검출된 객체는 cable_damage(0.60)뿐입니다. cable_damage는 케이블 손상에 해당하며 부식(corrosion) 여부를 이 검출 결과로는 알 수 없으므로 판단 불가입니다.\"\n}"
+}

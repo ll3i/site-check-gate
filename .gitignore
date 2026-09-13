@@ -1,27 +1,11 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-*.egg
+# gcloud 자격증명/로그 (망가진 경로)
+C*gcloud*/
 
-# 작업 디렉터리
-work/
-tmp/
-temp/
+# 임시 작업 디렉터리
 _tmp/
-tests/fixtures/cache/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# 바이너리 테스트 파일 (루트)
+*.bin
 
-# OS
-.DS_Store
-Thumbs.db
-
-# API 키
-.env
-.env.*
+# hermes-verify 관련
+hermes-verify*
