@@ -1,12 +1,12 @@
+import json
+import mimetypes
 import os
 import uuid
 import tempfile
 from pathlib import Path
-from typing import List
-
+from typing import List, Optional
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
-from fastapi.responses import HTMLResponse
-
+from fastapi.responses import HTMLResponse, FileResponse
 from service.core.pipeline import run_pipeline
 
 app = FastAPI(title="현장 보고 검증 게이트")
@@ -15,31 +15,20 @@ app = FastAPI(title="현장 보고 검증 게이트")
 jobs: dict[str, dict] = {}
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "web"
+ASSETS_DIR = Path(__file__).resolve().parent.parent.parent / "assets"
 
 
 # ── 경로 안전화 헬퍼 ─────────────────────────────────────────────────────────
 def _safe_save_path(tmpdir: str, original_filename: str) -> str:
-    """원본 파일명을 보존하되 경로 안전화만 수행하여 저장 경로를 반환한다.
-
-    - 디렉터리 구분자(`/`, `\\`) 및 널문자 제거
-    - 한글 등 비ASCII 문자 보존
-    - 확장자 보존
-    - 이름 충돌 시 뒤에 `_1`, `_2` 등 접미사 추가
-    """
-    # 널문자 제거
+    """원본 파일명을 보존하되 경로 안전화만 수행하여 저장 경로를 반환한다."""
     name = original_filename.replace("\x00", "")
-    # 디렉터리 구분자 제거
     name = name.replace("/", "_").replace("\\", "_")
-    # 경로 트래버설 방지: '..' 제거
     name = name.replace("..", "")
-    # 빈 이름이 되면 기본값 사용
     if not name.strip():
         name = "unnamed"
-    # 중복 처리
     base_path = os.path.join(tmpdir, name)
     if not os.path.exists(base_path):
         return base_path
-    # 확장자 분리
     base, ext = os.path.splitext(name)
     counter = 1
     while True:
@@ -48,6 +37,32 @@ def _safe_save_path(tmpdir: str, original_filename: str) -> str:
         if not os.path.exists(new_path):
             return new_path
         counter += 1
+
+
+def _build_demo_job(tmpdir: str) -> tuple[str, list[str]]:
+    """데모 문서와 사진 2장을 tmpdir에 복사하고 경로를 반환한다."""
+    # 문서
+    demo_doc_src = ASSETS_DIR / "demo" / "demo_report_gaon.pdf"
+    if not demo_doc_src.is_file():
+        raise FileNotFoundError(f"데모 문서 없음: {demo_doc_src}")
+    doc_path = os.path.join(tmpdir, "demo_report.pdf")
+    with open(doc_path, "wb") as f:
+        f.write(demo_doc_src.read_bytes())
+
+    # 사진 2장
+    photo_dir = ASSETS_DIR / "vision" / "demo_photos"
+    photo_names = ["r1_l3_pipe.jpg", "r1_l2_loading.jpg"]
+    photo_paths: list[str] = []
+    for pn in photo_names:
+        src = photo_dir / pn
+        if not src.is_file():
+            raise FileNotFoundError(f"데모 사진 없음: {src}")
+        dst = os.path.join(tmpdir, pn)
+        with open(dst, "wb") as f:
+            f.write(src.read_bytes())
+        photo_paths.append(dst)
+
+    return doc_path, photo_paths
 
 
 # ── health ───────────────────────────────────────────────────────────────────
@@ -81,6 +96,7 @@ async def create_job(
         "step": "접수 완료",
         "result": None,
         "error": None,
+        "photo_paths": [],
     }
 
     tmpdir = tempfile.mkdtemp(prefix="mabc_job_")
@@ -93,15 +109,15 @@ async def create_job(
 
     # 사진 저장
     photo_paths: list[str] = []
-    for i, photo in enumerate(photos):
+    for photo in photos:
         p = _safe_save_path(tmpdir, photo.filename)
         data = await photo.read()
         with open(p, "wb") as f:
             f.write(data)
         photo_paths.append(p)
+    jobs[job_id]["photo_paths"] = photo_paths
 
     # 공고문 저장 (pipeline에는 전달하지 않음 — 추후 확장용)
-    notice_path = None
     if notice is not None:
         notice_path = os.path.join(tmpdir, "notice")
         data = await notice.read()
@@ -136,6 +152,77 @@ async def create_job(
         "job_id": job_id,
         "status": "queued",
         "message": "검사를 시작했습니다. 진행 상황은 GET /jobs/{job_id} 에서 확인하세요.",
+    }
+
+
+# ── POST /jobs/demo ──────────────────────────────────────────────────────────
+@app.post("/jobs/demo", include_in_schema=False)
+async def create_demo_job(background_tasks: BackgroundTasks):
+    """샘플 보고서와 사진 2장을 자동으로 넣어 검사를 실행한다. (첫 방문 체험용)"""
+    api_key = os.environ.get("UPSTAGE_API_KEY")
+    if not api_key:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "UPSTAGE_API_KEY 환경변수가 설정되지 않았습니다.",
+                "hint": "실행 전 export UPSTAGE_API_KEY=<발급키> 또는 .env 파일에 설정하세요.",
+            },
+        )
+
+    job_id = str(uuid.uuid4())
+    jobs[job_id] = {
+        "status": "queued",
+        "progress": 0,
+        "step": "접수 완료",
+        "result": None,
+        "error": None,
+        "photo_paths": [],
+    }
+
+    tmpdir = tempfile.mkdtemp(prefix="mabc_demo_")
+
+    try:
+        doc_path, photo_paths = _build_demo_job(tmpdir)
+        jobs[job_id]["photo_paths"] = photo_paths
+    except FileNotFoundError as e:
+        jobs[job_id]["status"] = "error"
+        jobs[job_id]["error"] = str(e)
+        jobs[job_id]["step"] = "데모 자산 누락"
+        jobs[job_id]["progress"] = 100
+        return {
+            "job_id": job_id,
+            "status": "error",
+            "error": str(e),
+        }
+
+    def _run_pipeline():
+        try:
+            jobs[job_id]["status"] = "running"
+            jobs[job_id]["progress"] = 5
+            jobs[job_id]["step"] = "문서 판독 중"
+
+            result = run_pipeline(
+                file_path=doc_path,
+                photo_files=photo_paths,
+                offline=False,
+            )
+
+            jobs[job_id]["result"] = result
+            jobs[job_id]["status"] = "done"
+            jobs[job_id]["progress"] = 100
+            jobs[job_id]["step"] = "완료"
+        except Exception as exc:
+            jobs[job_id]["status"] = "error"
+            jobs[job_id]["error"] = str(exc)
+            jobs[job_id]["step"] = "오류 발생"
+            jobs[job_id]["progress"] = 100
+
+    background_tasks.add_task(_run_pipeline)
+
+    return {
+        "job_id": job_id,
+        "status": "queued",
+        "message": "샘플 보고서로 검사를 시작했습니다. 진행 상황은 GET /jobs/{job_id} 에서 확인하세요.",
     }
 
 
@@ -175,7 +262,49 @@ async def get_job_report(job_id: str):
                 "step": job["step"],
             },
         )
-    return job["result"]
+
+    result = job["result"]
+    if result is None:
+        raise HTTPException(status_code=500, detail={"error": "결과가 없습니다."})
+
+    # photo_section의 각 match에 photo_n(1-based)을 부여
+    photo_paths = job.get("photo_paths", [])
+    if photo_paths and "photo_section" in result and "matches" in result["photo_section"]:
+        for m in result["photo_section"]["matches"]:
+            pf = m.get("photo_file", "")
+            if pf:
+                basename = os.path.basename(pf)
+                for i, path in enumerate(photo_paths, 1):
+                    if os.path.basename(path) == basename:
+                        m["photo_n"] = i
+                        break
+
+    return result
+
+
+# ── GET /jobs/{job_id}/photos/{n} ────────────────────────────────────────────
+@app.get("/jobs/{job_id}/photos/{photo_n}")
+async def get_job_photo(job_id: str, photo_n: int):
+    """업로드된 사진 n번(1-based)을 서빙한다."""
+    if job_id not in jobs:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": f"존재하지 않는 작업 ID입니다: {job_id}"},
+        )
+    job = jobs[job_id]
+    photo_paths: list[str] = job.get("photo_paths", [])
+    if photo_n < 1 or photo_n > len(photo_paths):
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": f"사진 번호가 범위를 벗어났습니다: {photo_n} (전체 {len(photo_paths)}장)",
+            },
+        )
+    photo_path = photo_paths[photo_n - 1]
+    if not os.path.isfile(photo_path):
+        raise HTTPException(status_code=404, detail={"error": "사진 파일을 찾을 수 없습니다."})
+    media_type, _ = mimetypes.guess_type(photo_path)
+    return FileResponse(photo_path, media_type=media_type or "application/octet-stream")
 
 
 # ── GET / (정적 index.html) ──────────────────────────────────────────────────
