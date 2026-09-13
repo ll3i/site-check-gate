@@ -534,6 +534,37 @@ body {
 }
 .result-actions button:hover { background: var(--gray-bg); }
 
+/* ===== 인라인 오류 배너 ===== */
+.error-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--red);
+  color: #fff;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 9999;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.error-banner .msg { flex: 1; line-height: 1.4; }
+.error-banner .close-btn {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.4);
+  color: #fff;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.error-banner .close-btn:hover { background: rgba(255,255,255,0.35); }
+
 .empty-state {
   color: var(--gray);
   font-size: 13px;
@@ -552,24 +583,25 @@ body {
 
 <!-- ===== 히어로 ===== -->
 <header class="hero">
-  <h1>현장 보고 검증 게이트</h1>
-  <p class="hero-sub">보고서와 사진을 넣으면, 법령·사진 근거까지 검사해 '보고 가능한지' 판정합니다</p>
-  <div class="icon-row" aria-label="검사 항목">
-    <span>⚖️<small>법령</small></span>
-    <span>📷<small>사진</small></span>
-    <span>✅<small>적법도급</small></span>
-    <span>📚<small>인용</small></span>
+  <h1>현장 사진으로 안전 점검</h1>
+  <p class="hero-sub">현장 사진을 찍으면, 위험 요소를 찾아 관련 법령과 조치까지 알려드립니다</p>
+  <div class="icon-row" aria-label="점검 항목">
+    <span>📷<small>현장 사진</small></span>
+    <span>⚖️<small>관련 법령</small></span>
+    <span>🛠️<small>조치 권고</small></span>
   </div>
 </header>
 
-<!-- ===== 업로드 화면 ===== -->
+<!-- ===== 업로드(주 CTA = 사진 점검) 화면 ===== -->
 <main id="uploadArea">
   <div class="big-buttons">
-    <label class="big-btn" for="docInput">📄 보고서 선택</label>
-    <input type="file" id="docInput" accept=".pdf,.docx,.txt,.hwp">
-
-    <label class="big-btn" for="photoInput">📷 현장 사진 추가</label>
+    <!-- 주 CTA: 사진 기반 안전 점검 -->
+    <label class="big-btn" for="photoInput">📷 현장 사진으로 안전 점검</label>
     <input type="file" id="photoInput" accept="image/*" multiple>
+
+    <!-- 부 CTA: 보고서 검증 (기존 흐름은 아래로) -->
+    <label class="big-btn" for="docInput">📄 보고서 검증하기</label>
+    <input type="file" id="docInput" accept=".pdf,.docx,.txt,.hwp">
   </div>
 
   <div class="file-chips" id="fileChips"></div>
@@ -583,8 +615,9 @@ body {
   </details>
 
   <div class="action-row">
-    <button class="demo-btn" id="demoBtn">샘플 보고서로 30초 체험</button>
-    <button class="start-btn" id="startBtn" disabled>검사 시작</button>
+    <button class="demo-btn" id="inspectDemoBtn">📷 점검 샘플 체험 (사진 3장)</button>
+    <button class="demo-btn" id="verifyDemoBtn">📄 검증 샘플 체험 (보고서+사진)</button>
+    <button class="start-btn" id="startBtn" disabled>사진 선택 후 안전 점검 시작</button>
   </div>
 </main>
 
@@ -604,6 +637,7 @@ body {
 
 <!-- ===== 결과 화면 ===== -->
 <section class="result-screen" id="resultScreen" style="display:none"></section>
+<div id="errorBanner" style="display:none"></div>
 
 <script>
 (function () {
@@ -611,10 +645,11 @@ body {
 
   // ── 상태 ──────────────────────────────────────────────────────────────────
   const state = {
-    doc: null,
-    photos: [],
+    photos: [],      // 사진 점검 모드용
+    doc: null,       // 보고서 검증 모드용
     notice: null,
   };
+  const mode = { kind: 'inspect' }; // 'inspect' | 'verify'
   let jobId = null;
   let pollTimer = null;
   let retryCount = 0;
@@ -678,23 +713,24 @@ body {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
   }
-
   // ── 입력 이벤트 ───────────────────────────────────────────────────────────
   const docInput = document.getElementById('docInput');
   const photoInput = document.getElementById('photoInput');
   const noticeInput = document.getElementById('noticeInput');
 
-  docInput.addEventListener('change', () => {
-    if (docInput.files.length) {
-      state.doc = docInput.files[0];
+  photoInput.addEventListener('change', () => {
+    if (photoInput.files.length) {
+      state.photos = Array.from(photoInput.files);
+      mode.kind = 'inspect';
     }
     renderChips();
     updateStartButton();
   });
 
-  photoInput.addEventListener('change', () => {
-    if (photoInput.files.length) {
-      for (const f of photoInput.files) state.photos.push(f);
+  docInput.addEventListener('change', () => {
+    if (docInput.files.length) {
+      state.doc = docInput.files[0];
+      mode.kind = 'verify';
     }
     renderChips();
     updateStartButton();
@@ -705,42 +741,86 @@ body {
       state.notice = noticeInput.files[0];
     }
     renderChips();
+    updateStartButton();
   });
 
   function updateStartButton() {
     const btn = document.getElementById('startBtn');
-    if (state.doc && state.photos.length > 0) {
+    if (mode.kind === 'inspect' && state.photos.length > 0) {
       btn.disabled = false;
       btn.classList.add('active');
-      btn.textContent = '검사 시작';
+      btn.textContent = '안전 점검 시작';
+    } else if (mode.kind === 'verify' && state.doc) {
+      btn.disabled = false;
+      btn.classList.add('active');
+      btn.textContent = mode.photos.length > 0
+        ? '검사 시작 (문서 + 사진)'
+        : '검사 시작';
     } else {
       btn.disabled = true;
       btn.classList.remove('active');
-      btn.textContent = '보고서와 사진을 선택해 주세요';
+      btn.textContent = mode.kind === 'inspect'
+        ? '사진을 선택해 주세요'
+        : '보고서와 사진을 선택해 주세요';
     }
   }
 
-  // ── 샘플 체험 ─────────────────────────────────────────────────────────────
-  document.getElementById('demoBtn').addEventListener('click', function () {
+  // ── 샘플 체험 (점검 모드 전용: GET /inspect/demo) ──────────────────────────
+  document.getElementById('inspectDemoBtn').addEventListener('click', function () {
     this.disabled = true;
-    this.textContent = '체험 시작 중…';
+    this.textContent = '점검 체험 로딩 중…';
+    fetch('/inspect/demo')
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'skipped_api') {
+          // API 키 없이 엔진 결과만 받은 경우: inspect_result 로 결과 화면 진입
+          renderInspectResult(data.inspect_result, data.draft_md || null);
+          this.disabled = false;
+          this.textContent = '📷 점검 샘플 체험 (사진 3장)';
+          return;
+        }
+        if (data.error) {
+          this.disabled = false;
+          this.textContent = '📷 점검 샘플 체험 (사진 3장)';
+          showErrorBanner('점검 체험 실패: ' + data.error);
+          return;
+        }
+        // 정상: inspect_result + draft_md 모두 있음
+        renderInspectResult(data.inspect_result, data.draft_md || null);
+        this.disabled = false;
+        this.textContent = '📷 점검 샘플 체험 (사진 3장)';
+      })
+      .catch(err => {
+        this.disabled = false;
+        this.textContent = '📷 점검 샘플 체험 (사진 3장)';
+        showErrorBanner('점검 체험 실패: ' + err.message);
+      });
+  });
+
+  // ── 검증 샘플 체험 (POST /jobs/demo → 완료 시 renderVerifyReport) ──────────
+  document.getElementById('verifyDemoBtn').addEventListener('click', function () {
+    this.disabled = true;
+    this.textContent = '검증 체험 로딩 중…';
+    mode.kind = 'verify';
     fetch('/jobs/demo', { method: 'POST' })
       .then(r => r.json())
       .then(data => {
-        if (data.error) {
+        if (data.error || data.detail) {
           this.disabled = false;
-          this.textContent = '샘플 보고서로 30초 체험';
-          alert('체험 시작 실패: ' + data.error);
+          this.textContent = '📄 검증 샘플 체험 (보고서+사진)';
+          showErrorBanner('검증 체험 실패: ' + (data.error || data.detail));
           return;
         }
         jobId = data.job_id;
         enterProgress();
         pollJob();
+        this.disabled = false;
+        this.textContent = '📄 검증 샘플 체험 (보고서+사진)';
       })
       .catch(err => {
         this.disabled = false;
-        this.textContent = '샘플 보고서로 30초 체험';
-        alert('체험 시작 실패: ' + err.message);
+        this.textContent = '📄 검증 샘플 체험 (보고서+사진)';
+        showErrorBanner('검증 체험 실패: ' + err.message);
       });
   });
 
@@ -748,6 +828,44 @@ body {
   document.getElementById('startBtn').addEventListener('click', startJob);
 
   function startJob() {
+    if (mode.kind === 'inspect') {
+      startInspectJob();
+    } else {
+      startVerifyJob();
+    }
+  }
+
+  function startInspectJob() {
+    if (!state.photos.length) return;
+    const formData = new FormData();
+    state.photos.forEach(p => formData.append('files', p));
+    formData.append('gauge', 'false');
+
+    const startBtn = document.getElementById('startBtn');
+    startBtn.disabled = true;
+    startBtn.textContent = '점검 시작 중…';
+
+    fetch('/inspect', { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error || data.detail) {
+          startBtn.disabled = false;
+          startBtn.textContent = '안전 점검 시작';
+          alert('점검 시작 실패: ' + (data.error || data.detail));
+          return;
+        }
+        jobId = data.job_id;
+        enterProgress();
+        pollJob();
+      })
+      .catch(err => {
+        startBtn.disabled = false;
+        startBtn.textContent = '안전 점검 시작';
+        alert('요청 실패: ' + err.message);
+      });
+  }
+
+  function startVerifyJob() {
     if (!state.doc) return;
     const formData = new FormData();
     formData.append('document', state.doc);
@@ -763,7 +881,9 @@ body {
       .then(data => {
         if (data.error || data.detail) {
           startBtn.disabled = false;
-          startBtn.textContent = '검사 시작';
+          startBtn.textContent = mode.photos.length > 0
+            ? '검사 시작 (문서 + 사진)'
+            : '검사 시작';
           alert('검사 시작 실패: ' + (data.error || data.detail));
           return;
         }
@@ -773,7 +893,9 @@ body {
       })
       .catch(err => {
         startBtn.disabled = false;
-        startBtn.textContent = '검사 시작';
+        startBtn.textContent = mode.photos.length > 0
+          ? '검사 시작 (문서 + 사진)'
+          : '검사 시작';
         alert('요청 실패: ' + err.message);
       });
   }
@@ -872,14 +994,44 @@ body {
     if (pollRestartTimer) { clearTimeout(pollRestartTimer); pollRestartTimer = null; }
     document.getElementById('progressScreen').style.display = 'none';
     document.getElementById('uploadArea').style.display = 'block';
-    alert('검사 중 오류가 발생했습니다.\n\n' + msg);
+    showErrorBanner(msg);
+  }
+
+  function showErrorBanner(msg) {
+    const banner = document.getElementById('errorBanner');
+    banner.style.display = 'block';
+    banner.className = 'error-banner';
+    banner.innerHTML =
+      '<span class="msg">' + escapeHtml(msg).replace(/\n/g, '<br>') + '</span>' +
+      '<button class="close-btn" type="button">닫기</button>';
+    banner.querySelector('.close-btn').addEventListener('click', function () {
+      banner.style.display = 'none';
+    });
   }
 
   // ── 결과 화면 ─────────────────────────────────────────────────────────────
   function showReport() {
+    if (mode.kind === 'inspect') {
+      // 점검 모드: /jobs/{id} 결과는 {inspect_result, draft_md} 구조
+      fetch('/jobs/' + jobId)
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) { showFatalError(data.error); return; }
+          const result = data.result;
+          if (!result) { showFatalError('점검 결과가 없습니다.'); return; }
+          renderInspectResult(result.inspect_result, result.draft_md || null);
+        })
+        .catch(err => {
+          document.getElementById('progressScreen').style.display = 'none';
+          document.getElementById('uploadArea').style.display = 'block';
+          alert('리포트 로드 실패: ' + err.message);
+        });
+      return;
+    }
+    // 검증 모드(기존): /jobs/{id}/report
     fetch('/jobs/' + jobId + '/report')
       .then(r => r.json())
-      .then(report => renderReport(report))
+      .then(report => renderVerifyReport(report))
       .catch(err => {
         document.getElementById('progressScreen').style.display = 'none';
         document.getElementById('uploadArea').style.display = 'block';
@@ -888,6 +1040,192 @@ body {
   }
 
   function renderReport(r) {
+    if (r.inspect_result !== undefined) {
+      renderInspectResult(r.inspect_result, r.draft_md);
+      return;
+    }
+    renderVerifyReport(r);
+  }
+
+  // ── 점검 결과 화면 ─────────────────────────────────────────────────────────
+  function renderInspectResult(inspect_result, draft_md) {
+    const screen = document.getElementById('resultScreen');
+    screen.style.display = 'block';
+    screen.innerHTML = '';
+
+    const photos = inspect_result && inspect_result.photos ? inspect_result.photos : [];
+    const summary = inspect_result && inspect_result.summary ? inspect_result.summary : {};
+
+    // 종합 배지
+    const verdict = summary.판정 || '양호';
+    const badgeMap = {
+      '조치 필요': { cls: 'badge-danger', css: 'var(--red)', bg: 'var(--red-bg)', fg: 'var(--red-fg)', icon: '🔴', label: '조치 필요' },
+      '주의':      { cls: 'badge-warning', css: 'var(--orange)', bg: 'var(--orange-bg)', fg: 'var(--orange-fg)', icon: '⚠️', label: '주의' },
+      '양호':      { cls: 'badge-caution', css: 'var(--yellow)', bg: 'var(--yellow-bg)', fg: 'var(--yellow-fg)', icon: '✅', label: '양호' },
+    };
+    const b = badgeMap[verdict] || badgeMap['양호'];
+
+    const summaryBox = document.createElement('div');
+    summaryBox.style.cssText =
+      'padding:14px 16px;border-radius:10px;background:' + b.bg +
+      ';color:' + b.fg + ';border:1px solid;border-bottom:4px solid ' + b.css +
+      ';font-weight:600;display:flex;align-items:center;gap:12px;margin-bottom:20px;';
+    summaryBox.innerHTML =
+      '<span style="font-size:24px;">' + b.icon + '</span>' +
+      '<div>' +
+      '<div style="font-size:18px;">종합 판정: <b>' + b.label + '</b></div>' +
+      '<div style="font-size:13px;opacity:0.85;margin-top:2px;">' +
+      '위험 ' + (summary.위험 || 0) + '건 · 주의 ' + (summary.주의 || 0) + '건 · 양호 ' + (summary.양호 || 0) + '건' +
+      '</div>' +
+      '</div>';
+    screen.appendChild(summaryBox);
+
+    // 사진별 카드
+    if (photos.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-state';
+      empty.textContent = '점검할 사진이 없습니다.';
+      screen.appendChild(empty);
+    } else {
+      const heading = document.createElement('div');
+      heading.className = 'section-heading';
+      heading.innerHTML = '사진별 점검 결과 <span class="count">' + photos.length + '</span>장';
+      screen.appendChild(heading);
+
+      const cards = document.createElement('div');
+      cards.className = 'action-cards';
+
+      photos.forEach((ph, idx) => {
+        const photoName = ph.photo || '';
+        const risk_level = ph.risk_level || '양호';
+        const detections = ph.detections || [];
+        const law_refs = ph.law_refs || [];
+        const action = ph.action || '';
+
+        const card = document.createElement('div');
+        card.className = 'card ' + (
+          risk_level === '위험' ? 'badge-danger' :
+          risk_level === '주의' ? 'badge-warning' : 'badge-caution'
+        );
+
+        // 썸네일(서버 서빙 엔드포인트 사용)
+        const photoN = idx + 1;
+        let thumbUrl = '';
+        const jobIdForThumb = jobId || '';
+        if (jobIdForThumb) {
+          thumbUrl = '/jobs/' + jobIdForThumb + '/photos/' + photoN;
+        }
+
+        // 검출 라벨 칩
+        const labelChips = detections.map(d => {
+          const label = d.label || '';
+          const conf = d.conf != null ? d.conf : 0;
+          return '<span class="detection-label">' + escapeHtml(label) + ' ' + conf.toFixed(2) + '</span>';
+        }).join(' ');
+
+        // 위험도에 따른 색상 표시
+        const riskColorMap = {
+          '위험': 'var(--red)',
+          '주의': 'var(--orange)',
+          '양호': 'var(--green)',
+        };
+
+        // 관련 법령 발췌 (접기)
+        let lawAccordionHtml = '';
+        if (law_refs.length > 0) {
+          const items = law_refs.map(ref => {
+            const law = ref.법령 || '';
+            const jo = ref.조 || '';
+            const excerpt = ref.발췌 || '';
+            return '<div class="item">' +
+              '<div class="item-label">' + escapeHtml(law) + ' ' + escapeHtml(jo) + '</div>' +
+              '<div style="margin-top:2px;">' + escapeHtml(excerpt) + '</div>' +
+              '</div>';
+          }).join('');
+          lawAccordionHtml =
+            '<details class="accordion" style="margin-top:10px;">' +
+            '<summary>관련 법령·조문 발췌 ' + law_refs.length + '건 (접기)</summary>' +
+            '<div class="inner">' + items + '</div>' +
+            '</details>';
+        }
+
+        card.innerHTML =
+          '<div class="card-head">' +
+          '<span class="card-badge ' +
+            (risk_level === '위험' ? 'danger' :
+             risk_level === '주의' ? 'warning' : 'caution') + '">' +
+            risk_level.toUpperCase() + '</span>' +
+          '<p class="card-title">' + escapeHtml(photoName) + '</p>' +
+          '</div>' +
+          '<p class="card-problem">' + escapeHtml(action) + '</p>' +
+          '<div class="card-evidence">' +
+          (thumbUrl ? '<img class="photo-thumb" src="' + escapeAttr(thumbUrl) + '" alt="사진 ' + photoN + '">' : '') +
+          (labelChips ? '<div style="margin-top:6px;">' + labelChips + '</div>' : '') +
+          '</div>' +
+          lawAccordionHtml;
+
+        cards.appendChild(card);
+      });
+
+      screen.appendChild(cards);
+    }
+
+    // 초안 다운로드 + 검증 보내기 버튼
+    const actions = document.createElement('div');
+    actions.className = 'result-actions';
+
+    const downloadBtn = document.createElement('button');
+    downloadBtn.textContent = '점검 보고서 초안 다운로드 (.md)';
+    downloadBtn.addEventListener('click', function () {
+      if (!draft_md) {
+        alert('보고서 초안(draft_md)이 없습니다. (UPSTAGE_API_KEY 미설정 시 생성되지 않습니다)');
+        return;
+      }
+      const blob = new Blob([draft_md], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '안전점검_초안_' + (jobId || 'demo') + '.md';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    actions.appendChild(downloadBtn);
+
+    const verifyBtn = document.createElement('button');
+    verifyBtn.textContent = '이 초안을 보고서 검증에 넣기';
+    verifyBtn.addEventListener('click', function () {
+      if (!draft_md) {
+        alert('보고서 초안이 없어 검증 흐름으로 보낼 수 없습니다. (UPSTAGE_API_KEY 미설정 시 생성되지 않습니다)');
+        return;
+      }
+      // 초안을 텍스트로 기존 검증 흐름(/jobs)에 투입: 문서 대신 초안 텍스트를 임시 파일로 제출
+      const formData = new FormData();
+      const blob = new Blob([draft_md], { type: 'text/markdown' });
+      formData.append('document', blob, '안전점검_초안.md');
+      // 사진 점검 결과 자체를 검증 관점으로 다시 보고 싶다면, photos 로 재구성하지 않고
+      // 여기서는 "초안만" 보내는 순환 데모로 동작한다.
+      fetch('/jobs', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+          if (data.error || data.detail) {
+            alert('검증 흐름 투입 실패: ' + (data.error || data.detail));
+            return;
+          }
+          jobId = data.job_id;
+          enterProgress();
+          pollJob();
+        })
+        .catch(err => {
+          alert('요청 실패: ' + err.message);
+        });
+    });
+    actions.appendChild(verifyBtn);
+
+    screen.appendChild(actions);
+  }
+
+  // ── 검증 결과 화면 (기존 렌더, 이름만 변경) ────────────────────────────────
+  function renderVerifyReport(r) {
     const screen = document.getElementById('resultScreen');
     screen.style.display = 'block';
     screen.innerHTML = '';
@@ -1000,189 +1338,6 @@ body {
       }
     });
 
-    // ── 조치 필요 섹션 ─────────────────────────────────────────────────────
-    if (actionItems.length > 0) {
-      const heading = document.createElement('div');
-      heading.className = 'section-heading';
-      heading.innerHTML = '조치 필요 <span class="count">' + actionItems.length + '</span>건';
-      screen.appendChild(heading);
-
-      const cards = document.createElement('div');
-      cards.className = 'action-cards';
-
-      actionItems.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'card ' + (
-          item.badge === 'danger' ? 'badge-danger' :
-          item.badge === 'warning' ? 'badge-warning' : 'badge-caution'
-        );
-
-        let evidenceHtml = '';
-        if (item.photoN) {
-          evidenceHtml =
-            '<img class="photo-thumb" src="' + escapeAttr(item.thumbUrl) + '" alt="사진">' +
-            '<span class="detection-label">' + escapeHtml(item.label) + '</span>' +
-            (item.quote ? '<br><div style="font-size:12px;margin-top:4px;">주장: ' + escapeHtml(item.quote) + '</div>' : '') +
-            (item.reason ? '<div style="font-size:12px;color:#555;margin-top:2px;">사유: ' + escapeHtml(item.reason) + '</div>' : '');
-        } else if (item.refTitle) {
-          evidenceHtml =
-            '<div style="font-size:12px;margin-bottom:2px;"><b>인용 문헌:</b> ' + escapeHtml(item.refTitle) + '</div>' +
-            (item.quote ? '<div style="font-size:12px;">quote: ' + escapeHtml(item.quote) + '</div>' : '') +
-            (item.reason ? '<div style="font-size:12px;color:#555;margin-top:2px;">사유: ' + escapeHtml(item.reason) + '</div>' : '');
-        } else {
-          evidenceHtml = item.evidence ? escapeHtml(item.evidence) : '';
-        }
-
-        card.innerHTML =
-          '<div class="card-head">' +
-          '<span class="card-badge ' + item.badge + '">' + item.badgeLabel + '</span>' +
-          '<p class="card-title">' + escapeHtml(item.title) + '</p>' +
-          '</div>' +
-          '<p class="card-problem">' + escapeHtml(item.problem) + '</p>' +
-          '<div class="card-evidence">' + evidenceHtml + '</div>' +
-          '<p class="card-actions">' + escapeHtml(item.action) + '</p>';
-
-        cards.appendChild(card);
-      });
-
-      screen.appendChild(cards);
-    } else {
-      const h = document.createElement('div');
-      h.className = 'section-heading';
-      h.innerHTML = '조치 필요 <span class="count">0</span>건';
-      screen.appendChild(h);
-      const es = document.createElement('p');
-      es.className = 'empty-state';
-      es.textContent = '즉시 보완이 필요한 항목이 없습니다.';
-      screen.appendChild(es);
-    }
-
-    // ── 확인 필요 (아코디언) ───────────────────────────────────────────────
-    const checkItems = [];
-
-    lawItems.forEach(item => {
-      if (item.verdict === '스냅샷 미보유') {
-        checkItems.push({
-          label: item.law_name_raw + ' 제' + item.article + '조' + (item.paragraph ? ' 제' + item.paragraph + '항' : ''),
-          detail: '스냅샷 미보유 — 법령 내용 변동 가능성 있음',
-        });
-      }
-    });
-
-    photoMatches.forEach(m => {
-      if (m.verdict === '판단 불가') {
-        checkItems.push({
-          label: (m.sentence || '').slice(0, 60) + ' (사진: ' + (m.photo_file || '?') + ')',
-          detail: m.reason || '객체 검출·대조 실패',
-        });
-      }
-    });
-
-    scResults.forEach(item => {
-      if (item.label === '근거 없음-확인 필요') {
-        checkItems.push({
-          label: item.name || ('축 ' + item.axis + ' 항목 ' + item.item),
-          detail: '적법도급 판정 근거 부족 — 추가 자료 확인 필요',
-        });
-      }
-    });
-
-    matchResults.forEach(mr => {
-      if (mr.verdict === '판단 불가') {
-        checkItems.push({
-          label: (mr.claim || '').slice(0, 60),
-          detail: mr.reason || '근거 대조 불가',
-        });
-      }
-    });
-
-    if (checkItems.length > 0) {
-      const heading = document.createElement('div');
-      heading.className = 'section-heading';
-      heading.innerHTML = '확인 필요 <span class="count">' + checkItems.length + '</span>건';
-      screen.appendChild(heading);
-
-      const acc = document.createElement('details');
-      acc.className = 'accordion';
-      acc.innerHTML = '<summary>확인 필요 ' + checkItems.length + '건</summary><div class="inner"></div>';
-      const inner = acc.querySelector('.inner');
-      checkItems.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML =
-          '<div class="item-label">• ' + escapeHtml(item.label) + '</div>' +
-          '<div style="margin-top:2px;">' + escapeHtml(item.detail) + '</div>';
-        inner.appendChild(div);
-      });
-      screen.appendChild(acc);
-    }
-
-    // ── 정상 (한 줄 요약 + 펼치기) ─────────────────────────────────────────
-    const okItems = [];
-
-    lawItems.forEach(item => {
-      if (item.verdict === '실존') {
-        okItems.push({
-          label: item.law_name_raw + ' 제' + item.article + '조' + (item.paragraph ? ' 제' + item.paragraph + '항' : ''),
-          detail: '실존 확인',
-        });
-      }
-    });
-
-    photoMatches.forEach(m => {
-      if (m.verdict === '뒷받침함') {
-        okItems.push({
-          label: (m.sentence || '').slice(0, 60) + ' (사진: ' + (m.photo_file || '?') + ')',
-          detail: '사진으로 뒷받침됨',
-        });
-      }
-    });
-
-    scResults.forEach(item => {
-      if (item.label === '적법 방향') {
-        okItems.push({
-          label: item.name || ('축 ' + item.axis + ' 항목 ' + item.item),
-          detail: '적법 방향 — 기준 충족',
-        });
-      }
-    });
-
-    if (okItems.length > 0) {
-      const heading = document.createElement('div');
-      heading.className = 'section-heading';
-      heading.innerHTML = '정상 <span class="count">' + okItems.length + '</span>건';
-      screen.appendChild(heading);
-
-      const summary = document.createElement('p');
-      summary.className = 'ok-summary';
-      summary.textContent = okItems.length + '건 모두 기준이 확인되었습니다.';
-      screen.appendChild(summary);
-
-      const expandBtn = document.createElement('button');
-      expandBtn.className = 'expand-btn';
-      expandBtn.textContent = '펼치기 (' + okItems.length + '건)';
-      screen.appendChild(expandBtn);
-
-      const list = document.createElement('div');
-      list.className = 'ok-items';
-      list.style.display = 'none';
-      okItems.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML =
-          '<div class="item-label">• ' + escapeHtml(item.label) + '</div>' +
-          '<div style="margin-top:2px;color:var(--green);">' + escapeHtml(item.detail) + '</div>';
-        list.appendChild(div);
-      });
-      screen.appendChild(list);
-
-      expandBtn.addEventListener('click', function () {
-        const visible = list.style.display === 'block';
-        list.style.display = visible ? 'none' : 'block';
-        expandBtn.textContent = visible ? '펼치기 (' + okItems.length + '건)' : '접기 (' + okItems.length + '건)';
-      });
-    }
-
     // ── 적법도급 요약 배지 + 아코디언 ─────────────────────────────────────
     const riskTotal = scResults.filter(x => x.label === '위험 신호').length;
     const compliantTotal = scResults.filter(x => x.label === '적법 방향').length;
@@ -1278,20 +1433,21 @@ body {
       URL.revokeObjectURL(url);
     });
     const rescanBtn = document.createElement('button');
-    rescanBtn.textContent = '다시 검사';
+    rescanBtn.textContent = '다시 점검';
     rescanBtn.addEventListener('click', function () {
       screen.style.display = 'none';
       document.getElementById('uploadArea').style.display = 'block';
       document.getElementById('startBtn').disabled = true;
       document.getElementById('startBtn').classList.remove('active');
-      document.getElementById('startBtn').textContent = '검사 시작';
-      state.doc = null;
+      document.getElementById('startBtn').textContent = '사진 선택 후 안전 점검 시작';
       state.photos = [];
+      state.doc = null;
       state.notice = null;
-      docInput.value = '';
       photoInput.value = '';
+      docInput.value = '';
       noticeInput.value = '';
       renderChips();
+      updateStartButton();
     });
     actions.appendChild(saveBtn);
     actions.appendChild(rescanBtn);
