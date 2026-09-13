@@ -34,6 +34,7 @@ SERVERS: List[tuple[str, Path]] = [
     ("url_check",    SERVER_DIR / "url_check_server.py"),
     ("wayback",      SERVER_DIR / "wayback_server.py"),
     ("doc_parse",    SERVER_DIR / "doc_parse_server.py"),
+    ("contest_brief", SERVER_DIR / "contest_brief_server.py"),
 ]
 
 # ── 테스트 입력 ────────────────────────────────────────────────────────────────
@@ -412,6 +413,7 @@ def test_roundtrip_site_rules():
     ("url_check",    SERVER_DIR / "url_check_server.py"),
     ("wayback",      SERVER_DIR / "wayback_server.py"),
     ("doc_parse",    SERVER_DIR / "doc_parse_server.py"),
+    ("contest_brief", SERVER_DIR / "contest_brief_server.py"),
 ])
 def test_roundtrip_parametrized(name, script):
     _roundtrip_server(name, script)

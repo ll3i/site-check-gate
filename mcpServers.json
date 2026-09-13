@@ -63,8 +63,8 @@
     "contest_brief": {
       "command": "python",
       "args": ["service/mcp_servers/contest_brief_server.py"],
-      "enabled": false,
-      "description": "대회 브리핑 요약 (contest_brief) — 다음 세션에서 구현 예정"
+      "enabled": true,
+      "description": "대회 브리핑 요약 (contest_brief) — 공고문 마감·D-day·제출요건·실격조건 추출"
     }
   }
 }

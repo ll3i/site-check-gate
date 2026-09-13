@@ -51,7 +51,7 @@ SAMPLE_SUBCONTRACT_TEXT = (
 # ── 헬퍼: 서버 개수 검증 ──────────────────────────────────────────────────────────
 
 def _expected_enabled_count() -> int:
-    """mcpServers.json 의 enabled:true 서버 개수 (contest_brief 제외)."""
+    """mcpServers.json 의 enabled:true 서버 개수."""
     cfg = load_config(CONFIG_PATH)
     servers = cfg.get("mcpServers", {})
     return sum(1 for s in servers.values() if isinstance(s, dict) and s.get("enabled", False))
@@ -60,23 +60,23 @@ def _expected_enabled_count() -> int:
 # ── 테스트: 설정 로딩 ─────────────────────────────────────────────────────────────
 
 def test_config_loads():
-    """mcpServers.json 이 정상적으로 로딩되고 contest_brief 가 enabled:false 로 존재하는지 확인."""
+    """mcpServers.json 이 정상적으로 로딩되고 contest_brief 가 enabled:true 로 존재하는지 확인."""
     cfg = load_config(CONFIG_PATH)
     assert "mcpServers" in cfg
     servers = cfg["mcpServers"]
 
-    # enabled 서버 개수 확인 (기존 9 + photo_inspect = 10, contest_brief는 enabled:false 자리 표시)
+    # enabled 서버 개수 확인
     enabled_names = [
         name for name, spec in servers.items()
         if isinstance(spec, dict) and spec.get("enabled", False)
     ]
-    assert len(enabled_names) == 10, f"enabled 서버 10개 기대, 실제 {len(enabled_names)}: {enabled_names}"
+    assert len(enabled_names) == 11, f"enabled 서버 11개 기대, 실제 {len(enabled_names)}: {enabled_names}"
 
-    # contest_brief 가 enabled:false 자리 표시로 존재하는지 확인
+    # contest_brief 가 enabled:true 로 존재하는지 확인
     assert "contest_brief" in servers, "contest_brief 항목이 mcpServers.json 에 없음"
     cb = servers["contest_brief"]
     assert isinstance(cb, dict), "contest_brief 항목이 dict가 아님"
-    assert cb.get("enabled") is False, "contest_brief 는 enabled:false 여야 함"
+    assert cb.get("enabled") is True, "contest_brief 는 enabled:true 여야 함"
 
 
 def test_enabled_server_names():
@@ -86,7 +86,7 @@ def test_enabled_server_names():
     expected = {
         "cite_core", "pii_guard", "law_registry", "site_rules",
         "scholar_search", "retraction_check", "url_check", "wayback",
-        "doc_parse", "photo_inspect",
+        "doc_parse", "photo_inspect", "contest_brief",
     }
     assert set(names) == expected, f"서버 목록 불일치: {names} vs {expected}"
 
@@ -105,8 +105,8 @@ def host():
     if failed:
         pytest.fail(f"서버 기동 실패: {failed}")
 
-    # 기동 확인: enabled 서버 10개 (contest_brief는 enabled:false 자리 표시)
-    assert len(started) == 10, f"10개 서버 기동 기대, 실제 {len(started)}: {started}"
+    # 기동 확인: enabled 서버 11개 (contest_brief 포함)
+    assert len(started) == 11, f"11개 서버 기동 기대, 실제 {len(started)}: {started}"
 
     yield h
 
@@ -115,10 +115,10 @@ def host():
 
 
 def test_host_server_count(host: MCPHost):
-    """기동된 서버 개수가 10개인지 확인 (contest_brief는 enabled:false 자리 표시)."""
+    """기동된 서버 개수가 11개인지 확인 (contest_brief 포함)."""
     status = host.list_servers()
     running = [s for s in status if s["running"]]
-    assert len(running) == 10, f"기동 중인 서버 10개 기대, 실제 {len(running)}"
+    assert len(running) == 11, f"기동 중인 서버 11개 기대, 실제 {len(running)}"
 
 
 # ── 테스트: tools/list 합계 ───────────────────────────────────────────────────────
@@ -146,8 +146,8 @@ def test_total_tools_count(host: MCPHost):
     print(f"  총 {total}개 도구")
 
     # cite_core가 2개(verify_references, match_claim), law_registry가 2개(lookup_article, search_articles)
-    # 나머지 서버들은 각 1개씩 → 총 12개 예상
-    assert total == 12, f"도구 12개 기대, 실제 {total}: {by_server}"
+    # 나머지 서버들은 각 1개씩 → 총 13개 예상 (contest_brief +1)
+    assert total == 13, f"도구 13개 기대, 실제 {total}: {by_server}"
 
     # 서버별 도구 이름 확인
     assert by_server.get("site_rules") == ["check_subcontract"], f"site_rules 도구 불일치: {by_server.get('site_rules')}"
