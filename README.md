@@ -44,6 +44,12 @@ Upstage Document Parse + 참고문헌 검증 + 법령·적법도급·사진 게�
 | `photo_inspect` | YOLO 객체 검출 (`detect_objects`) | `ultralytics` + `assets/vision/weights/*.pt` |
 | `contest_brief` | 대회 브리핑 요약 (비활성) | 다음 세션 구현 예정 |
 
+### 하지 않는 일 (의도적 경계)
+
+- **LLM은 조문·서지·라벨을 만들지 않는다.** 법령 본문은 `assets/law/*.json` 스냅샷에서만 조회(실시간 law.go.kr 호출 없음). 서지 메타데이터는 Crossref·arXiv·DataCite·OpenAlex·Wayback 등 외부 출처에서 가져온 것만 사용. 사진 라벨은 YOLO 가중치(`cleaning.pt`, `defect.pt`, `gauge.pt`)가 붙인 검출 결과만 사용.
+- **서비스 스스로 "이 문헌이 맞다"고 최종 판정하지 않는다.** 실존 5단계·대조 3분기·게이트 3상태는 모두 근거와 함께 제시하고, 최종 제출 여부는 판정자가 결정한다.
+- **대체 문헌 제안은 "이런 후보가 있다"까지.** 확인 불가 항목(단행본 ISBN/OpenLibrary, 국문 KCI/RISS/DBpia 등)에 대해 다음으로 확인할 경로를 안내할 뿐 자동 대체하지 않는다.
+
 ---
 
 ## 60초 로컬 실행
