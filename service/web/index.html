@@ -909,8 +909,37 @@ figure.result-card{margin:0;break-inside:avoid}
     WATCH.files=[];
     enterVideoMode();
     if(watchVideo.readyState===0) watchVideo.load();
-    // 자동 재생이 브라우저 정책으로 막히면 사용자 상호작용 필요
+
+    // 4초 스톨 감시: play() 호출 후 4초 안에 readyState>=2 가 안 되면
+    // 영상 모드를 접고 사진 관제 루프로 폴백한다.
+    let stallTimer = null;
+    function clearStall(){ if(stallTimer){ clearTimeout(stallTimer); stallTimer = null; } }
+    function onStall(){
+      clearStall();
+      // 이미 영상 모드가 풀렸으면(선행 폴백 등) 스킵
+      if(VID.mode !== 'video') return;
+      // 영상 모드 접기
+      leaveVideoMode();
+      addWatchLog('경고','영상 재생 불가 — 사진 관제 모드로 전환');
+      // 사진 관제 샘플 루프로 폴백
+      runWatchPhotoDemo();
+    }
+
     watchVideo.play().catch(e=>addWatchLog('경고','자동 재생 차단: '+e.message));
+
+    // readyState 조건 체크(타이머 안쪽에서도 확인한다)
+    stallTimer = setTimeout(onStall, 4000);
+
+    // canplay 이벤트: 재생 준비 끝났으면 타이머 해제
+    watchVideo.addEventListener('canplay', function onCanplay(){
+      clearStall();
+      watchVideo.removeEventListener('canplay', onCanplay);
+    }, { once: true });
+
+    // readyState>=2 도달 시점에도 타이머 해제 (load() 직후 진입 등)
+    if(watchVideo.readyState >= 2){
+      clearStall();
+    }
   }
   function hashToTab(){
     const h = location.hash.replace('#','');
@@ -1422,9 +1451,10 @@ figure.result-card{margin:0;break-inside:avoid}
   }
 
   // ── 관제 샘플 체험 (영상 자동 재생) ─────────────────────────────────────────
-  watchDemoBtn.addEventListener('click', function(){
-    this.disabled = true;
-    this.textContent = '체험 로딩 중…';
+  // 데모 흐름을 함수로 추출해 watchDemoBtn 클릭과 영상 스톨 폴백에서 재사용한다.
+  function runWatchVideoDemo(){
+    watchDemoBtn.disabled = true;
+    watchDemoBtn.textContent = '체험 로딩 중…';
     addWatchLog('샘플','🎯 관제 샘플 체험 시작');
 
     // 영상 모드로 진입 (데모 영상 자동 재생)
@@ -1439,20 +1469,83 @@ figure.result-card{margin:0;break-inside:avoid}
     watchVideo.src = '/watch/video';
     watchVideo.load();
     watchVideo.play().then(() => {
-      this.disabled = false;
-      this.textContent = '🎯 관제 샘플 체험';
+      watchDemoBtn.disabled = false;
+      watchDemoBtn.textContent = '🎯 관제 샘플 체험';
       addWatchLog('샘플','데모 영상 재생 완료');
       // 타임라인이 아직 로드 안 됐으면 로드
       if(!VID.timeline){
         loadVideoTimeline();
       }
     }).catch(err => {
-      this.disabled = false;
-      this.textContent = '🎯 관제 샘플 체험';
+      watchDemoBtn.disabled = false;
+      watchDemoBtn.textContent = '🎯 관제 샘플 체험';
       showErrorBanner('비디오 재생 실패: '+err.message);
       addWatchLog('오류','데모 영상 재생 실패: '+err.message);
     });
-  });
+  }
+  watchDemoBtn.addEventListener('click', function(){ runWatchVideoDemo(); });
+
+  // ── 사진 관제 샘플 데모 (영상 스톨 폴백용) ──────────────────────────────────
+  function runWatchPhotoDemo(){
+    watchDemoBtn.disabled = false;
+    watchDemoBtn.textContent = '🎯 관제 샘플 체험';
+
+    // 영상 숨기고 사진 모드로 전환
+    watchVideo.style.display = 'none';
+    VID.mode = 'none';
+    if(VID.syncTimer){ clearTimeout(VID.syncTimer); VID.syncTimer = null; }
+    watchVideo.removeEventListener('timeupdate', onVideoTimeUpdate);
+    stopVideoSync();
+
+    addWatchLog('샘플','🎯 관제 샘플 체험 시작');
+    addWatchLog('샘플','데모 사진 로드');
+
+    // 데모 사진 가져와 프레임으로 렌더링
+    fetch('/watch/demo')
+      .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(data => {
+        const photos = data.inspect_result && data.inspect_result.photos;
+        if(!photos || !photos.length){
+          addWatchLog('오류','데모 사진 없음 — 샘플 체험할 수 없습니다.');
+          showErrorBanner('데모 사진이 없습니다.');
+          return;
+        }
+        WATCH.files = [];
+        WATCH.fileType = 'photo';
+        WATCH.jobId = null;
+        WATCH.frames = photos;
+        WATCH.cur = 0;
+
+        // 사진 모드로 진입: 첫 프레임 렌더 후 자동 재생
+        renderWatchFrame(0);
+        // 가장 높은 위험 프레임 찾기
+        let maxRisk = 0, maxIdx = 0;
+        photos.forEach((fr, i) => {
+          const r = riskOf(fr);
+          if(r > maxRisk){ maxRisk = r; maxIdx = i; }
+        });
+        if(data.law_refs && data.law_refs.length){
+          renderWatchCentralAlert(data);
+        } else {
+          renderWatchCentralAlertFromFrame(photos[maxIdx]);
+        }
+        buildWatchThumbStrip();
+        watchThumbStrip.style.display = 'flex';
+        watchEventLog.style.display = 'block';
+        // 자동 재생
+        if(maxRisk >= 3){
+          setTimeout(() => { goWatchFrame(maxIdx); startWatchAutoPlay(); }, 400);
+        } else {
+          startWatchAutoPlay();
+        }
+        renderWatchEventLog();
+        addWatchLog('샘플','데모 사진 재생 완료');
+      })
+      .catch(err => {
+        addWatchLog('오류','데모 사진 로드 실패: '+err.message);
+        showErrorBanner('데모 사진 로드 실패: '+err.message);
+      });
+  }
 
   // ── 영상 모드 진입: 비디오 재생 + 스캔 밴드 + 타임라인 로드 ────────────────
   function enterVideoMode(){
