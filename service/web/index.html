@@ -1478,6 +1478,9 @@ figure.result-card{margin:0;break-inside:avoid}
     watchVideo.removeEventListener('timeupdate', onVideoTimeUpdate);
     stopVideoSync();
 
+    // 스캔 밴드 상시 표시 — 사진 루프 중 항상 보이게
+    watchScanBand.style.display = 'block';
+
     addWatchLog('샘플','🎯 관제 샘플 체험 시작');
     addWatchLog('샘플','데모 사진 로드');
 
@@ -1554,9 +1557,6 @@ figure.result-card{margin:0;break-inside:avoid}
     watchAlertOverlay.style.display = 'none';
     watchStatusTip.style.display = 'none';
     watchStage.style.background = '';
-
-    // 스캔 밴드 항상 표시 (영상·이미지 공통)
-    watchScanBand.style.display = 'block';
 
     // 타임라인 로드
     loadVideoTimeline();
