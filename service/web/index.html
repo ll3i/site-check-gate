@@ -744,6 +744,15 @@ figure.result-card{margin:0;break-inside:avoid}
   'use strict';
 
   // ── 디자인 토큰 (Watch.dc/Report.dc에서 추출한 색·등급) ─────────────────────
+  const VID = {
+    mode: 'none',          // 'none' | 'video' | 'photo'
+    timeline: null,        // GET /watch/video/timeline 응답
+    events: [],            // events 배열
+    curEventIdx: -1,
+    syncTimer: null,
+    tooltipTimer: null,
+  };
+
   const LC = {4:'#ff2d3f', 3:'#ff8a00', 2:'#f5a623', 1:'#3182f6'};
   const TAG = {4:'긴급', 3:'부적합', 2:'조건부', 1:'참고'};
   const KO = {
@@ -1456,16 +1465,6 @@ figure.result-card{margin:0;break-inside:avoid}
       addWatchLog('오류','데모 영상 재생 실패: '+err.message);
     });
   });
-
-  // ── 영상 모드 상태 (타임라인 동기) ──────────────────────────────────────────
-  const VID = {
-    mode: 'none',          // 'none' | 'video' | 'photo'
-    timeline: null,        // GET /watch/video/timeline 응답
-    events: [],            // events 배열
-    curEventIdx: -1,
-    syncTimer: null,
-    tooltipTimer: null,
-  };
 
   // ── 영상 모드 진입: 비디오 재생 + 스캔 밴드 + 타임라인 로드 ────────────────
   function enterVideoMode(){
