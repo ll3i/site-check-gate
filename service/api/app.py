@@ -10,6 +10,8 @@ from fastapi.responses import HTMLResponse, FileResponse
 from service.core.pipeline import run_pipeline
 from service.core.inspect_mode import inspect_photos
 from service.core.draft_report import generate_draft
+from service.core.video_frames import extract_frames
+from service.core.annotate import annotate_image_with_risk_badge
 
 app = FastAPI(title="현장 보고 검증 게이트")
 
@@ -237,13 +239,17 @@ async def get_job_status(job_id: str):
             detail={"error": f"존재하지 않는 작업 ID입니다: {job_id}"},
         )
     job = jobs[job_id]
-    return {
+    resp: dict = {
         "job_id": job_id,
         "status": job["status"],
         "progress": job["progress"],
         "step": job["step"],
         "error": job.get("error"),
     }
+    # 완료된 작업이면 result 포함
+    if job["status"] == "done" and job.get("result") is not None:
+        resp["result"] = job["result"]
+    return resp
 
 
 # ── GET /jobs/{job_id}/report ────────────────────────────────────────────────
@@ -351,6 +357,209 @@ async def inspect_demo():
         "inspect_result": inspect_result,
         "draft_md": draft_md,
     }
+
+
+# ── GET /watch/demo ──────────────────────────────────────────────────────────
+@app.get("/watch/demo", include_in_schema=False)
+async def watch_demo():
+    """관제 데모: demo_photos 3장으로 사진 기반 위험 탐지 체험.
+
+    inspect_result + 각 사진별 annotated 경로 포함.
+    """
+    demo_dir = ASSETS_DIR / "vision" / "demo_photos"
+    photo_names = ["r1_l3_pipe.jpg", "r1_l2_loading.jpg", "r1_l1_electrical.jpg"]
+    photo_files = [str(demo_dir / name) for name in photo_names]
+    missing = [pf for pf in photo_files if not os.path.isfile(pf)]
+    if missing:
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "데모 사진 누락", "missing": missing},
+        )
+
+    inspect_result = inspect_photos(photo_files)
+
+    # annotated 경로가 없는 경우 즉시 생성
+    for photo in inspect_result["photos"]:
+        if not photo.get("annotated"):
+            src = demo_dir / photo["photo"]
+            if src.is_file():
+                out_name = f"annotated_{photo['photo']}"
+                out_path = str(demo_dir / out_name)
+                annotate_image_with_risk_badge(
+                    str(src),
+                    photo["detections"],
+                    out_path,
+                    risk_level=photo["risk_level"],
+                )
+                photo["annotated"] = out_path
+
+    return {
+        "status": "ok",
+        "inspect_result": inspect_result,
+    }
+
+
+# ── POST /watch ──────────────────────────────────────────────────────────────
+@app.post("/watch")
+async def create_watch_job(
+    background_tasks: BackgroundTasks,
+    video: UploadFile = File(default=None, description="영상 파일 (mp4)"),
+    files: List[UploadFile] = File(default=[], description="사진 파일들"),
+):
+    """사진들 또는 영상 1개를 업로드하여 위험 탐지를 실행한다.
+
+    - photos: 여러 장 업로드 시 각각 inspect_photos 로 분석.
+    - video: mp4 업로드 시 1fps·최대24프레임·640px 샘플링 후 각 프레임 분석.
+    결과 JSON에 detections(box 포함)·annotated 경로 포함.
+
+    Returns:
+        {"job_id": ..., "status": "queued", "message": "..."}
+    """
+    job_id = str(uuid.uuid4())
+    jobs[job_id] = {
+        "status": "queued",
+        "progress": 0,
+        "step": "접수 완료",
+        "result": None,
+        "error": None,
+        "photo_paths": [],
+        "video_path": None,
+        "frame_paths": [],
+    }
+
+    tmpdir = tempfile.mkdtemp(prefix="mabc_watch_")
+
+    frame_paths: list[str] = []
+
+    # 영상 처리 (우선순위: video가 있으면 영상만 처리)
+    if video is not None:
+        video_path = os.path.join(tmpdir, "upload_video.mp4")
+        data = await video.read()
+        with open(video_path, "wb") as f:
+            f.write(data)
+        jobs[job_id]["video_path"] = video_path
+
+        frames_dir = os.path.join(tmpdir, "frames")
+        try:
+            frame_paths = extract_frames(video_path, frames_dir, max_frames=24, target_width=640)
+            jobs[job_id]["frame_paths"] = frame_paths
+        except Exception as e:
+            jobs[job_id]["status"] = "error"
+            jobs[job_id]["error"] = f"영상 프레임 추출 실패: {str(e)}"
+            jobs[job_id]["step"] = "프레임 추출 오류"
+            jobs[job_id]["progress"] = 100
+            return {
+                "job_id": job_id,
+                "status": "error",
+                "error": f"영상 프레임 추출 실패: {str(e)}",
+            }
+
+    # 사진 처리
+    photo_paths: list[str] = []
+    for f in files:
+        p = _safe_save_path(tmpdir, f.filename)
+        data = await f.read()
+        with open(p, "wb") as out:
+            out.write(data)
+        photo_paths.append(p)
+    jobs[job_id]["photo_paths"] = photo_paths
+
+    # 분석 대상: 영상 프레임이 있으면 프레임들, 없으면 사진들
+    targets = frame_paths if frame_paths else photo_paths
+
+    def _run_watch():
+        try:
+            jobs[job_id]["status"] = "running"
+            jobs[job_id]["progress"] = 20
+            jobs[job_id]["step"] = "영상 판독 중" if frame_paths else "사진 점검 중"
+
+            inspect_result = inspect_photos(targets)
+
+            # 각 사진/프레임별 annotated 생성
+            for photo in inspect_result["photos"]:
+                if not photo.get("annotated"):
+                    src = Path(photo["photo_path"]) if os.path.isfile(photo["photo_path"]) else None
+                    if src is None:
+                        # 데모 사진에서 찾기
+                        basename = photo["photo"]
+                        candidate = ASSETS_DIR / "vision" / "demo_photos" / basename
+                        if candidate.is_file():
+                            src = candidate
+                    if src and src.is_file():
+                        out_name = f"annotated_{photo['photo']}"
+                        out_path = os.path.join(tmpdir, out_name)
+                        annotate_image_with_risk_badge(
+                            str(src),
+                            photo["detections"],
+                            out_path,
+                            risk_level=photo["risk_level"],
+                        )
+                        photo["annotated"] = out_path
+
+            jobs[job_id]["result"] = {
+                "inspect_result": inspect_result,
+            }
+            jobs[job_id]["status"] = "done"
+            jobs[job_id]["progress"] = 100
+            jobs[job_id]["step"] = "완료"
+        except Exception as exc:
+            jobs[job_id]["status"] = "error"
+            jobs[job_id]["error"] = str(exc)
+            jobs[job_id]["step"] = "오류 발생"
+            jobs[job_id]["progress"] = 100
+
+    background_tasks.add_task(_run_watch)
+
+    return {
+        "job_id": job_id,
+        "status": "queued",
+        "message": "영상·사진 분석을 시작했습니다. 진행 상황은 GET /jobs/{job_id} 에서 확인하세요.",
+    }
+
+
+# ── GET /jobs/{job_id}/annotated/{n} ─────────────────────────────────────────
+@app.get("/jobs/{job_id}/annotated/{frame_n}")
+async def get_job_annotated(job_id: str, frame_n: int):
+    """분석 완료된 작업의 n번째 프레임/사진에 대한 annotated(주석) 이미지를 서빙.
+
+    n은 1-based 인덱스. inspect_result.photos[n-1].annotated 경로를 반환.
+    """
+    if job_id not in jobs:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": f"존재하지 않는 작업 ID입니다: {job_id}"},
+        )
+    job = jobs[job_id]
+    if job["status"] != "done":
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "아직 완료되지 않았습니다.",
+                "current_status": job["status"],
+                "step": job["step"],
+            },
+        )
+
+    result = job.get("result")
+    if result is None or "inspect_result" not in result:
+        raise HTTPException(status_code=500, detail={"error": "결과가 없습니다."})
+
+    photos = result["inspect_result"].get("photos", [])
+    if frame_n < 1 or frame_n > len(photos):
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": f"프레임/사진 번호가 범위를 벗어났습니다: {frame_n} (전체 {len(photos)}개)"
+            },
+        )
+
+    photo = photos[frame_n - 1]
+    annotated_path = photo.get("annotated")
+    if not annotated_path or not os.path.isfile(annotated_path):
+        raise HTTPException(status_code=404, detail={"error": "주석 이미지를 찾을 수 없습니다."})
+
+    media_type, _ = mimetypes.guess_type(annotated_path)
+    return FileResponse(annotated_path, media_type=media_type or "image/jpeg")
 
 
 # ── POST /inspect ────────────────────────────────────────────────────────────

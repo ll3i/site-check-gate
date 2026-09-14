@@ -146,12 +146,35 @@ def _inspect_one(photo_file: str, gauge: bool = False) -> Dict[str, Any]:
     # 검출 목록은 클라이언트 표시용 평문 dict 로 반환
     detections = [_normalize_det(d["det"]) for d in labeled]
 
+    # ④ annotated 경로 생성 (박스 주석 이미지)
+    demo_dir = Path(__file__).resolve().parent.parent.parent / "assets" / "vision" / "demo_photos"
+    annotated_path: Optional[str] = None
+    try:
+        from service.core.annotate import annotate_image_with_risk_badge
+        if demo_dir.is_dir():
+            src_photo = demo_dir / basename
+            if src_photo.is_file():
+                annotated_filename = f"annotated_{basename}"
+                annotated_path = str(demo_dir / annotated_filename)
+                annotate_image_with_risk_badge(
+                    str(src_photo),
+                    detections,
+                    annotated_path,
+                    risk_level=risk_level,
+                )
+    except Exception:
+        pass  # annotated 생성 실패해도 결과에는 영향 없음
+
+    # detections의 box는 이미 _normalize_det에서 포함
+
     return {
         "photo": basename,
+        "photo_path": photo_file,
         "detections": detections,
         "risk_level": risk_level,
         "law_refs": law_refs,
         "action": action,
+        "annotated": annotated_path,
         "gauge_run": gauge_run,
     }
 
