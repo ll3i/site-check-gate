@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HIMEC EYE — 현장 보고 검증 게이트</title>
+<title>현장 검문소 — 안전 관제·검증 게이트</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
 /* ===== DC 토큰 (Watch.dc / Report.dc) ===== */
@@ -639,7 +639,7 @@ figure.result-card{margin:0;break-inside:avoid}
     <div class="report-shell">
       <div class="report-inner">
         <div class="report-head">
-          <span class="brand">HIMEC <b>EYE</b></span>
+          <span class="brand">현장 <b>검문소</b></span>
           <span class="title">판독 분석 리포트</span>
           <span class="spacer"></span>
           <span class="date" id="reportDate"></span>
@@ -1374,16 +1374,26 @@ figure.result-card{margin:0;break-inside:avoid}
           addWatchLog('오류','/watch/demo 오류: '+data.error);
           return;
         }
-        if(data.frames && data.frames.length){
-          WATCH.jobId = data.job_id || 'demo';
-          WATCH.frames = data.frames;
+        // GET /watch/demo 반환: {status, inspect_result:{photos:[...], summary}}
+        // photos 각 원소는 frames로 그대로 쓸 수 있음 (annotated·detections·risk_level 보유)
+        const photos = data.inspect_result && data.inspect_result.photos;
+        if(photos && photos.length){
+          WATCH.jobId = null;  // 'demo'로 설정하면 /jobs/demo/annotated/ 404 → null이어야 /watch/demo/annotated/ 폴백 사용
+          WATCH.frames = photos;
           WATCH.log = [];
-          addWatchLog('샘플','데모 프레임 '+data.frames.length+'장');
-          // 법 참조·액션이 있으면 중앙 경보로
+          addWatchLog('샘플','데모 사진 '+photos.length+'장');
+          // 위험 대표 사진(risk_level==='위험' 첫 장, 없으면 첫 장)의 law_refs·action 추출
+          let rep = null;
+          for(const p of photos){
+            if(p.risk_level === '위험'){
+              rep = p; break;
+            }
+          }
+          if(!rep && photos.length) rep = photos[0];
           finishWatchFromResult({
-            frames: data.frames,
-            law_refs: data.law_refs || [],
-            action: data.action || ''
+            frames: photos,
+            law_refs: rep && rep.law_refs ? rep.law_refs : [],
+            action: rep && rep.action ? rep.action : ''
           });
         } else {
           showErrorBanner('샘플 데이터가 없습니다.');
