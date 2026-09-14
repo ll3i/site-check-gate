@@ -903,26 +903,14 @@ figure.result-card{margin:0;break-inside:avoid}
   function startWatchVideoAutoplay(){
     if(VID.mode === 'video') return;  // 이미 영상 모드면 스킵
     // 비디오가 이미 src를 갖고 있고, 재생 가능하면 바로 진입
-    if(watchVideo.src && watchVideo.src !== '' && watchVideo.readyState >= 1){
-      // 영상 모드로 진입 (비디오 재생 + 타임라인)
-      WATCH.fileType = 'video';
-      WATCH.files = [];
-      enterVideoMode();
-      watchVideo.play().catch(e => {
-        // 자동 재생이 브라우저 정책으로 막히면 사용자 상호작용 필요
-        addWatchLog('경고','자동 재생 차단: '+e.message);
-      });
-    } else if(watchVideo.src === '' || !watchVideo.src){
-      // src가 없으면 기본 src(/watch/video) 설정
-      watchVideo.src = '/watch/video';
-      watchVideo.load();
-      WATCH.fileType = 'video';
-      WATCH.files = [];
-      enterVideoMode();
-      watchVideo.play().catch(e => {
-        addWatchLog('경고','자동 재생 차단: '+e.message);
-      });
-    }
+    if(!watchVideo.src) watchVideo.src='/watch/video';
+    // 영상 모드로 진입 (비디오 재생 + 타임라인)
+    WATCH.fileType='video';
+    WATCH.files=[];
+    enterVideoMode();
+    if(watchVideo.readyState===0) watchVideo.load();
+    // 자동 재생이 브라우저 정책으로 막히면 사용자 상호작용 필요
+    watchVideo.play().catch(e=>addWatchLog('경고','자동 재생 차단: '+e.message));
   }
   function hashToTab(){
     const h = location.hash.replace('#','');
