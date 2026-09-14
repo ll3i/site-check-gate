@@ -1122,7 +1122,7 @@ figure.result-card{margin:0;break-inside:avoid}
       watchAlertHead.textContent = topRule.h + (risk>=4 ? ' !!' : '');
       watchAlertSub.textContent = TAG[risk]+' · '+topRule.s;
     } else if(action){
-      const am = action.match(/^\[(위험|주의)\]\s*[^—\-(]+/);
+      const am = action.match(/^\[(위험|주의)\]\s*([^—\-(]+)/);
       if(am){
         watchAlertHead.textContent = am[2].trim() + (am[1]==='위험' ? ' 위험 !!' : ' 주의');
         const ac = am[1]==='위험' ? LC[4] : LC[3];
