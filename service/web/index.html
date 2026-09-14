@@ -230,7 +230,7 @@ a:hover{color:#1b64da}
 .stage .scan-band{
   position:absolute;left:0;right:0;height:14%;pointer-events:none;
   background:linear-gradient(180deg,rgba(49,130,246,0) 0%,rgba(49,130,246,.32) 68%,rgba(49,130,246,.92) 100%);
-  animation:scanmove 1.4s linear infinite
+  animation:scanmove 3s linear infinite
 }
 @keyframes scanmove{0%{top:-4%}100%{top:100%}}
 .stage .status-tip{
@@ -574,31 +574,29 @@ figure.result-card{margin:0;break-inside:avoid}
       <!-- 풀블리드 스테이지 -->
       <div class="stage-wrap">
         <div class="stage" id="watchStage">
-          <div class="idle" id="watchIdle">
-            <div class="big">📭 대기 화면</div>
-            <div>사진을 업로드하거나 샘플 체험을 누르면 판독이 시작됩니다.</div>
-          </div>
+          <video id="watchVideo" src="/watch/video" autoplay muted loop playsinline
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"></video>
           <img class="stage-img" id="watchStageImg" style="display:none" alt="판독 화면">
           <div class="box-layer" id="watchBoxLayer" style="display:none"></div>
           <div class="scan-band" id="watchScanBand" style="display:none"></div>
           <div class="edge-flash" id="watchEdgeFlash" style="display:none"></div>
 
-          <!-- 좌상단 시각 + REC -->
+          <!-- 좌상단 시각 + REC (사진 모드에서만) -->
           <div class="top-left" id="watchTopLeft" style="display:none">
             <span class="time-pill" id="watchTimePill">오전 09:20</span>
             <span class="rec"><span class="pulse"></span>REC</span>
           </div>
 
-          <!-- 우상단 타임스탬프 -->
+          <!-- 우상단 타임스탬프 (사진 모드에서만) -->
           <div class="stamp" id="watchStamp" style="display:none"></div>
 
-          <!-- 좌하단 구역 배지 -->
+          <!-- 좌하단 구역 배지 (사진 모드에서만) -->
           <div class="bottom-left" id="watchBottomLeft" style="display:none">
             <span class="cam-badge" id="watchCamBadge">CAM 01</span>
             <span class="site-label" id="watchSiteLabel">현장 구역</span>
           </div>
 
-          <!-- 우하단 워터마크 -->
+          <!-- 우하단 워터마크 — 영상 모드엔 이미 박혀 있으므로 영상 모드엔 숨김, 사진 모드엔 표시 -->
           <div class="watermark" id="watchWatermark" style="display:none">판독 영상 · 실제 탐지 데이터</div>
 
           <!-- 중앙 위험 경보 -->
@@ -830,7 +828,7 @@ figure.result-card{margin:0;break-inside:avoid}
   // ── DOM 캐시 ─────────────────────────────────────────────────────────────────
   const $ = id => document.getElementById(id);
   const watchStage       = $('watchStage');
-  const watchIdle        = $('watchIdle');
+  const watchVideo       = $('watchVideo');
   const watchStageImg    = $('watchStageImg');
   const watchBoxLayer    = $('watchBoxLayer');
   const watchScanBand    = $('watchScanBand');
@@ -884,8 +882,40 @@ figure.result-card{margin:0;break-inside:avoid}
     Object.keys(tabPanels).forEach(k => tabPanels[k].classList.toggle('active', k===name));
     tabNav.querySelectorAll('.tab-pill').forEach(b => b.classList.toggle('active', b.dataset.tab===name));
     if(focus && tabPanels[name]) tabPanels[name].scrollIntoView({behavior:'smooth', block:'start'});
-    if(name==='watch') stopWatchPlay();
+    if(name==='watch'){
+      // 관제 탭 진입 시 영상 자동 재생 (업로드 흐름이 아니면)
+      if(!WATCH.jobId && !WATCH.files.length){
+        startWatchVideoAutoplay();
+      }
+      stopWatchPlay();
+    }
     if(name==='report' && WATCH.frames && WATCH.frames.length) renderReportFromFrames({frames: WATCH.frames});
+  }
+
+  // ── 관제 탭 진입 시 영상 자동 재생 ──────────────────────────────────────────
+  function startWatchVideoAutoplay(){
+    if(VID.mode === 'video') return;  // 이미 영상 모드면 스킵
+    // 비디오가 이미 src를 갖고 있고, 재생 가능하면 바로 진입
+    if(watchVideo.src && watchVideo.src !== '' && watchVideo.readyState >= 1){
+      // 영상 모드로 진입 (비디오 재생 + 타임라인)
+      WATCH.fileType = 'video';
+      WATCH.files = [];
+      enterVideoMode();
+      watchVideo.play().catch(e => {
+        // 자동 재생이 브라우저 정책으로 막히면 사용자 상호작용 필요
+        addWatchLog('경고','자동 재생 차단: '+e.message);
+      });
+    } else if(watchVideo.src === '' || !watchVideo.src){
+      // src가 없으면 기본 src(/watch/video) 설정
+      watchVideo.src = '/watch/video';
+      watchVideo.load();
+      WATCH.fileType = 'video';
+      WATCH.files = [];
+      enterVideoMode();
+      watchVideo.play().catch(e => {
+        addWatchLog('경고','자동 재생 차단: '+e.message);
+      });
+    }
   }
   function hashToTab(){
     const h = location.hash.replace('#','');
@@ -1060,6 +1090,24 @@ figure.result-card{margin:0;break-inside:avoid}
     }
     WATCH.frames = result.frames;
     WATCH.cur = 0;
+
+    // 영상 모드 (업로드한 영상 또는 샘플 영상) — 현재 업로드된 게 영상이고 타임라인 있으면 영상 모드로
+    if(WATCH.fileType === 'video' || (!WATCH.files.length && watchVideo.src)){
+      // 영상 모드: 비디오 재생 + 타임라인 동기
+      // 타임라인이 아직 로드 안 됐으면 로드
+      if(!VID.timeline){
+        loadVideoTimeline();
+        // 로드 전이라도 비디오는 표시
+      }
+      enterVideoMode();
+      // 비디오 재생 시작
+      watchVideo.play().catch(e => {
+        addWatchLog('경고','비디오 재생 실패: '+e.message);
+      });
+      return;
+    }
+
+    // 사진 모드: 기존 프레임 렌더링
     // 가장 높은 위험 프레임 찾기
     let maxRisk = 0, maxIdx = 0;
     result.frames.forEach((fr, i) => {
@@ -1173,7 +1221,6 @@ figure.result-card{margin:0;break-inside:avoid}
   function renderWatchFrame(idx){
     const fr = WATCH.frames[idx];
     if(!fr){
-      watchIdle.style.display = 'flex';
       watchStageImg.style.display = 'none';
       watchBoxLayer.style.display = 'none';
       watchTopLeft.style.display = 'none';
@@ -1182,7 +1229,6 @@ figure.result-card{margin:0;break-inside:avoid}
       watchWatermark.style.display = 'none';
       return;
     }
-    watchIdle.style.display = 'none';
     watchStageImg.style.display = 'block';
     watchBoxLayer.style.display = 'block';
     watchTopLeft.style.display = 'flex';
@@ -1296,15 +1342,18 @@ figure.result-card{margin:0;break-inside:avoid}
   function stopWatchPlay(){
     stopWatchAutoPlay();
     stopWatchPolling();
+    stopVideoSync();
     watchThumbStrip.style.display = 'none';
     watchEventLog.style.display = 'none';
+    leaveVideoMode();
     resetWatchStage();
   }
 
   // ── 관제 분석 중 UI 상태 ─────────────────────────────────────────────────────
   function enterWatchAnalyzing(){
     WATCH.kind = 'analyzing';
-    watchIdle.style.display = 'none';
+    // 영상 모드가 아니어야 CCTV 크롬 보임 (사진 업로드 중 분석)
+    leaveVideoMode();
     watchScanBand.style.display = 'block';
     watchStatusTip.style.display = 'block';
     watchStatusTip.textContent = '판독 중';
@@ -1337,7 +1386,7 @@ figure.result-card{margin:0;break-inside:avoid}
 
   function resetWatchStage(){
     WATCH.kind = 'idle';
-    watchIdle.style.display = 'flex';
+    leaveVideoMode();
     watchStageImg.style.display = 'none';
     watchBoxLayer.style.display = 'none';
     watchScanBand.style.display = 'none';
@@ -1377,54 +1426,280 @@ figure.result-card{margin:0;break-inside:avoid}
     return d.getHours()+':'+p(d.getMinutes())+':'+p(d.getSeconds());
   }
 
-  // ── 관제 샘플 체험 (GET /watch/demo) ─────────────────────────────────────────
+  // ── 관제 샘플 체험 (영상 자동 재생) ─────────────────────────────────────────
   watchDemoBtn.addEventListener('click', function(){
     this.disabled = true;
     this.textContent = '체험 로딩 중…';
-    addWatchLog('샘플','GET /watch/demo');
-    fetch('/watch/demo')
-      .then(r => r.json())
+    addWatchLog('샘플','🎯 관제 샘플 체험 시작');
+
+    // 영상 모드로 진입 (데모 영상 자동 재생)
+    WATCH.files = [];
+    WATCH.fileType = 'video';
+    WATCH.jobId = null;
+    WATCH.frames = [];
+    WATCH.log = [];
+    addWatchLog('샘플','데모 영상 재생');
+
+    // 비디오 재생
+    watchVideo.src = '/watch/video';
+    watchVideo.load();
+    watchVideo.play().then(() => {
+      this.disabled = false;
+      this.textContent = '🎯 관제 샘플 체험';
+      addWatchLog('샘플','데모 영상 재생 완료');
+      // 타임라인이 아직 로드 안 됐으면 로드
+      if(!VID.timeline){
+        loadVideoTimeline();
+      }
+    }).catch(err => {
+      this.disabled = false;
+      this.textContent = '🎯 관제 샘플 체험';
+      showErrorBanner('비디오 재생 실패: '+err.message);
+      addWatchLog('오류','데모 영상 재생 실패: '+err.message);
+    });
+  });
+
+  // ── 영상 모드 상태 (타임라인 동기) ──────────────────────────────────────────
+  const VID = {
+    mode: 'none',          // 'none' | 'video' | 'photo'
+    timeline: null,        // GET /watch/video/timeline 응답
+    events: [],            // events 배열
+    curEventIdx: -1,
+    syncTimer: null,
+    tooltipTimer: null,
+  };
+
+  // ── 영상 모드 진입: 비디오 재생 + 스캔 밴드 + 타임라인 로드 ────────────────
+  function enterVideoMode(){
+    VID.mode = 'video';
+    VID.timeline = null;
+    VID.events = [];
+    VID.curEventIdx = -1;
+
+    // 비디오 표시, 이미지 숨김
+    watchVideo.style.display = 'block';
+    watchStageImg.style.display = 'none';
+    watchBoxLayer.style.display = 'block';
+    watchScanBand.style.display = 'block';
+    watchEdgeFlash.style.display = 'none';
+
+    // CCTV 크롬 숨김 (영상에 이미 박힘)
+    watchTopLeft.style.display = 'none';
+    watchStamp.style.display = 'none';
+    watchBottomLeft.style.display = 'none';
+
+    // 워터마크는 영상에 이미 박혀 있지만, 지시대로 "재현 영상 · 판독은 실제 탐지 데이터" 유지
+    watchWatermark.style.display = 'block';
+    watchWatermark.textContent = '재현 영상 · 판독은 실제 탐지 데이터';
+
+    watchAlertOverlay.style.display = 'none';
+    watchStatusTip.style.display = 'none';
+    watchStage.style.background = '';
+
+    // 스캔 밴드 항상 표시 (영상·이미지 공통)
+    watchScanBand.style.display = 'block';
+
+    // 타임라인 로드
+    loadVideoTimeline();
+
+    // 비디오 시간 변화 리스너
+    watchVideo.removeEventListener('timeupdate', onVideoTimeUpdate);
+    watchVideo.addEventListener('timeupdate', onVideoTimeUpdate);
+
+    // 초기 렌더링
+    if(watchVideo.readyState >= 2){
+      onVideoTimeUpdate();
+    }
+  }
+
+  function leaveVideoMode(){
+    VID.mode = 'none';
+    VID.timeline = null;
+    VID.events = [];
+    VID.curEventIdx = -1;
+    if(VID.syncTimer){ clearTimeout(VID.syncTimer); VID.syncTimer = null; }
+
+    watchVideo.style.display = 'none';
+    watchVideo.removeEventListener('timeupdate', onVideoTimeUpdate);
+    stopVideoSync();
+  }
+
+  // ── 타임라인 로드 ──────────────────────────────────────────────────────────
+  function loadVideoTimeline(){
+    addWatchLog('샘플','GET /watch/video/timeline');
+    fetch('/watch/video/timeline')
+      .then(r => {
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        return r.json();
+      })
       .then(data => {
-        this.disabled = false;
-        this.textContent = '🎯 관제 샘플 체험';
-        if(data.error){
-          showErrorBanner('샘플 체험 실패: '+data.error);
-          addWatchLog('오류','/watch/demo 오류: '+data.error);
-          return;
-        }
-        // GET /watch/demo 반환: {status, inspect_result:{photos:[...], summary}}
-        // photos 각 원소는 frames로 그대로 쓸 수 있음 (annotated·detections·risk_level 보유)
-        const photos = data.inspect_result && data.inspect_result.photos;
-        if(photos && photos.length){
-          WATCH.jobId = null;  // 'demo'로 설정하면 /jobs/demo/annotated/ 404 → null이어야 /watch/demo/annotated/ 폴백 사용
-          WATCH.frames = photos;
-          WATCH.log = [];
-          addWatchLog('샘플','데모 사진 '+photos.length+'장');
-          // 위험 대표 사진(risk_level==='위험' 첫 장, 없으면 첫 장)의 law_refs·action 추출
-          let rep = null;
-          for(const p of photos){
-            if(p.risk_level === '위험'){
-              rep = p; break;
-            }
-          }
-          if(!rep && photos.length) rep = photos[0];
-          finishWatchFromResult({
-            frames: photos,
-            law_refs: rep && rep.law_refs ? rep.law_refs : [],
-            action: rep && rep.action ? rep.action : ''
-          });
-        } else {
-          showErrorBanner('샘플 데이터가 없습니다.');
-          addWatchLog('오류','데모 프레임 없음');
+        VID.timeline = data;
+        VID.events = data.events || [];
+        addWatchLog('샘플','타임라인 '+VID.events.length+'개 이벤트 로드 완료');
+        // 이벤트 로그 초기 채우기
+        renderVideoEventLog();
+        // 첫 동기화
+        if(watchVideo.readyState >= 2){
+          onVideoTimeUpdate();
         }
       })
       .catch(err => {
-        this.disabled = false;
-        this.textContent = '🎯 관제 샘플 체험';
-        showErrorBanner('샘플 체험 실패: '+err.message);
-        addWatchLog('오류','데모 예외: '+err.message);
+        addWatchLog('오류','타임라인 로드 실패: '+err.message);
+        showErrorBanner('타임라인 로드 실패: '+err.message);
       });
-  });
+  }
+
+  // ── 비디오 시간 업데이트 핸들러 ──────────────────────────────────────────
+  function onVideoTimeUpdate(){
+    if(VID.mode !== 'video' || !VID.events.length) return;
+
+    const ct = watchVideo.currentTime;
+    // 현재 초의 이벤트 찾기 (가장 가까운 t)
+    let bestIdx = -1;
+    let bestDist = Infinity;
+    for(let i=0; i<VID.events.length; i++){
+      const ev = VID.events[i];
+      const dist = Math.abs(ev.t - ct);
+      if(dist < bestDist){
+        bestDist = dist;
+        bestIdx = i;
+      }
+    }
+    VID.curEventIdx = bestIdx;
+
+    // 박스 오버레이 렌더
+    renderVideoBoxes(bestIdx, ct);
+
+    // 위험 이벤트 ±1.5초 구간이 있으면 중앙 경보
+    renderVideoAlert(bestIdx, ct);
+
+    // 이벤트 로그 업데이트 (처음 보는 이벤트면 추가)
+    updateVideoEventLog(bestIdx, ct);
+
+    // 다음 동기화 예약 ( video.currentTime 가 자주 바뀌지 않을 수 있으므로 250ms 폴링 )
+    if(VID.syncTimer) clearTimeout(VID.syncTimer);
+    VID.syncTimer = setTimeout(onVideoTimeUpdate, 250);
+  }
+
+  function stopVideoSync(){
+    if(VID.syncTimer){ clearTimeout(VID.syncTimer); VID.syncTimer = null; }
+  }
+
+  // ── 영상 박스 오버레이 렌더 (1280x720 원본 픽셀 → 표시 %) ───────────────
+  function renderVideoBoxes(evIdx, ct){
+    watchBoxLayer.innerHTML = '';
+    if(evIdx < 0 || evIdx >= VID.events.length) return;
+
+    const ev = VID.events[evIdx];
+    const dets = ev.detections || [];
+    if(!dets.length) return;
+
+    const VW = 1280, VH = 720;  // 원본 해상도
+
+    dets.forEach((d) => {
+      const box = d.box;
+      if(!box || box.length < 4) return;
+      const x1 = box[0], y1 = box[1], x2 = box[2], y2 = box[3];
+
+      // 픽셀 → % 변환 (지시: left=x1/1280, top=y1/720, w=(x2-x1)/1280, h=(y2-y1)/720)
+      const left = (x1 / VW) * 100;
+      const top  = (y1 / VH) * 100;
+      const w   = ((x2 - x1) / VW) * 100;
+      const h   = ((y2 - y1) / VH) * 100;
+
+      const ruleId = CLS2RULE[d.label];
+      const rule = ruleId ? RULE[ruleId] : null;
+      const isBad = !!rule;
+      const risk = rule ? rule.r : 0;
+
+      // 위험 이벤트면 박스 빨강, 아니면 기존 규칙 색상
+      let col = 'rgba(255,255,255,.55)';
+      if(isBad){
+        col = risk>=4 ? LC[4] : (risk===3 ? LC[3] : LC[2]);
+      }
+      // 위험 이벤트 구간에선 모든 박스 빨강
+      if(ev.risk_level === '위험'){
+        col = LC[4];
+      }
+
+      const el = document.createElement('div');
+      el.className = 'box';
+      el.style.left = left+'%';
+      el.style.top = top+'%';
+      el.style.width = w+'%';
+      el.style.height = h+'%';
+      el.style.borderColor = col;
+
+      const lab = document.createElement('span');
+      lab.className = 'lab ' + (left > 70 ? 'r' : 'l');
+      lab.style.background = col;
+      lab.textContent = (KO[d.label]||d.label) + ' ' + Math.round(d.conf*100) + '%';
+      el.appendChild(lab);
+      watchBoxLayer.appendChild(el);
+    });
+  }
+
+  // ── 영상 중앙 경보 (위험 이벤트 ±1.5초) ──────────────────────────────────
+  function renderVideoAlert(evIdx, ct){
+    if(evIdx < 0 || evIdx >= VID.events.length) return;
+    const ev = VID.events[evIdx];
+    if(ev.risk_level !== '위험') return;
+    if(Math.abs(ev.t - ct) > 1.5) return;
+
+    // renderWatchCentralAlertFromFrame 재사용: detections 형식 동일
+    const fakeFrame = {
+      detections: ev.detections || [],
+    };
+    renderWatchCentralAlertFromFrame(fakeFrame);
+    watchAlertOverlay.style.display = 'flex';
+  }
+
+  // ── 영상 이벤트 로그 (이벤트 발생 시 추가) ──────────────────────────────
+  let videoLogRendered = false;
+  function updateVideoEventLog(evIdx, ct){
+    if(evIdx < 0 || evIdx >= VID.events.length) return;
+    const ev = VID.events[evIdx];
+
+    // 이미 로그에서 해당 t 초 이벤트를 넣었는지 확인
+    const already = WATCH.log.some(entry =>
+      entry.tag === '이벤트' && Math.abs(entry._t - ev.t) < 0.01
+    );
+    if(already) return;
+
+    // 위험 이벤트면 risk 값 설정
+    let risk = 0;
+    if(ev.risk_level === '위험'){
+      // 가장 높은 위험 규칙 찾기
+      ev.detections.forEach(d => {
+        const ruleId = CLS2RULE[d.label];
+        if(ruleId && RULE[ruleId]){
+          if(RULE[ruleId].r > risk) risk = RULE[ruleId].r;
+        }
+      });
+    }
+
+    WATCH.log.push({
+      t: new Date(),
+      tag: '이벤트',
+      msg: ev.t+'초 '+(ev.detections.length? ev.detections[0].label : '검출')+' '+
+            (ev.detections.length ? Math.round(ev.detections[0].conf*100)+'%' : ''),
+      risk: risk,
+      _t: ev.t,
+    });
+    renderWatchEventLog();
+    videoLogRendered = true;
+
+    // 이벤트 로그 표시
+    watchEventLog.style.display = 'block';
+  }
+
+  function renderVideoEventLog(){
+    // 타임라인 로드 직후 이벤트 로그를 한 번 정리 (기존 로그 유지)
+    // 초기에는 이벤트 없음 상태
+    if(!VID.events.length){
+      watchEventList.innerHTML = '<div class="ev"><span class="t">—</span><span class="d">이벤트 없음</span></div>';
+    }
+  }
 
   // ═════════════════════════════════════════════════════════════════════════════
   // 2) 리포트 탭 (#report)
