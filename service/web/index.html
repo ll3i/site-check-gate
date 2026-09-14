@@ -1188,7 +1188,7 @@ figure.result-card{margin:0;break-inside:avoid}
     watchTimePill.textContent = info.timeOfDay || '오전 09:20';
     const now = new Date();
     const stamp = now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+
-                  now.getDate().toString().padStart(2,'0')+'  '+info.stamp || '09:20:00';
+                  now.getDate().toString().padStart(2,'0')+'  '+(info.stamp || '09:20:00');
     watchStamp.textContent = stamp;
     watchCamBadge.textContent = info.cam || 'CAM 01';
     watchSiteLabel.textContent = info.site || '현장 구역';
@@ -1207,6 +1207,7 @@ figure.result-card{margin:0;break-inside:avoid}
         col = risk>=4 ? LC[4] : (risk===3 ? LC[3] : LC[2]);
       }
       const b = d.bbox; // [x,y,w,h] (0~1 상대 좌표)
+      if(!b) return;
       const el = document.createElement('div');
       el.className = 'box';
       el.style.left = (b[0]*100)+'%';
