@@ -885,6 +885,7 @@ figure.result-card{margin:0;break-inside:avoid}
     tabNav.querySelectorAll('.tab-pill').forEach(b => b.classList.toggle('active', b.dataset.tab===name));
     if(focus && tabPanels[name]) tabPanels[name].scrollIntoView({behavior:'smooth', block:'start'});
     if(name==='watch') stopWatchPlay();
+    if(name==='report' && WATCH.frames && WATCH.frames.length) renderReportFromFrames({frames: WATCH.frames});
   }
   function hashToTab(){
     const h = location.hash.replace('#','');
@@ -1117,8 +1118,24 @@ figure.result-card{margin:0;break-inside:avoid}
     const col = LC[risk] || '#3182f6';
     watchAlertSvg.style.color = col;
     watchAlertHead.style.color = col;
-    watchAlertHead.textContent = topRule ? topRule.h + (risk>=4 ? ' !!' : '') : '이상 없음';
-    watchAlertSub.textContent = topRule ? (TAG[risk]+' · '+topRule.s) : (action || '검출된 지적사항 없음');
+    if(topRule){
+      watchAlertHead.textContent = topRule.h + (risk>=4 ? ' !!' : '');
+      watchAlertSub.textContent = TAG[risk]+' · '+topRule.s;
+    } else if(action){
+      const am = action.match(/^\[(위험|주의)\]\s*[^—\-(]+/);
+      if(am){
+        watchAlertHead.textContent = am[2].trim() + (am[1]==='위험' ? ' 위험 !!' : ' 주의');
+        const ac = am[1]==='위험' ? LC[4] : LC[3];
+        watchAlertSvg.style.color = ac;
+        watchAlertHead.style.color = ac;
+      } else {
+        watchAlertHead.textContent = '이상 없음';
+      }
+      watchAlertSub.textContent = action;
+    } else {
+      watchAlertHead.textContent = '이상 없음';
+      watchAlertSub.textContent = '검출된 지적사항 없음';
+    }
     watchAlertOverlay.style.display = 'flex';
   }
 
@@ -1435,18 +1452,20 @@ figure.result-card{margin:0;break-inside:avoid}
       .then(r => r.json())
       .then(data => {
         reportSampleBtn.disabled = false;
-        reportSampleBtn.textContent = '📷 샘품으로 보기';
-        if(!data.frames || !data.frames.length){
+        reportSampleBtn.textContent = '📷 샘플로 보기';
+        // GET /watch/demo 반환: {status, inspect_result:{photos:[...], summary}}
+        const photos = data.inspect_result && data.inspect_result.photos;
+        if(!photos || !photos.length){
           showErrorBanner('리포트 샘플이 없습니다.');
           return;
         }
-        WATCH.jobId = data.job_id || 'demo';
-        WATCH.frames = data.frames;
-        renderReportFromFrames(data);
+        WATCH.jobId = null;
+        WATCH.frames = photos;
+        renderReportFromFrames({frames: photos, summary: data.inspect_result.summary});
       })
       .catch(err => {
         reportSampleBtn.disabled = false;
-        reportSampleBtn.textContent = '📷 샘품으로 보기';
+        reportSampleBtn.textContent = '📷 샘플로 보기';
         showErrorBanner('리포트 로드 실패: '+err.message);
       });
   }
