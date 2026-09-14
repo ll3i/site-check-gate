@@ -1797,11 +1797,7 @@ figure.result-card{margin:0;break-inside:avoid}
       let riskCell = '';
       if(rl === '위험') riskCell = '<td class="num bad">위험</td>';
       else if(rl === '주의') riskCell = '<td class="num warn">주의</td>';
-      else {
-        const bad = kept.filter(d => { const r = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]].r : 0; return r>=3; });
-        if(bad.length) riskCell = '<td class="num bad">'+bad.length+'</td>';
-        else riskCell = '<td class="num">—</td>';
-      }
+      else riskCell = '<td class="num">—</td>';
       sumHtml += '<tr>'+
         '<td>'+escapeHtml(f.info?.name || '프레임 '+(i+1))+'</td>'+
         '<td class="num">1</td>'+
