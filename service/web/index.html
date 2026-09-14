@@ -1174,8 +1174,9 @@ figure.result-card{margin:0;break-inside:avoid}
     watchWatermark.style.display = 'block';
 
     // 배경 이미지 (annotated 이미지 사용, 없으면 원본)
-    const imgSrc = fr.annotated ? '/jobs/'+WATCH.jobId+'/annotated/'+idx :
-                 fr.photoSrc ? fr.photoSrc : '';
+    const imgSrc = WATCH.jobId
+      ? '/jobs/'+WATCH.jobId+'/annotated/'+idx
+      : '/watch/demo/annotated/'+idx;
     if(imgSrc){
       watchStageImg.src = imgSrc;
     } else {
@@ -1230,7 +1231,9 @@ figure.result-card{margin:0;break-inside:avoid}
       t.className = 'thumb' + (i===WATCH.cur ? ' selected' : '') +
                 (riskOf(fr) >= 3 ? ' danger' : '');
       const img = document.createElement('img');
-      img.src = fr.annotated ? '/jobs/'+WATCH.jobId+'/annotated/'+i : '';
+      img.src = WATCH.jobId
+        ? '/jobs/'+WATCH.jobId+'/annotated/'+i
+        : '/watch/demo/annotated/'+i;
       img.alt = '프레임 '+(i+1);
       t.appendChild(img);
       const idx = document.createElement('span');
@@ -1502,7 +1505,9 @@ figure.result-card{margin:0;break-inside:avoid}
       const urgent = bad.some(d => { const r = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]].r : 0; return r>=4; });
       const vcol = urgent ? '#c2181f' : bad.length ? '#c2410c' : '#0f7a52';
       const verdict = urgent ? '긴급' : bad.length ? '부적합' : '적합';
-      const imgSrc = f.annotated ? '/jobs/'+WATCH.jobId+'/annotated/'+i : '';
+      const imgSrc = WATCH.jobId
+        ? '/jobs/'+WATCH.jobId+'/annotated/'+i
+        : '/watch/demo/annotated/'+i;
       let boxesHtml = '';
       kept.slice(0,14).forEach((d, j) => {
         const col = vcol;

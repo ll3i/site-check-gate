@@ -359,6 +359,27 @@ async def inspect_demo():
     }
 
 
+# ── GET /watch/demo/annotated/{n} ─────────────────────────────────────────────
+@app.get("/watch/demo/annotated/{n}", include_in_schema=False)
+async def watch_demo_annotated(n: int):
+    """데모 관제 사진 n번째(1-based)의 annotated 이미지를 FileResponse로 서빙.
+
+    /watch/demo 결과의 photo_names 순서(r1_l3_pipe, r1_l2_loading, r1_l1_electrical)를 따른다.
+    """
+    if n < 1 or n > 3:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": f"사진 번호가 범위를 벗어났습니다: {n} (전체 3장)"},
+        )
+    photo_names = ["r1_l3_pipe.jpg", "r1_l2_loading.jpg", "r1_l1_electrical.jpg"]
+    annotated_name = f"annotated_{photo_names[n - 1]}"
+    annotated_path = ASSETS_DIR / "vision" / "demo_photos" / annotated_name
+    if not annotated_path.is_file():
+        raise HTTPException(status_code=404, detail={"error": "주석 이미지를 찾을 수 없습니다."})
+    media_type, _ = mimetypes.guess_type(str(annotated_path))
+    return FileResponse(str(annotated_path), media_type=media_type or "image/jpeg")
+
+
 # ── GET /watch/demo ──────────────────────────────────────────────────────────
 @app.get("/watch/demo", include_in_schema=False)
 async def watch_demo():
