@@ -187,7 +187,7 @@ def main() -> None:
     frames_info: List[Dict[str, Any]] = []
     frame_idx = 0
     saved_count = 0
-    max_frames = 24
+    max_frames = 40
 
     while True:
         ret, frame = cap.read()
