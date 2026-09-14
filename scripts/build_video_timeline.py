@@ -91,12 +91,10 @@ def _run_domain(image_path: str, domain: str) -> List[Dict[str, Any]]:
         print(f"  [warn] {domain} 검출 실패 ({tmp_path}): {exc}", file=sys.stderr)
         dets = []
     finally:
-        # 크롭 파일 보존 (디버그용) — 확인 후 os.remove 복구
-        pass
-        # try:
-        #     os.remove(tmp_path)
-        # except OSError:
-        #     pass
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
 
     adjusted: List[Dict[str, Any]] = []
     for d in dets:
@@ -196,7 +194,7 @@ def main() -> None:
         if not ret:
             break
 
-        # 1초 간격 샘플링: CAP_PROP_POS_MSEC 기준
+        # CAP_PROP_POS_MSEC 기준으로 결정
         current_ms = cap.get(cv2.CAP_PROP_POS_MSEC)
         if current_ms < 0:
             current_ms = frame_idx / fps * 1000.0 if fps > 0 else 0.0
