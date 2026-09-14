@@ -3,975 +3,1843 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>현장 보고 검증 게이트</title>
+<title>HIMEC EYE — 현장 보고 검증 게이트</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-:root {
-  --green: #15803d;
-  --green-bg: #dcfce7;
-  --green-fg: #166534;
-  --orange: #c2410c;
-  --orange-bg: #ffedd5;
-  --orange-fg: #9a3412;
-  --yellow: #a16207;
-  --yellow-bg: #fef9c3;
-  --yellow-fg: #854d0e;
-  --red: #b91c1c;
-  --red-bg: #fee2e2;
-  --red-fg: #991b1b;
-  --gray: #6b7280;
-  --gray-bg: #f3f4f6;
-  --gray-fg: #374151;
-  --blue: #1a56db;
-  --blue-bg: #dbeafe;
-  --blue-fg: #1e40af;
-  --white: #fff;
-  --bg: #f7f7f8;
-  --card: #fff;
-  --border: #d0d0d0;
-  --text: #1a1a1a;
-  --text-secondary: #555;
+/* ===== DC 토큰 (Watch.dc / Report.dc) ===== */
+:root{
+  --bg:#05070a;            /* Watch 스테이지 바탕 */
+  --ink:#191f28;
+  --muted:#8b95a1;
+  --line:#e5e8eb;
+  --soft:#f2f4f6;
+  --red:#c2181f;
+  --red-bg:#fee2e2;
+  --red-fg:#991b1b;
+  --orange:#c2410c;
+  --orange-bg:#fff7ed;
+  --orange-fg:#7c4a21;
+  --green:#0f7a52;
+  --green-bg:#dcfce7;
+  --green-fg:#166534;
+  --blue:#3182f6;
+  --blue-bg:#dbeafe;
+  --blue-fg:#1e40af;
+  --gray:#6b7280;
+  --gray-bg:#f3f4f6;
+  --gray-fg:#374151;
+  --card:#fff;
+  --text:#1a1a1a;
 }
 
-* { box-sizing: border-box; }
+/* ===== 전역 리셋 ===== */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#f7f7f8;color:var(--text);font-family:Pretendard,'Malgun Gothic',system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-x:hidden}
+a{color:var(--blue);text-decoration:none}
+a:hover{color:#1b64da}
+.mono{font-family:ui-monospace,'Consolas',monospace}
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", "Malgun Gothic", sans-serif;
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 20px 16px 48px;
-  color: var(--text);
-  background: var(--bg);
-  line-height: 1.55;
-  -webkit-text-size-adjust: 100%;
+/* ===== 상단 탭 내비 ===== */
+.tab-nav{
+  display:flex;gap:6px;background:#fff;border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:50;backsrc-filter:blur(6px)
 }
+.tab-pill{
+  appearance:none;border:none;border-radius:999px;padding:9px 16px;
+  font-size:13px;font-weight:600;color:var(--gray);background:#f7f7f8;
+  cursor:pointer;transition:background .12s,color .12s,border-color .12s;
+  border:1.5px solid transparent;display:inline-flex;align-items:center;gap:7px
+}
+.tab-pill:hover{color:var(--text)}
+.tab-pill.active{
+  background:#000;color:#fff;border-color:#000;font-weight:700;
+  box-shadow:0 2px 8px rgba(0,0,0,.18)
+}
+.tab-pill .dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.7}
 
-/* ===== 히어로 ===== */
-.hero {
-  text-align: center;
-  padding: 28px 0 20px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
-}
-.hero h1 {
-  font-size: 22px;
-  margin: 0 0 6px;
-  letter-spacing: -0.3px;
-  color: var(--text);
-}
-.hero-sub {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0 0 14px;
-  line-height: 1.5;
-}
-.icon-row {
-  display: flex;
-  justify-content: center;
-  gap: 18px;
-  font-size: 22px;
-  user-select: none;
-}
-.icon-row span {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  cursor: default;
-}
-.icon-row small {
-  font-size: 10px;
-  color: var(--gray);
-  letter-spacing: 0;
-}
+/* ===== 레이아웃 ===== */
+.app{max-width:940px;margin:0 auto;padding:0}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
 
-/* ===== 버튼 영역 ===== */
-.big-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 14px;
+/* ===== 공통 배너 ===== */
+.error-banner{
+  position:fixed;top:0;left:0;right:0;background:var(--red);color:#fff;
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  z-index:9999;font-size:14px;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,.15)
 }
-.big-btn {
-  display: block;
-  width: 100%;
-  height: 56px;
-  padding: 0 16px;
-  border: 2px solid var(--blue);
-  border-radius: 10px;
-  background: var(--blue-bg);
-  color: var(--blue-fg);
-  font-size: 16px;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  line-height: 56px;
-  user-select: none;
+.error-banner .msg{flex:1;line-height:1.4}
+.error-banner .close-btn{
+  background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);
+  color:#fff;border-radius:6px;padding:4px 10px;font-size:13px;cursor:pointer;flex-shrink:0
 }
-.big-btn:hover { background: #eff6ff; }
-.big-btn input,
-#docInput,
-#photoInput,
-#noticeInput {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-.big-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.error-banner .close-btn:hover{background:rgba(255,255,255,.35)}
 
-.file-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 14px;
-  min-height: 0;
-}
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 4px 6px 4px 12px;
-  font-size: 13px;
-  color: var(--text);
-}
-.chip .name {
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.chip .size {
-  color: var(--gray);
-  font-size: 11px;
-}
-.chip button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  color: var(--gray);
-  padding: 0 2px;
-  line-height: 1;
-}
-.chip button:hover { color: var(--red); }
+/* =========================================================
+   1) 관제 탭 (#watch) — Watch.dc 토큰 기반
+   ========================================================= */
+#watch .watch-shell{display:flex;flex-direction:column;gap:14px;padding:0}
 
-.action-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 6px;
-  flex-wrap: wrap;
+/* 업로드 영역 */
+.watch-upload{
+  background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px
 }
-.demo-btn {
-  flex: 1;
-  min-width: 180px;
-  height: 44px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--white);
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
+.watch-upload h2{
+  font-size:15px;font-weight:700;margin:0 0 6px;letter-spacing:-.02em
 }
-.demo-btn:hover { background: var(--gray-bg); }
-.start-btn {
-  flex: 2;
-  min-width: 200px;
-  height: 56px;
-  border: none;
-  border-radius: 10px;
-  background: #999;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: not-allowed;
-  transition: background 0.15s;
+.watch-upload .sub{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+.watch-upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.watch-option{
+  border:1.5px dashed var(--line);border-radius:10px;padding:18px 16px;
+  background:#fafafa;cursor:pointer;transition:border-color .12s,background .12s;text-align:center
 }
-.start-btn.active {
-  background: var(--blue);
-  cursor: pointer;
-}
-.start-btn.active:hover { background: #1647c0; }
+.watch-option:hover{border-color:var(--blue);background:#eff6ff}
+.watch-option.disabled{cursor:not-allowed;opacity:.55}
+.watch-option .ico{font-size:24px;line-height:1}
+.watch-option .lbl{font-size:13px;font-weight:600;margin:6px 0 2px}
+.watch-option .det{font-size:11.5px;color:var(--gray)}
+.watch-option input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 
-.advanced {
-  margin-top: 6px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--white);
+.watch-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.btn{
+  border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text);
+  font-size:13px;font-weight:500;padding:8px 14px;cursor:pointer;transition:background .12s
 }
-.advanced summary {
-  padding: 10px 14px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--gray);
-  list-style: none;
+.btn:hover{background:var(--gray-bg)}
+.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.primary:hover{background:#1b64da}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.danger{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.danger:hover{background:#8f1518}
+
+/* 플레이 시 썸네일 스트립 */
+.thumb-strip{
+  display:flex;gap:8px;overflow-x:auto;padding:6px 4px 8px;
+  border:1px solid var(--line);border-radius:10px;background:#fff;min-height:96px;scroll-behavior:smooth
 }
-.advanced summary::-webkit-details-marker { display: none; }
-.advanced summary::before { content: '▶ '; display: inline-block; margin-right: 4px; transition: transform 0.15s; }
-.advanced[open] summary::before { transform: rotate(90deg); }
-.advanced .inner {
-  padding: 8px 14px 14px;
+.thumb-strip::-webkit-scrollbar{height:6px}
+.thumb-strip::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.thumb{
+  flex:0 0 auto;width:78px;height:52px;border-radius:6px;overflow:hidden;
+  border:2px solid var(--line);position:relative;cursor:pointer;transition:border-color .12s
 }
-.advanced .big-btn {
-  height: 44px;
-  font-size: 14px;
-  line-height: 44px;
+.thumb.selected{border-color:var(--blue)}
+.thumb.danger{border-color:var(--red);box-shadow:0 0 0 1px var(--red-bg)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .idx{
+  position:absolute;left:3px;top:3px;font-size:10px;font-weight:700;color:#fff;
+  background:rgba(0,0,0,.55);padding:1px 5px;border-radius:4px
+}
+.thumb.danger .idx{background:var(--red)}
+
+/* 이벤트 로그 (데스크톱 우측 / 모바일 아래) */
+.event-log{
+  background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  max-height:240px;overflow-y:auto;font-size:12.5px
+}
+.event-log h3{font-size:12px;font-weight:700;margin:0 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.event-log .ev{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--soft);align-items:baseline}
+.event-log .ev:last-child{border-bottom:none}
+.event-log .ev .t{flex:0 0 auto;color:var(--gray);font-family:ui-monospace,monospace;font-size:11.5px}
+.event-log .ev .tag{
+  flex:0 0 auto;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;
+  background:var(--gray-bg);color:var(--gray);margin-right:4px
+}
+.event-log .ev .tag.r4{background:var(--red-bg);color:var(--red-fg)}
+.event-log .ev .tag.r3{background:var(--orange-bg);color:var(--orange-fg)}
+.event-log .ev .d{flex:1;color:var(--text)}
+
+/* ===== 풀블리드 스테이지 ===== */
+.stage-wrap{
+  position:relative;width:100%;background:#05070a;border-radius:10px;overflow:hidden;
+  aspect-ratio:16/9;min-height:380px;display:flex;align-items:center;justify-content:center
+}
+.stage{
+  position:relative;width:min(100%,calc(100vh * .5625));max-width:100%;
+  aspect-ratio:16/9;overflow:hidden;background-size:100% 100%;background-repeat:no-repeat
+}
+.stage img.stage-img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.stage .box-layer{position:absolute;inset:0;pointer-events:none}
+.stage .box{
+  position:absolute;border:2.5px solid;border-radius:3px;pointer-events:none;
+  box-shadow:0 0 0 1px rgba(5,7,10,.55)
+}
+.stage .box .lab{
+  position:absolute;font:700 11px Pretendard,sans-serif;color:#fff;letter-spacing:-.02em;
+  padding:2px 7px;border-radius:4px;white-space:nowrap;line-height:1.5
+}
+.stage .box .lab.l{left:-1px;top:-30px}
+.stage .box .lab.r{right:-1px;top:-30px}
+
+/* REC / 시각 / 타임스탬프 / 구역 배지 (Watch.dc 위치 문법을 cqw→상대 비율로 번역) */
+.stage .top-left{position:absolute;left:2.2%;top:3.4%;display:flex;align-items:center;gap:8px}
+.stage .time-pill{
+  font-size:13px;font-weight:800;letter-spacing:-.03em;color:#191f28;
+  background:#fff;padding:3px 9px;border-radius:99px;white-space:nowrap;
+  box-shadow:0 2px 6px rgba(0,0,0,.35)
+}
+.stage .rec{
+  display:flex;align-items:center;gap:5px;color:var(--red);font-weight:800;
+  font-size:12px;letter-spacing:.08em;text-shadow:0 1px 3px rgba(0,0,0,.9)
+}
+.stage .rec .pulse{width:9px;height:9px;border-radius:50%;background:var(--red);animation:recblink 1.4s infinite}
+@keyframes recblink{0%,45%{opacity:1}55%,100%{opacity:.15}}
+
+.stage .stamp{
+  position:absolute;right:2.2%;top:3.9%;font-family:ui-monospace,monospace;
+  font-size:11.5px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap
+}
+.stage .bottom-left{position:absolute;left:2.2%;bottom:3.6%;display:flex;align-items:center;gap:8px}
+.stage .cam-badge{
+  font-size:11.5px;font-weight:800;letter-spacing:.05em;color:#fff;
+  background:rgba(5,7,10,.72);padding:3px 8px;border-radius:5px;white-space:nowrap
+}
+.stage .site-label{
+  font-size:11.5px;color:#e9edf2;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap
+}
+.stage .watermark{
+  position:absolute;right:2.2%;bottom:3.6%;font-size:10.5px;color:#b0b8c1;
+  text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap
 }
 
-/* ===== 진행 화면 ===== */
-.progress-screen {
-  text-align: center;
-  padding: 32px 0 24px;
+/* 중앙 위험 경보 (Watch.dc alert 스타일) */
+.stage .alert-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;padding:0 6%;z-index:5
 }
-.stepper {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-bottom: 18px;
+.stage .alert-box{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  animation:headpop .28s ease-out
 }
-.step {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  background: var(--gray-bg);
-  color: var(--gray);
-  border: 1px solid transparent;
+@keyframes headpop{0%{opacity:0;transform:scale(1.14)}100%{opacity:1;transform:scale(1)}}
+.stage .alert-svg{width:44px;height:44px}
+.stage .alert-head{
+  font-size:22px;font-weight:800;letter-spacing:-.04em;color:var(--c);text-align:center;
+  line-height:1.15;text-shadow:0 3px 10px rgba(5,7,10,.95),0 0 4px rgba(5,7,10,.9)
 }
-.step .num {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--gray);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
-  flex-shrink: 0;
+.stage .alert-sub{
+  font-size:13px;font-weight:700;letter-spacing:-.02em;color:#fff;
+  background:rgba(5,7,10,.78);padding:8px 18px;border-radius:12px;
+  text-align:center;max-width:86%;line-height:1.5
 }
-.step.active {
-  background: var(--blue-bg);
-  color: var(--blue-fg);
-  border-color: var(--blue);
-}
-.step.active .num {
-  background: var(--blue);
-}
-.step.done {
-  background: var(--green-bg);
-  color: var(--green-fg);
-}
-.step.done .num {
-  background: var(--green);
-}
-.progress-bar {
-  height: 8px;
-  background: var(--gray-bg);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-.progress-fill {
-  height: 100%;
-  background: var(--blue);
-  width: 0%;
-  transition: width 0.4s;
-}
-.progress-label {
-  font-size: 13px;
-  color: var(--gray);
-  margin-bottom: 4px;
-}
-.progress-note {
-  font-size: 12px;
-  color: var(--gray);
-}
-.retry-badge {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 4px 12px;
-  background: var(--gray-bg);
-  color: var(--gray);
-  border-radius: 12px;
-  font-size: 12px;
+.stage .alert-band{
+  position:absolute;left:0;right:0;bottom:0;height:6px;background:rgba(255,255,255,.14)
 }
 
-/* ===== 결과 화면 ===== */
-.result-screen { margin-top: 8px; }
-
-.gate-banner {
-  padding: 14px 16px;
-  border-radius: 10px;
-  margin-bottom: 18px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* 스캔 밴드 (분석 중) */
+.stage .scan-band{
+  position:absolute;left:0;right:0;height:14%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(49,130,246,0) 0%,rgba(49,130,246,.32) 68%,rgba(49,130,246,.92) 100%);
+  animation:scanmove 1.4s linear infinite
 }
-.gate-banner.submittable {
-  background: var(--green-bg);
-  color: var(--green-fg);
-  border: 1px solid #86efac;
-}
-.gate-banner.revision {
-  background: var(--orange-bg);
-  color: var(--orange-fg);
-  border: 1px solid #fdba74;
-}
-.gate-banner.check {
-  background: var(--yellow-bg);
-  color: var(--yellow-fg);
-  border: 1px solid #fde68a;
-}
-.gate-banner .icon { font-size: 22px; }
-.gate-banner .reason {
-  font-weight: 400;
-  font-size: 13px;
-  opacity: 0.85;
+@keyframes scanmove{0%{top:-4%}100%{top:100%}}
+.stage .status-tip{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-size:13px;font-weight:700;color:#fff;background:rgba(5,7,10,.7);
+  padding:6px 16px;border-radius:8px;letter-spacing:-.02em
 }
 
-.section-heading {
-  font-size: 15px;
-  font-weight: 700;
-  margin: 20px 0 10px;
-  padding-bottom: 6px;
-  border-bottom: 2px solid var(--border);
+/* 엣지 플래시 (위험 등급 3 이상) */
+.stage .edge-flash{
+  position:absolute;inset:0;pointer-events:none;
+  animation:edgeflash 1s ease-in-out infinite
 }
-.section-heading .count {
-  display: inline-block;
-  background: var(--red);
-  color: #fff;
-  border-radius: 12px;
-  padding: 0 8px;
-  font-size: 12px;
-  margin-left: 6px;
-  vertical-align: middle;
+@keyframes edgeflash{
+  0%,100%{box-shadow:inset 0 0 0 4px rgba(255,45,63,.2)}
+  50%{box-shadow:inset 0 0 0 8px rgba(255,45,63,.9)}
 }
 
-.action-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* 유휴 플레이스홀더 */
+.stage .idle{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#3a4350;font-size:13px;letter-spacing:-.02em
 }
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  border-left: 4px solid var(--gray);
-}
-.card.badge-danger { border-left-color: var(--red); }
-.card.badge-warning { border-left-color: var(--orange); }
-.card.badge-caution { border-left-color: var(--yellow); }
-
-.card-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.card-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.card-badge.danger { background: var(--red-bg); color: var(--red-fg); }
-.card-badge.warning { background: var(--orange-bg); color: var(--orange-fg); }
-.card-badge.caution { background: var(--yellow-bg); color: var(--yellow-fg); }
-
-.card-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0;
+.stage .idle .big{
+  font-size:20px;font-weight:800;color:var(--gray);margin-bottom:4px
 }
 
-.card-problem {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin: 0 0 8px;
+/* =========================================================
+   2) 리포트 탭 (#report) — Report.dc 토큰 기반
+   ========================================================= */
+#report .report-shell{padding:24px 0 8px}
+.report-inner{
+  background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px 28px
+}
+.report-head{
+  display:flex;align-items:center;gap:10px;padding-bottom:10px;
+  border-bottom:1px solid var(--line);font-family:Pretendard,sans-serif;letter-spacing:-.02em
+}
+.report-head .brand{font-size:13px;font-weight:800}
+.report-head .brand b{color:var(--blue)}
+.report-head .title{font-size:12.5px;font-weight:600;color:var(--muted)}
+.report-head .spacer{flex:1}
+.report-head .date{font-size:11.5px;font-weight:500;color:var(--muted)}
+
+.report h1{
+  font-size:22px;font-weight:800;letter-spacing:-.035em;margin:14px 0 4px;line-height:1.3
+}
+.report .lede{font-size:12.5px;font-weight:500;color:var(--muted);margin:0 0 22px}
+
+/* KPI 행 (Report.dc 4카드 그리드 토큰) */
+.kpi-row{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:26px
+}
+.kpi{
+  background:#f9fafb;border-radius:12px;padding:13px 14px
+}
+.kpi .k{font-size:11.5px;font-weight:700;color:var(--muted)}
+.kpi .v{font-size:22px;font-weight:800;letter-spacing:-.03em;margin-top:3px}
+.kpi .v.red{color:var(--red)}
+.kpi .v.orange{color:var(--orange)}
+.kpi .v.green{color:var(--green)}
+
+/* 요약 테이블 — Report.dc 테이블 토큰 */
+table.sum-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:26px}
+.sum-table th{
+  text-align:left;padding:8px 10px;font-weight:700;color:#4e5968;
+  border-radius:8px 0 0 8px;background:var(--soft)
+}
+.sum-table th.r{text-align:right}
+.sum-table th.r:last-child{border-radius:0 8px 8px 0}
+.sum-table td{
+  padding:9px 10px;border-bottom:1px solid var(--soft);
+  font-variant-numeric:tabular-nums
+}
+.sum-table td.num{text-align:right}
+.sum-table td.bad{font-weight:700;color:var(--red)}
+.sum-table td.muted{color:#4e5968}
+
+/* 이미지별 판독 결과 그리드 — Report.dc figure 토큰 */
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+figure.result-card{margin:0;break-inside:avoid}
+.result-card .shot{
+  position:relative;width:100%;aspect-ratio:16/10;overflow:hidden;
+  border-radius:8px;background:#e5e8eb;background-size:cover;background-repeat:no-repeat
+}
+.result-card .shot img{width:100%;height:100%;object-fit:cover;display:block}
+.result-card .shot .bx-layer{position:absolute;inset:0;pointer-events:none}
+.result-card .shot .bx{
+  position:absolute;border:1.5px solid;border-radius:3px
+}
+.result-card .shot .bx .lab{
+  position:absolute;font:700 10px Pretendard,sans-serif;color:#fff;
+  letter-spacing:-.02em;padding:1px 5px;border-radius:3px;white-space:nowrap;line-height:12px
+}
+.result-card .shot .bx .lab.l{left:-1px;top:-11px}
+.result-card .shot .bx .lab.r{right:-1px;top:-11px}
+
+.result-card .cap{
+  display:flex;align-items:center;gap:8px;margin-top:7px;font-size:11.5px
+}
+.result-card .cap .no{font-weight:700;color:var(--muted)}
+.result-card .cap .role{font-weight:700}
+.result-card .cap .spacer{flex:1}
+.result-card .cap .verdict{
+  font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:7px;color:#fff
+}
+.result-card .items{
+  font-size:11px;font-weight:500;color:#4e5968;margin-top:4px;line-height:1.5
+}
+.result-card .law-fold{margin-top:8px}
+.result-card .law-fold summary{
+  font-size:11.5px;font-weight:500;color:var(--muted);cursor:pointer;list-style:none;
+  background:none;border:none;padding:0
+}
+.result-card .law-fold summary::before{content:'▶ 'display:inline-block;margin-right:4px;transition:transform .15s}
+.result-card .law-fold[open] summary::before{transform:rotate(90deg)}
+.result-card .law-fold .inner{
+  font-size:11px;color:#4e5968;margin-top:4px;padding:4px 0;line-height:1.5
 }
 
-.card-evidence {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin: 0 0 8px;
-  padding: 8px;
-  background: var(--gray-bg);
-  border-radius: 6px;
-  overflow-wrap: break-word;
-  line-height: 1.45;
+/* 집계 정직 문구 */
+.honest-note{
+  background:var(--soft);border-radius:10px;padding:12px 16px;
+  font-size:12px;color:var(--muted);margin-bottom:22px;line-height:1.6
 }
 
-.card-actions {
-  font-size: 12px;
-  color: var(--blue);
-  font-weight: 500;
-}
-.card-actions::before { content: '➜ '; }
+.report .actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.report .actions .btn{flex:1;min-width:180px}
 
-.photo-thumb {
-  display: inline-block;
-  width: 120px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  margin-right: 10px;
-  vertical-align: middle;
+.empty-note{color:var(--gray);font-size:13px;padding:16px 0;line-height:1.6}
+.sample-btn{margin-top:14px}
+
+/* =========================================================
+   3) 검증 탭 (#verify) — 기존 UI 전부 이식
+   ========================================================= */
+#verify .verify-shell{padding:0}
+#verify .hero{
+  text-align:center;padding:28px 0 20px;border-bottom:1px solid var(--line);margin-bottom:20px
 }
-.detection-label {
-  display: inline-block;
-  background: var(--blue-bg);
-  color: var(--blue-fg);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  margin-left: 4px;
-  vertical-align: middle;
+#verify .hero h1{font-size:22px;margin:0 0 6px;letter-spacing:-.3px}
+#verify .hero-sub{font-size:14px;color:var(--muted);margin:0 0 14px;line-height:1.5}
+#verify .icon-row{display:flex;justify-content:center;gap:18px;font-size:22px;user-select:none}
+#verify .icon-row span{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+#verify .icon-row small{font-size:10px;color:var(--gray);letter-spacing:0}
+
+#verify .main-pad{
+  max-width:640px;margin:0 auto;padding:20px 16px 48px
 }
 
-.accordion {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  margin-bottom: 14px;
-  overflow: hidden;
+/* 검증 탭 전용 업로드 */
+#verify .big-buttons{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+#verify .big-btn{
+  display:block;width:100%;height:56px;padding:0 16px;
+  border:2px solid var(--blue);border-radius:10px;background:var(--blue-bg);
+  color:var(--blue-fg);font-size:16px;font-weight:600;text-align:left;cursor:pointer;
+  transition:background .15s,border-color .15s;line-height:56px;user-select:none
 }
-.accordion summary {
-  padding: 10px 14px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  background: var(--white);
-  list-style: none;
-  color: var(--text);
+#verify .big-btn:hover{background:#eff6ff}
+#verify .big-btn:disabled{opacity:.5;cursor:not-allowed}
+#verify .file-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;min-height:0}
+#verify .chip{
+  display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);
+  border-radius:20px;padding:4px 6px 4px 12px;font-size:13px
 }
-.accordion summary::-webkit-details-marker { display: none; }
-.accordion summary::before { content: '▶ '; display: inline-block; margin-right: 4px; transition: transform 0.15s; }
-.accordion[open] summary::before { transform: rotate(90deg); }
-.accordion .inner {
-  padding: 0 14px 14px;
-  font-size: 13px;
-  color: var(--text-secondary);
+#verify .chip .name{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#verify .chip .size{color:var(--gray);font-size:11px}
+#verify .chip button{background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray);padding:0 2px;line-height:1}
+#verify .chip button:hover{color:var(--red)}
+#verify .action-row{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
+#verify .demo-btn{
+  flex:1;min-width:180px;height:44px;border:1px solid var(--line);border-radius:8px;
+  background:#fff;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:background .15s
 }
-.accordion .inner .item {
-  padding: 6px 0;
-  border-bottom: 1px solid var(--gray-bg);
+#verify .demo-btn:hover{background:var(--gray-bg)}
+#verify .start-btn{
+  flex:2;min-width:200px;height:56px;border:none;border-radius:10px;background:#999;color:#fff;
+  font-size:16px;font-weight:600;cursor:not-allowed;transition:background .15s
 }
-.accordion .inner .item:last-child { border-bottom: none; }
-.accordion .inner .item-label { font-weight: 500; color: var(--text); }
+#verify .start-btn.active{background:var(--blue);cursor:pointer}
+#verify .start-btn.active:hover{background:#1647c0}
+#verify .advanced{margin-top:6px;border:1px solid var(--line);border-radius:8px;background:#fff}
+#verify .advanced summary{padding:10px 14px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray);list-style:none}
+#verify .advanced summary::-webkit-details-marker{display:none}
+#verify .advanced summary::before{content:'▶ ';display:inline-block;margin-right:4px;transition:transform .15s}
+#verify .advanced[open] summary::before{transform:rotate(90deg)}
+#verify .advanced .inner{padding:8px 14px 14px}
+#verify .advanced .big-btn{height:44px;font-size:14px;line-height:44px}
 
-.ok-summary {
-  font-size: 13px;
-  color: var(--text-secondary);
-  padding: 8px 0;
+/* 검증 탭 진행 화면 */
+#verify .progress-screen{text-align:center;padding:32px 0 24px;display:none}
+#verify .stepper{display:flex;flex-direction:column;gap:0;margin-bottom:18px}
+#verify .step{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;
+  font-size:14px;background:var(--gray-bg);color:var(--gray);border:1px solid transparent
 }
-.expand-btn {
-  background: none;
-  border: none;
-  color: var(--blue);
-  font-size: 13px;
-  cursor: pointer;
-  font-weight: 500;
-  padding: 0;
-  margin-top: 4px;
+#verify .step .num{
+  width:24px;height:24px;border-radius:50%;background:var(--gray);color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0
 }
-
-.subcontract-badges {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-.subbadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-}
-.subbadge.risk { background: var(--red-bg); color: var(--red-fg); }
-.subbadge.compliant { background: var(--green-bg); color: var(--green-fg); }
-.subbadge.noneed { background: var(--yellow-bg); color: var(--yellow-fg); }
-
-.result-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-}
-.result-actions button {
-  flex: 1;
-  height: 44px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--white);
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.result-actions button:hover { background: var(--gray-bg); }
-
-/* ===== 인라인 오류 배너 ===== */
-.error-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: var(--red);
-  color: #fff;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  z-index: 9999;
-  font-size: 14px;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-.error-banner .msg { flex: 1; line-height: 1.4; }
-.error-banner .close-btn {
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.4);
-  color: #fff;
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 13px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.error-banner .close-btn:hover { background: rgba(255,255,255,0.35); }
-
-.empty-state {
-  color: var(--gray);
-  font-size: 13px;
-  padding: 12px 0;
+#verify .step.active{background:var(--blue-bg);color:var(--blue-fg);border-color:var(--blue)}
+#verify .step.active .num{background:var(--blue)}
+#verify .step.done{background:var(--green-bg);color:var(--green-fg)}
+#verify .step.done .num{background:var(--green)}
+#verify .progress-bar{height:8px;background:var(--gray-bg);border-radius:4px;overflow:hidden;margin-bottom:10px}
+#verify .progress-fill{height:100%;background:var(--blue);width:0%;transition:width .4s}
+#verify .progress-label{font-size:13px;color:var(--gray);margin-bottom:4px}
+#verify .progress-note{font-size:12px;color:var(--gray)}
+#verify .retry-badge{
+  display:inline-block;margin-top:8px;padding:4px 12px;background:var(--gray-bg);
+  color:var(--gray);border-radius:12px;font-size:12px
 }
 
-@media (min-width: 768px) {
-  body { max-width: 900px; padding: 32px 24px 48px; }
-  .action-cards { flex-direction: row; flex-wrap: wrap; }
-  .card { flex: 1 1 280px; }
-  .hero h1 { font-size: 26px; }
+#verify .result-screen{margin-top:8px;display:none}
+#verify .gate-banner{
+  padding:14px 16px;border-radius:10px;margin-bottom:18px;font-weight:600;
+  display:flex;align-items:center;gap:10px
+}
+#verify .gate-banner.submittable{background:var(--green-bg);color:var(--green-fg);border:1px solid #86efac}
+#verify .gate-banner.revision{background:var(--orange-bg);color:var(--orange-fg);border:1px solid #fdba74}
+#verify .gate-banner.check{background:var(--yellow-bg);color:var(--yellow-fg);border:1px solid #fde68a}
+#verify .gate-banner .icon{font-size:22px}
+#verify .gate-banner .reason{font-weight:400;font-size:13px;opacity:.85}
+
+#verify .section-heading{
+  font-size:15px;font-weight:700;margin:20px 0 10px;padding-bottom:6px;
+  border-bottom:2px solid var(--line)
+}
+#verify .section-heading .count{
+  display:inline-block;background:var(--red);color:#fff;border-radius:12px;
+  padding:0 8px;font-size:12px;margin-left:6px;vertical-align:middle
+}
+#verify .action-cards{display:flex;flex-direction:column;gap:10px}
+#verify .card{
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:14px;border-left:4px solid var(--gray)
+}
+#verify .card.badge-danger{border-left-color:var(--red)}
+#verify .card.badge-warning{border-left-color:var(--orange)}
+#verify .card.badge-caution{border-left-color:var(--yellow)}
+#verify .card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+#verify .card-badge{
+  font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;
+  text-transform:uppercase;letter-spacing:.3px
+}
+#verify .card-badge.danger{background:var(--red-bg);color:var(--red-fg)}
+#verify .card-badge.warning{background:var(--orange-bg);color:var(--orange-fg)}
+#verify .card-badge.caution{background:var(--yellow-bg);color:var(--yellow-fg)}
+#verify .card-title{font-size:14px;font-weight:600;margin:0}
+#verify .card-problem{font-size:13px;color:var(--muted);margin:0 0 8px}
+#verify .card-evidence{
+  font-size:12px;color:var(--muted);margin:0 0 8px;padding:8px;
+  background:var(--gray-bg);border-radius:6px;overflow-wrap:break-word;line-height:1.45
+}
+#verify .card-actions{font-size:12px;color:var(--blue);font-weight:500}
+#verify .card-actions::before{content:'➜ '}
+#verify .photo-thumb{
+  display:inline-block;width:120px;height:80px;object-fit:cover;border-radius:6px;
+  border:1px solid var(--line);margin-right:10px;vertical-align:middle
+}
+#verify .detection-label{
+  display:inline-block;background:var(--blue-bg);color:var(--blue-fg);
+  font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;
+  margin-left:4px;vertical-align:middle
+}
+#verify .accordion{border:1px solid var(--line);border-radius:8px;margin-bottom:14px;overflow:hidden}
+#verify .accordion summary{padding:10px 14px;cursor:pointer;font-size:13px;font-weight:500;background:#fff;list-style:none;color:var(--text)}
+#verify .accordion summary::-webkit-details-marker{display:none}
+#verify .accordion summary::before{content:'▶ ';display:inline-block;margin-right:4px;transition:transform .15s}
+#verify .accordion[open] summary::before{transform:rotate(90deg)}
+#verify .accordion .inner{padding:0 14px 14px;font-size:13px;color:var(--muted)}
+#verify .accordion .inner .item{padding:6px 0;border-bottom:1px solid var(--soft)}
+#verify .accordion .inner .item:last-child{border-bottom:none}
+#verify .accordion .inner .item-label{font-weight:500;color:var(--text)}
+#verify .ok-summary{font-size:13px;color:var(--muted);padding:8px 0}
+#verify .expand-btn{background:none;border:none;color:var(--blue);font-size:13px;cursor:pointer;font-weight:500;padding:0;margin-top:4px}
+#verify .subcontract-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+#verify .subbadge{
+  display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:8px;
+  font-size:13px;font-weight:600
+}
+#verify .subbadge.risk{background:var(--red-bg);color:var(--red-fg)}
+#verify .subbadge.compliant{background:var(--green-bg);color:var(--green-fg)}
+#verify .subbadge.noneed{background:var(--yellow-bg);color:var(--yellow-fg)}
+#verify .result-actions{display:flex;gap:10px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line)}
+#verify .result-actions button{
+  flex:1;height:44px;border:1px solid var(--line);border-radius:8px;background:#fff;
+  color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:background .15s
+}
+#verify .result-actions button:hover{background:var(--gray-bg)}
+#verify .empty-state{color:var(--gray);font-size:13px;padding:12px 0}
+
+@media (min-width:768px){
+  #verify .action-cards{flex-direction:row;flex-wrap:wrap}
+  #verify .card{flex:1 1 280px}
+  #verify .hero h1{font-size:26px}
+  #report .report-inner{padding:32px}
 }
 </style>
 </head>
 <body>
 
-<!-- ===== 히어로 ===== -->
-<header class="hero">
-  <h1>현장 사진으로 안전 점검</h1>
-  <p class="hero-sub">현장 사진을 찍으면, 위험 요소를 찾아 관련 법령과 조치까지 알려드립니다</p>
-  <div class="icon-row" aria-label="점검 항목">
-    <span>📷<small>현장 사진</small></span>
-    <span>⚖️<small>관련 법령</small></span>
-    <span>🛠️<small>조치 권고</small></span>
-  </div>
-</header>
+<!-- ===================== 상단 탭 내비 ===================== -->
+<nav class="tab-nav" id="tabNav">
+  <button class="tab-pill active" data-tab="watch"><span class="dot"></span>관제 화면</button>
+  <button class="tab-pill" data-tab="report"><span class="dot"></span>분석 리포트</button>
+  <button class="tab-pill" data-tab="verify"><span class="dot"></span>보고서 검증</button>
+</nav>
 
-<!-- ===== 업로드(주 CTA = 사진 점검) 화면 ===== -->
-<main id="uploadArea">
-  <div class="big-buttons">
-    <!-- 주 CTA: 사진 기반 안전 점검 -->
-    <label class="big-btn" for="photoInput">📷 현장 사진으로 안전 점검</label>
-    <input type="file" id="photoInput" accept="image/*" multiple>
+<div class="app" id="app">
 
-    <!-- 부 CTA: 보고서 검증 (기존 흐름은 아래로) -->
-    <label class="big-btn" for="docInput">📄 보고서 검증하기</label>
-    <input type="file" id="docInput" accept=".pdf,.docx,.txt,.hwp">
-  </div>
+  <!-- =========================================================
+       탭 1) 관제 화면 (#watch)
+       ========================================================= -->
+  <section class="tab-panel active" id="watch">
+    <div class="watch-shell">
+      <div class="watch-upload">
+        <h2>시설 결함·부식 위험 탐지</h2>
+        <p class="sub">사진 여러 장 또는 영상(mp4) 1개를 업로드하면 즉시 분석합니다.</p>
+        <div class="watch-upload-grid">
+          <label class="watch-option" id="watchPhotoOpt">
+            <input type="file" id="watchPhotoInput" accept="image/*" multiple>
+            <div class="ico">📷</div>
+            <div class="lbl">사진 업로드</div>
+            <div class="det">JPG/PNG 여러 장 · 최대 24장</div>
+          </label>
+          <label class="watch-option" id="watchVideoOpt">
+            <input type="file" id="watchVideoInput" accept="video/mp4">
+            <div class="ico">🎥</div>
+            <div class="lbl">영상 업로드</div>
+            <div class="det">MP4 1개 · 최대 4분</div>
+          </label>
+        </div>
+        <div class="watch-controls">
+          <button class="btn" id="watchDemoBtn">🎯 관제 샘플 체험</button>
+          <button class="btn" id="watchClearBtn">✕ 선택 해제</button>
+          <button class="btn primary" id="watchStartBtn" disabled>분석 시작</button>
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--gray)" id="watchFileInfo">선택된 파일 없음</div>
+      </div>
 
-  <div class="file-chips" id="fileChips"></div>
+      <!-- 풀블리드 스테이지 -->
+      <div class="stage-wrap">
+        <div class="stage" id="watchStage">
+          <div class="idle" id="watchIdle">
+            <div class="big">📭 대기 화면</div>
+            <div>사진을 업로드하거나 샘플 체험을 누르면 판독이 시작됩니다.</div>
+          </div>
+          <img class="stage-img" id="watchStageImg" style="display:none" alt="판독 화면">
+          <div class="box-layer" id="watchBoxLayer" style="display:none"></div>
+          <div class="scan-band" id="watchScanBand" style="display:none"></div>
+          <div class="edge-flash" id="watchEdgeFlash" style="display:none"></div>
 
-  <details class="advanced">
-    <summary>고급</summary>
-    <div class="inner">
-      <label class="big-btn" for="noticeInput">📋 점검 지시·공고 추가</label>
-      <input type="file" id="noticeInput" accept=".pdf,.docx,.txt">
+          <!-- 좌상단 시각 + REC -->
+          <div class="top-left" id="watchTopLeft" style="display:none">
+            <span class="time-pill" id="watchTimePill">오전 09:20</span>
+            <span class="rec"><span class="pulse"></span>REC</span>
+          </div>
+
+          <!-- 우상단 타임스탬프 -->
+          <div class="stamp" id="watchStamp" style="display:none"></div>
+
+          <!-- 좌하단 구역 배지 -->
+          <div class="bottom-left" id="watchBottomLeft" style="display:none">
+            <span class="cam-badge" id="watchCamBadge">CAM 01</span>
+            <span class="site-label" id="watchSiteLabel">현장 구역</span>
+          </div>
+
+          <!-- 우하단 워터마크 -->
+          <div class="watermark" id="watchWatermark" style="display:none">판독 영상 · 실제 탐지 데이터</div>
+
+          <!-- 중앙 위험 경보 -->
+          <div class="alert-overlay" id="watchAlertOverlay" style="display:none">
+            <div class="alert-box">
+              <svg class="alert-svg" viewBox="0 0 48 48" id="watchAlertSvg" aria-hidden="true">
+                <rect x="21.4" y="1.5" width="5.2" height="7.4" rx="2.6" fill="currentColor"></rect>
+                <path d="M24 11c-6.6 0-12 5.4-12 12v11h24V23c0-6.6-5.4-12-12-12z" fill="currentColor"></path>
+                <rect x="8.5" y="35.5" width="31" height="7.5" rx="2.6" fill="currentColor"></rect>
+                <path d="M4.6 16.2 9.9 19M43.4 16.2 38.1 19M7.2 27.4H1.8M40.8 27.4h5.4" stroke="currentColor" stroke-width="3.1" stroke-linecap="round" fill="none"></path>
+              </svg>
+              <div class="alert-head" id="watchAlertHead">이상 없음</div>
+              <div class="alert-sub" id="watchAlertSub">검출된 지적사항 없음</div>
+            </div>
+            <div class="alert-band"></div>
+          </div>
+
+          <!-- 분석 중 상태 팁 -->
+          <div class="status-tip" id="watchStatusTip" style="display:none">판독 중</div>
+        </div>
+      </div>
+
+      <!-- 썸네일 스트립 (플레이 중일 때) -->
+      <div class="thumb-strip" id="watchThumbStrip" style="display:none"></div>
+
+      <!-- 이벤트 로그 -->
+      <div class="event-log" id="watchEventLog" style="display:none">
+        <h3>이벤트 로그</h3>
+        <div id="watchEventList"></div>
+      </div>
     </div>
-  </details>
+  </section>
 
-  <div class="action-row">
-    <button class="demo-btn" id="inspectDemoBtn">📷 점검 샘플 체험 (사진 3장)</button>
-    <button class="demo-btn" id="verifyDemoBtn">📄 검증 샘플 체험 (보고서+사진)</button>
-    <button class="start-btn" id="startBtn" disabled>사진 선택 후 안전 점검 시작</button>
-  </div>
-</main>
+  <!-- =========================================================
+       탭 2) 분석 리포트 (#report)
+       ========================================================= -->
+  <section class="tab-panel" id="report">
+    <div class="report-shell">
+      <div class="report-inner">
+        <div class="report-head">
+          <span class="brand">HIMEC <b>EYE</b></span>
+          <span class="title">판독 분석 리포트</span>
+          <span class="spacer"></span>
+          <span class="date" id="reportDate"></span>
+        </div>
 
-<!-- ===== 진행 화면 ===== -->
-<section class="progress-screen" id="progressScreen" style="display:none">
-  <div class="stepper">
-    <div class="step active" id="step1"><span class="num">1</span>문서 판독</div>
-    <div class="step" id="step2"><span class="num">2</span>법령·문헌 대조</div>
-    <div class="step" id="step3"><span class="num">3</span>사진 분석</div>
-    <div class="step" id="step4"><span class="num">4</span>종합 판정</div>
-  </div>
-  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-  <div class="progress-label" id="progressLabel">0%</div>
-  <div class="progress-note">보통 1~2분</div>
-  <div class="retry-badge" id="retryBadge" style="display:none">연결 재시도 중…</div>
-</section>
+        <h1 id="reportTitle">직무별 비전 AI 판독 분석 리포트</h1>
+        <p class="lede" id="reportLede">프로토타입 검증 · 현장 업로드 데이터 기반 · 규칙 기반 판정</p>
 
-<!-- ===== 결과 화면 ===== -->
-<section class="result-screen" id="resultScreen" style="display:none"></section>
-<div id="errorBanner" style="display:none"></div>
+        <div class="kpi-row" id="reportKpiRow"></div>
+
+        <h2 style="font-size:15px;font-weight:800;letter-spacing:-.03em;margin:0 0 9px">1. 구역(파일)별 요약</h2>
+        <table class="sum-table" id="reportSumTable">
+          <thead>
+            <tr>
+              <th>구역(파일)</th>
+              <th class="r">이미지</th>
+              <th class="r">검출 채택</th>
+              <th class="r">위험</th>
+              <th>주요 검출 항목</th>
+            </tr>
+          </thead>
+          <tbody id="reportSumBody"></tbody>
+        </table>
+
+        <h2 style="font-size:15px;font-weight:800;letter-spacing:-.03em;margin:0 0 9px">2. 이미지별 판독 결과</h2>
+        <div class="result-grid" id="reportResultGrid"></div>
+
+        <div class="honest-note" id="reportHonestNote"></div>
+
+        <div class="actions" id="reportActions"></div>
+        <div class="empty-note" id="reportEmpty" style="display:none">분석 결과가 없습니다. 관제 탭에서 사진을 분석하거나 [샘플로 보기]를 눌러주세요.</div>
+        <button class="btn sample-btn" id="reportSampleBtn" style="display:none">📷 샘품으로 보기</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       탭 3) 보고서 검증 (#verify) — 기존 UI 전부 이동
+       ========================================================= -->
+  <section class="tab-panel" id="verify">
+    <div class="verify-shell">
+      <header class="hero">
+        <h1>현장 사진으로 안전 점검</h1>
+        <p class="hero-sub">현장 사진을 찍으면, 위험 요소를 찾아 관련 법령과 조치까지 알려드립니다</p>
+        <div class="icon-row" aria-label="점검 항목">
+          <span>📷<small>현장 사진</small></span>
+          <span>⚖️<small>관련 법령</small></span>
+          <span>🛠️<small>조치 권고</small></span>
+        </div>
+      </header>
+
+      <div class="main-pad">
+        <!-- 업로드 (주 CTA = 사진 점검) -->
+        <main id="verifyUploadArea">
+          <div class="big-buttons">
+            <label class="big-btn" for="verifyPhotoInput">📷 현장 사진으로 안전 점검</label>
+            <input type="file" id="verifyPhotoInput" accept="image/*" multiple>
+
+            <label class="big-btn" for="verifyDocInput">📄 보고서 검증하기</label>
+            <input type="file" id="verifyDocInput" accept=".pdf,.docx,.txt,.hwp">
+          </div>
+
+          <div class="file-chips" id="verifyFileChips"></div>
+
+          <details class="advanced">
+            <summary>고급</summary>
+            <div class="inner">
+              <label class="big-btn" for="verifyNoticeInput">📋 점검 지시·공고 추가</label>
+              <input type="file" id="verifyNoticeInput" accept=".pdf,.docx,.txt">
+            </div>
+          </details>
+
+          <div class="action-row">
+            <!-- 🔴 checklist: verifyDemoBtn (GET /jobs/demo) — 여기 -->
+            <button class="demo-btn" id="verifyDemoBtn">📄 검증 샘플 체험 (보고서+사진)</button>
+            <button class="demo-btn" id="verifyInspectDemoBtn">📷 점검 샘플 체험 (사진 3장)</button>
+            <button class="start-btn" id="verifyStartBtn" disabled>선택 후 안전 점검 시작</button>
+          </div>
+        </main>
+
+        <!-- 진행 화면 -->
+        <section class="progress-screen" id="verifyProgressScreen">
+          <div class="stepper">
+            <div class="step active" id="verifyStep1"><span class="num">1</span>문서 판독</div>
+            <div class="step" id="verifyStep2"><span class="num">2</span>법령·문헌 대조</div>
+            <div class="step" id="verifyStep3"><span class="num">3</span>사진 분석</div>
+            <div class="step" id="verifyStep4"><span class="num">4</span>종합 판정</div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="verifyProgressFill"></div></div>
+          <div class="progress-label" id="verifyProgressLabel">0%</div>
+          <div class="progress-note">보통 1~2분</div>
+          <div class="retry-badge" id="verifyRetryBadge" style="display:none">연결 재시도 중…</div>
+        </section>
+
+        <!-- 결과 화면 -->
+        <section class="result-screen" id="verifyResultScreen"></section>
+        <div id="verifyErrorBanner" style="display:none"></div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /app -->
 
 <script>
 (function () {
   'use strict';
 
-  // ── 상태 ──────────────────────────────────────────────────────────────────
-  const state = {
-    photos: [],      // 사진 점검 모드용
-    doc: null,       // 보고서 검증 모드용
-    notice: null,
+  // ── 디자인 토큰 (Watch.dc/Report.dc에서 추출한 색·등급) ─────────────────────
+  const LC = {4:'#ff2d3f', 3:'#ff8a00', 2:'#f5a623', 1:'#3182f6'};
+  const TAG = {4:'긴급', 3:'부적합', 2:'조건부', 1:'참고'};
+  const KO = {
+    person:'작업자', helmet:'안전모 착용', no_helmet:'안전모 미착용',
+    vest:'안전조끼 착용', no_vest:'안전조끼 미착용',
+    goggles:'보안경 착용', no_goggles:'보안경 미착용',
+    gloves:'안전장갑 착용', no_gloves:'안전장갑 미착용',
+    cone:'안전콘', smoke:'연기', corrosion:'부식', crack:'균열',
+    cable_damage:'케이블 손상', weld_bad:'용접 불량', weld_good:'용접 양호',
+    weld_defect:'용접 결함부', wall_damage:'벽체 손상', ok:'양품',
+    incorrect_install:'조립 불량', dry_joint:'냉납', board_damage:'기판 손상',
+    short_circuit:'단락', surface_defect:'표면 결함', cell_anomaly:'셀 이상',
+    cell_ok:'정렬 정상 셀', cell_reversed:'역극 셀',
+    forklift:'지게차', worker:'작업자', chassis_working:'상하차 진행'
   };
-  const mode = { kind: 'inspect' }; // 'inspect' | 'verify'
+  // 규칙표 — inspect_mode.LABEL_MAP 재사용 (Watch.dc RULE과 동일 값)
+  const RULE = {
+    'S-01':{r:3,h:'안전모 미착용',       s:'산업안전보건기준규칙 제32조①1 · 작업중지 후 착용 조치'},
+    'S-02':{r:2,h:'안전조끼 미착용',     s:'동 규칙 제32조①10 · 착용 후 작업 재개'},
+    'S-03':{r:2,h:'보안경 미착용',       s:'동 규칙 제32조①4 · 용접·절단 구간 착용 의무화'},
+    'S-04':{r:2,h:'안전장갑 미착용',     s:'동 규칙 제32조①5 · 보호장갑 지급·착용 확인'},
+    'S-05':{r:4,h:'연기 감지 · 화재 의심', s:'화재예방법 제17조 · 즉시 작업중지 · 화기감시자 확인'},
+    'D-01':{r:2,h:'부식 진행',           s:'기계설비법 제17조 · 케레이징 후 방청도장 재시공'},
+    'D-02':{r:3,h:'균열 검출',           s:'시설물 안전·유지관리 세부지침 · 크랙게이지 실측 후 보수'},
+    'D-03':{r:3,h:'케이블 피복 손상',    s:'KEC 132 · 즉시 교체 또는 절연처리'},
+    'D-04':{r:3,h:'용접부 불량',         s:'KS B 0845 · 그라인딩 후 재용접 · 비파괴검사'},
+    'D-05':{r:2,h:'용접 결함부',         s:'KS B 0845 · 보수용접 후 전수 외관검사'},
+    'D-06':{r:2,h:'벽체 손상',           s:'시설물 안전·유지관리 세부지침 · 구조 안전성 검토'},
+    'P-01':{r:3,h:'접합 불량 (냉납)',    s:'IPC-A-610 Class 2 · 재작업 후 재검사'},
+    'P-02':{r:3,h:'조립·삽입 불량',      s:'IPC-A-610 · 재실장 후 초·중·종물 검사 강화'},
+    'P-03':{r:2,h:'기판 손상',           s:'IPC-A-610 · 손상 정도 판정 후 폐기 또는 수리'},
+    'P-04':{r:4,h:'단락 검출',           s:'전기용품안전관리법 · 즉시 격리 · 동일 로트 홀드'},
+    'P-05':{r:2,h:'표면 결함',           s:'KS A ISO 2859-1 · 외관 등급 판정 후 선별'},
+    'P-06':{r:3,h:'셀 이상 검출',        s:'KS C IEC 61215 · 이상 셀 격리 후 정밀검사'},
+    'X-01':{r:4,h:'역극 셀 검출',        s:'KS C IEC 62133 · 즉시 격리 · 트레이 전수 재검'},
+    'L-01':{r:4,h:'지게차 협착 위험',    s:'산업안전보건기준규칙 제172조 · 즉시 작업중지 · 유도자 배치'},
+    'L-02':{r:1,h:'상하차 작업 진행 중', s:'동 규칙 제39조 · 작업구역 통제선 확인'}
+  };
+  const CLS2RULE = {
+    no_helmet:'S-01', no_vest:'S-02', no_goggles:'S-03', no_gloves:'S-04', smoke:'S-05',
+    corrosion:'D-01', crack:'D-02', cable_damage:'D-03', weld_bad:'D-04', weld_defect:'D-05',
+    wall_damage:'D-06', dry_joint:'P-01', incorrect_install:'P-02', board_damage:'P-03',
+    short_circuit:'P-04', surface_defect:'P-05', cell_anomaly:'P-06', cell_reversed:'X-01',
+    chassis_working:'L-02'
+  };
+  const THRESH = {no_helmet:.25, no_vest:.30, no_goggles:.30, no_gloves:.30, smoke:.55,
+    corrosion:.35, crack:.30, cable_damage:.35, weld_bad:.35, weld_defect:.35,
+    wall_damage:.35, dry_joint:.35, incorrect_install:.30, board_damage:.35,
+    short_circuit:.30, surface_defect:.35, cell_anomaly:.35, cell_ok:.40,
+    cell_reversed:.25, forklift:.35, worker:.30, chassis_working:.45, car:.35, bus:.35, truck:.35};
+  const TH = c => THRESH[c] !== undefined ? THRESH[c] : 0.25;
+
+  // ── 상태 ──────────────────────────────────────────────────────────────────────
+  const state = { photos:[], doc:null, notice:null };
+  const WATCH = {
+    kind:'idle',        // 'idle' | 'analyzing' | 'ready'
+    files:[],           // File[] (사진/영상)
+    fileType:null,      // 'photo' | 'video'
+    jobId:null,
+    frames:[],          // 프레임 메타데이터 목록 (서버 응답 기반)
+    cur:0,
+    playing:false,
+    scanTimer:null,
+    autoTimer:null,
+    pollTimer:null,
+    log:[]
+  };
+
+  // ── 기존 모드.kind 전환 3곳 — 검증 탭에서 그대로 유지 ───────────────────────
+  //   (1) verifyPhotoInput.change  → mode.kind='inspect'
+  //   (2) verifyDocInput.change    → mode.kind='verify'
+  //   (3) 결과→검증 보내기 핸들러  → mode.kind='verify'
+  const mode = { kind:'inspect' };
+
   let jobId = null;
   let pollTimer = null;
   let retryCount = 0;
   let pollRestartTimer = null;
 
-  // ── 파일 칩 렌더링 ────────────────────────────────────────────────────────
-  const fileChips = document.getElementById('fileChips');
+  // ── DOM 캐시 ─────────────────────────────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+  const watchStage       = $('watchStage');
+  const watchIdle        = $('watchIdle');
+  const watchStageImg    = $('watchStageImg');
+  const watchBoxLayer    = $('watchBoxLayer');
+  const watchScanBand    = $('watchScanBand');
+  const watchEdgeFlash   = $('watchEdgeFlash');
+  const watchTopLeft     = $('watchTopLeft');
+  const watchTimePill    = $('watchTimePill');
+  const watchStamp       = $('watchStamp');
+  const watchBottomLeft  = $('watchBottomLeft');
+  const watchCamBadge    = $('watchCamBadge');
+  const watchSiteLabel   = $('watchSiteLabel');
+  const watchWatermark   = $('watchWatermark');
+  const watchAlertOverlay= $('watchAlertOverlay');
+  const watchAlertHead   = $('watchAlertHead');
+  const watchAlertSub    = $('watchAlertSub');
+  const watchAlertSvg    = $('watchAlertSvg');
+  const watchAlertBand   = $('watchAlertBand');
+  const watchStatusTip   = $('watchStatusTip');
+  const watchThumbStrip  = $('watchThumbStrip');
+  const watchEventLog    = $('watchEventLog');
+  const watchEventList   = $('watchEventList');
+  const watchFileInfo    = $('watchFileInfo');
+  const watchStartBtn    = $('watchStartBtn');
+  const watchDemoBtn     = $('watchDemoBtn');
+  const watchClearBtn    = $('watchClearBtn');
+  const watchPhotoInput  = $('watchPhotoInput');
+  const watchVideoInput  = $('watchVideoInput');
+  const watchPhotoOpt    = $('watchPhotoOpt');
+  const watchVideoOpt    = $('watchVideoOpt');
 
-  function formatSize(bytes) {
-    if (bytes > 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + 'MB';
-    if (bytes > 1024) return (bytes / 1024).toFixed(0) + 'KB';
-    return bytes + 'B';
+  // ── 안전 출력 ─────────────────────────────────────────────────────────────────
+  function escapeHtml(s){
+    if(!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function escapeAttr(s){
+    if(!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')
+      .replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  function renderChips() {
-    fileChips.innerHTML = '';
-    const items = [];
-    if (state.doc) items.push({ type: '문서', file: state.doc });
-    state.photos.forEach(f => items.push({ type: '사진', file: f }));
-    if (state.notice) items.push({ type: '공고문', file: state.notice });
+  // ── 탭 라우팅 (해시) ──────────────────────────────────────────────────────────
+  const tabPanels = {
+    watch:$('watch'),
+    report:$('report'),
+    verify:$('verify')
+  };
+  const tabNav = $('tabNav');
 
-    items.forEach(({ type, file }) => {
-      const chip = document.createElement('span');
-      chip.className = 'chip';
-      chip.innerHTML =
-        '<span class="name">' + escapeHtml(file.name) + '</span>' +
-        '<span class="size">' + formatSize(file.size) + '</span>' +
-        '<button data-type="' + type + '" data-name="' + escapeAttr(file.name) + '">×</button>';
-      fileChips.appendChild(chip);
-    });
+  function activateTab(name, focus){
+    Object.keys(tabPanels).forEach(k => tabPanels[k].classList.toggle('active', k===name));
+    tabNav.querySelectorAll('.tab-pill').forEach(b => b.classList.toggle('active', b.dataset.tab===name));
+    if(focus && tabPanels[name]) tabPanels[name].scrollIntoView({behavior:'smooth', block:'start'});
+    if(name==='watch') stopWatchPlay();
+  }
+  function hashToTab(){
+    const h = location.hash.replace('#','');
+    if(['watch','report','verify'].includes(h)) return h;
+    return 'watch';
+  }
+  function setHash(t){ if(location.hash.replace('#','')!==t){ history.replaceState(null,'','#'+t); } }
+  tabNav.addEventListener('click', e => {
+    const b = e.target.closest('.tab-pill');
+    if(!b) return;
+    activateTab(b.dataset.tab, true);
+    setHash(b.dataset.tab);
+  });
+  window.addEventListener('hashchange', () => activateTab(hashToTab()));
+  activateTab(hashToTab());
 
-    fileChips.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', function () {
-        const type = this.dataset.type;
-        const name = this.dataset.name;
-        if (type === '문서') state.doc = null;
-        else if (type === '사진') {
-          state.photos = state.photos.filter(f => f.name !== name);
-        } else if (type === '공고문') state.notice = null;
-        renderChips();
-        updateStartButton();
-      });
-    });
+  // ── 전역 오류 배너 (alert() 0개 — 전부 여기로) ───────────────────────────────
+  function showErrorBanner(msg){
+    const banner = document.getElementById('verifyErrorBanner') || (function(){
+      const el = document.createElement('div');
+      el.id = 'verifyErrorBannerGlobal';
+      document.body.appendChild(el);
+      return el;
+    })();
+    // 기존 오류 배너가 있으면 재사용, 없으면 일회용 생성
+    let target = document.getElementById('verifyErrorBanner');
+    if(!target){ target = document.createElement('div'); target.id='verifyErrorBanner'; document.body.appendChild(target); }
+    target.style.display='block';
+    target.className='error-banner';
+    target.innerHTML =
+      '<span class="msg">'+escapeHtml(msg).replace(/\n/g,'<br>')+'</span>'+
+      '<button class="close-btn" type="button">닫기</button>';
+    target.querySelector('.close-btn').addEventListener('click', function(){ target.style.display='none'; });
   }
 
-  function escapeHtml(s) {
-    if (!s) return '';
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-  function escapeAttr(s) {
-    if (!s) return '';
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-  // ── 입력 이벤트 ───────────────────────────────────────────────────────────
-  const docInput = document.getElementById('docInput');
-  const photoInput = document.getElementById('photoInput');
-  const noticeInput = document.getElementById('noticeInput');
-
-  photoInput.addEventListener('change', () => {
-    if (photoInput.files.length) {
-      state.photos = Array.from(photoInput.files);
-      mode.kind = 'inspect';
+  // ── 관제 파일 선택 핸들러 ────────────────────────────────────────────────────
+  watchPhotoInput.addEventListener('change', () => {
+    if(watchPhotoInput.files.length){
+      WATCH.files = Array.from(watchPhotoInput.files);
+      WATCH.fileType = 'photo';
+      WATCH.kind = 'idle';
     }
-    renderChips();
-    updateStartButton();
+    updateWatchFileInfo();
+    updateWatchStartBtn();
+  });
+  watchVideoInput.addEventListener('change', () => {
+    if(watchVideoInput.files.length){
+      WATCH.files = Array.from(watchVideoInput.files);
+      WATCH.fileType = 'video';
+      WATCH.kind = 'idle';
+    }
+    updateWatchFileInfo();
+    updateWatchStartBtn();
+  });
+  watchClearBtn.addEventListener('click', () => {
+    WATCH.files = [];
+    WATCH.fileType = null;
+    WATCH.kind = 'idle';
+    watchPhotoInput.value = '';
+    watchVideoInput.value = '';
+    updateWatchFileInfo();
+    updateWatchStartBtn();
+    resetWatchStage();
   });
 
-  docInput.addEventListener('change', () => {
-    if (docInput.files.length) {
-      state.doc = docInput.files[0];
+  function updateWatchFileInfo(){
+    if(!WATCH.files.length){
+      watchFileInfo.textContent = '선택된 파일 없음';
+      watchPhotoOpt.classList.remove('disabled');
+      watchVideoOpt.classList.remove('disabled');
+      return;
+    }
+    watchPhotoOpt.classList.add('disabled');
+    watchVideoOpt.classList.add('disabled');
+    const f = WATCH.files[0];
+    let s = f.size, u = s>1024*1024 ? (s/(1024*1024)).toFixed(1)+'MB' : s>1024 ? (s/1024).toFixed(0)+'KB' : s+'B';
+    watchFileInfo.textContent = WATCH.files.length+'개 선택 · '+f.name+' ('+u+')';
+  }
+  function updateWatchStartBtn(){
+    const has = WATCH.files.length>0;
+    watchStartBtn.disabled = !has;
+    watchStartBtn.textContent = has ? '분석 시작' : '파일을 선택해 주세요';
+  }
+
+  // ── 관제 분석 시작 ────────────────────────────────────────────────────────────
+  watchStartBtn.addEventListener('click', () => {
+    if(!WATCH.files.length) return;
+    startWatchJob();
+  });
+
+  function startWatchJob(){
+    const isVideo = WATCH.fileType==='video';
+    const formData = new FormData();
+    WATCH.files.forEach(f => formData.append(isVideo ? 'video' : 'files', f));
+
+    const btn = watchStartBtn;
+    btn.disabled = true;
+    btn.textContent = '분석 시작 중…';
+    enterWatchAnalyzing();
+    addWatchLog('요청','POST /watch 시작');
+
+    fetch('/watch', { method:'POST', body:formData })
+      .then(r => r.json())
+      .then(data => {
+        if(data.error || data.detail){
+          btn.disabled = false;
+          btn.textContent = '분석 시작';
+          showErrorBanner('분석 시작 실패: '+(data.error || data.detail));
+          addWatchLog('오류','/watch 실패: '+(data.error || data.detail));
+          return;
+        }
+        WATCH.jobId = data.job_id;
+        WATCH.frames = data.frames || [];
+        // 데모·로컬 상황에 따라 바로 결과가 올 수도 있음
+        if(data.status === 'done' && data.result){
+          finishWatchFromResult(data.result);
+          return;
+        }
+        addWatchLog('요청','작업 '+data.job_id+' 접수');
+        enterWatchPolling();
+        pollWatchJob();
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.textContent = '분석 시작';
+        showErrorBanner('요청 실패: '+err.message);
+        addWatchLog('오류','요청 예외: '+err.message);
+      });
+  }
+
+  // ── 관제 폴링 (setTimeout 체인 — setInterval 금지) ───────────────────────────
+  function pollWatchJob(){
+    if(!WATCH.jobId) return;
+    fetch('/jobs/'+WATCH.jobId)
+      .then(r => {
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        return r.json();
+      })
+      .then(data => {
+        if(data.error){
+          showErrorBanner('작업 오류: '+data.error);
+          addWatchLog('오류','작업 오류: '+data.error);
+          stopWatchPlay();
+          return;
+        }
+        const progress = data.progress || 0;
+        // 진행 표시 (스테이지 상태에 반영)
+        if(data.status === 'processing' && WATCH.kind === 'analyzing'){
+          // 분석 진행 중 — 스캔 밴드 유지
+        }
+        if(data.status === 'done'){
+          // 결과 도착 — 프레임·annotated 이미지 렌더링
+          finishWatchFromResult(data.result);
+          return;
+        }
+        // 아직 진행 중이면 반복 (setTimeout 체인)
+        WATCH.pollTimer = setTimeout(pollWatchJob, 900);
+      })
+      .catch(err => {
+        addWatchLog('오류','폴링 실패: '+err.message);
+        WATCH.pollTimer = setTimeout(pollWatchJob, 1500);
+      });
+  }
+
+  // ── 관제 결과 도착 처리 ─────────────────────────────────────────────────────
+  function finishWatchFromResult(result){
+    stopWatchPolling();
+    addWatchLog('완료','결과 도착');
+    if(!result || !result.frames || !result.frames.length){
+      showErrorBanner('탐지 결과가 비어 있습니다.');
+      return;
+    }
+    WATCH.frames = result.frames;
+    WATCH.cur = 0;
+    // 가장 높은 위험 프레임 찾기
+    let maxRisk = 0, maxIdx = 0;
+    result.frames.forEach((fr, i) => {
+      const r = riskOf(fr);
+      if(r > maxRisk){ maxRisk = r; maxIdx = i; }
+    });
+    renderWatchFrame(0);
+    if(result.law_refs && result.law_refs.length){
+      // 중앙 경보는 전체 결과의 law_refs·action 문구로 렌더링 (지시문 요구)
+      renderWatchCentralAlert(result);
+    } else {
+      // 프레임 단위 결과가 있으면 가장 위험한 프레임 기준으로 경보
+      renderWatchCentralAlertFromFrame(result.frames[maxIdx]);
+    }
+    // 썸네일 스트립
+    buildWatchThumbStrip();
+    watchThumbStrip.style.display = 'flex';
+    watchEventLog.style.display = 'block';
+    // 자동 재생 시작 (위험 프레임이 있으면 그 프레임으로 점프 후 3초 순환)
+    if(maxRisk >= 3){
+      setTimeout(() => { goWatchFrame(maxIdx); startWatchAutoPlay(); }, 400);
+    } else {
+      startWatchAutoPlay();
+    }
+    // 우측 이벤트 로그 채우기
+    renderWatchEventLog();
+  }
+
+  // ── 중앙 대형 경보 렌더 ──────────────────────────────────────────────────────
+  function riskOf(frame){
+    if(!frame || !frame.detections) return 0;
+    let r = 0;
+    frame.detections.forEach(d => {
+      const rule = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]] : null;
+      if(rule && rule.r > r) r = rule.r;
+    });
+    return r;
+  }
+
+  function renderWatchCentralAlert(result){
+    // 결과 전체의 law_refs·action 문구를 중앙 경보에 사용
+    const refs = result.law_refs || [];
+    const action = result.action || '';
+    if(!refs.length && !action){
+      // fallback: 프레임 기준
+      renderWatchCentralAlertFromFrame(result.frames && result.frames[result.frames.length-1]);
+      return;
+    }
+    // 위험도 4면 긴급, 3이면 부적합
+    let topRule = null;
+    refs.forEach(ref => {
+      const code = extractRuleCode(ref.법령 || ref.조 || '');
+      if(RULE[code] && (!topRule || RULE[code].r > topRule.r)) topRule = RULE[code];
+    });
+    const risk = topRule ? topRule.r : (action ? 3 : 0);
+    const col = LC[risk] || '#3182f6';
+    watchAlertSvg.style.color = col;
+    watchAlertHead.style.color = col;
+    watchAlertHead.textContent = topRule ? topRule.h + (risk>=4 ? ' !!' : '') : '이상 없음';
+    watchAlertSub.textContent = topRule ? (TAG[risk]+' · '+topRule.s) : (action || '검출된 지적사항 없음');
+    watchAlertOverlay.style.display = 'flex';
+  }
+
+  function extractRuleCode(str){
+    // 예: '산업안전보건기준규칙 제32조①1' → 'S-01' 매핑은 부정확하므로 규칙으로 직접 찾는다.
+    // 여기선(rule 기반) 간단히 가장 가까운 규칙 id를 찾는다.
+    for(const id in RULE){
+      if(str.includes(id.slice(0,2)) || str.includes(id.split('-')[1])) return id;
+    }
+    return null;
+  }
+
+  function renderWatchCentralAlertFromFrame(frame){
+    if(!frame || !frame.detections || !frame.detections.length){
+      watchAlertOverlay.style.display = 'none';
+      return;
+    }
+    // 해당 프레임에서 가장 높은 위험 규칙 찾기
+    let topRule = null, topRisk = 0;
+    frame.detections.forEach(d => {
+      const c = d.label;
+      const ruleId = CLS2RULE[c];
+      if(ruleId && RULE[ruleId].r > topRisk){ topRisk = RULE[ruleId].r; topRule = RULE[ruleId]; }
+    });
+    if(!topRule){ watchAlertOverlay.style.display = 'none'; return; }
+    const col = LC[topRisk];
+    watchAlertSvg.style.color = col;
+    watchAlertHead.style.color = col;
+    watchAlertHead.textContent = topRule.h + (topRisk>=4 ? ' !!' : '');
+    watchAlertSub.textContent = TAG[topRisk] + ' · ' + topRule.s;
+    watchAlertOverlay.style.display = 'flex';
+  }
+
+  // ── 관제 프레임 렌더 (풀블리드 스테이지) ─────────────────────────────────────
+  function renderWatchFrame(idx){
+    const fr = WATCH.frames[idx];
+    if(!fr){
+      watchIdle.style.display = 'flex';
+      watchStageImg.style.display = 'none';
+      watchBoxLayer.style.display = 'none';
+      watchTopLeft.style.display = 'none';
+      watchStamp.style.display = 'none';
+      watchBottomLeft.style.display = 'none';
+      watchWatermark.style.display = 'none';
+      return;
+    }
+    watchIdle.style.display = 'none';
+    watchStageImg.style.display = 'block';
+    watchBoxLayer.style.display = 'block';
+    watchTopLeft.style.display = 'flex';
+    watchStamp.style.display = 'block';
+    watchBottomLeft.style.display = 'flex';
+    watchWatermark.style.display = 'block';
+
+    // 배경 이미지 (annotated 이미지 사용, 없으면 원본)
+    const imgSrc = fr.annotated ? '/jobs/'+WATCH.jobId+'/annotated/'+idx :
+                 fr.photoSrc ? fr.photoSrc : '';
+    if(imgSrc){
+      watchStageImg.src = imgSrc;
+    } else {
+      watchStageImg.style.display = 'none';
+    }
+
+    // 좌표·시간 정보 (서버가 제공한 메타데이터 사용)
+    const info = fr.info || {};
+    watchTimePill.textContent = info.timeOfDay || '오전 09:20';
+    const now = new Date();
+    const stamp = now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+
+                  now.getDate().toString().padStart(2,'0')+'  '+info.stamp || '09:20:00';
+    watchStamp.textContent = stamp;
+    watchCamBadge.textContent = info.cam || 'CAM 01';
+    watchSiteLabel.textContent = info.site || '현장 구역';
+
+    // 박스 렌더
+    watchBoxLayer.innerHTML = '';
+    const dets = fr.detections || [];
+    dets.forEach((d, i) => {
+      const ruleId = CLS2RULE[d.label];
+      const rule = ruleId ? RULE[ruleId] : null;
+      const isBad = !!rule;
+      const risk = rule ? rule.r : 0;
+      // 색상이름 결정: 위험 라벨=빨강/오렌지, 그 외 흰색 반투명
+      let col = 'rgba(255,255,255,.55)';
+      if(isBad){
+        col = risk>=4 ? LC[4] : (risk===3 ? LC[3] : LC[2]);
+      }
+      const b = d.bbox; // [x,y,w,h] (0~1 상대 좌표)
+      const el = document.createElement('div');
+      el.className = 'box';
+      el.style.left = (b[0]*100)+'%';
+      el.style.top = (b[1]*100)+'%';
+      el.style.width = (b[2]*100)+'%';
+      el.style.height = (b[3]*100)+'%';
+      el.style.borderColor = col;
+      const lab = document.createElement('span');
+      lab.className = 'lab ' + (b[0] > 0.7 ? 'r' : 'l');
+      lab.style.background = col;
+      lab.textContent = (KO[d.label]||d.label) + ' ' + Math.round(d.conf*100) + '%';
+      el.appendChild(lab);
+      watchBoxLayer.appendChild(el);
+    });
+  }
+
+  // ── 썸네일 스트립 ────────────────────────────────────────────────────────────
+  function buildWatchThumbStrip(){
+    watchThumbStrip.innerHTML = '';
+    WATCH.frames.forEach((fr, i) => {
+      const t = document.createElement('div');
+      t.className = 'thumb' + (i===WATCH.cur ? ' selected' : '') +
+                (riskOf(fr) >= 3 ? ' danger' : '');
+      const img = document.createElement('img');
+      img.src = fr.annotated ? '/jobs/'+WATCH.jobId+'/annotated/'+i : '';
+      img.alt = '프레임 '+(i+1);
+      t.appendChild(img);
+      const idx = document.createElement('span');
+      idx.className = 'idx';
+      idx.textContent = i+1;
+      t.appendChild(idx);
+      t.addEventListener('click', () => { stopWatchAutoPlay(); goWatchFrame(i); });
+      watchThumbStrip.appendChild(t);
+    });
+    // 스크롤 위치 조정
+    const sel = watchThumbStrip.querySelector('.selected');
+    if(sel) sel.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+  }
+
+  function goWatchFrame(i){
+    WATCH.cur = i;
+    renderWatchFrame(i);
+    // 썸네일 선택 갱신
+    watchThumbStrip.querySelectorAll('.thumb').forEach((el, idx) => {
+      el.classList.toggle('selected', idx===i);
+    });
+    const sel = watchThumbStrip.querySelector('.selected');
+    if(sel) sel.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+    addWatchLog('이동','프레임 '+(i+1)+' / '+WATCH.frames.length);
+  }
+
+  // ── 자동 재생 (3초 순환, 정지 가능) ────────────────────────────────────────
+  function startWatchAutoPlay(){
+    if(WATCH.autoTimer) return;
+    WATCH.playing = true;
+    WATCH.autoTimer = setTimeout(function tick(){
+      if(!WATCH.playing) return;
+      const next = (WATCH.cur + 1) % WATCH.frames.length;
+      goWatchFrame(next);
+      WATCH.autoTimer = setTimeout(tick, 3000);
+    }, 3000);
+  }
+  function stopWatchAutoPlay(){
+    WATCH.playing = false;
+    if(WATCH.autoTimer){ clearTimeout(WATCH.autoTimer); WATCH.autoTimer = null; }
+  }
+  function stopWatchPlay(){
+    stopWatchAutoPlay();
+    stopWatchPolling();
+    watchThumbStrip.style.display = 'none';
+    watchEventLog.style.display = 'none';
+    resetWatchStage();
+  }
+
+  // ── 관제 분석 중 UI 상태 ─────────────────────────────────────────────────────
+  function enterWatchAnalyzing(){
+    WATCH.kind = 'analyzing';
+    watchIdle.style.display = 'none';
+    watchScanBand.style.display = 'block';
+    watchStatusTip.style.display = 'block';
+    watchStatusTip.textContent = '판독 중';
+    watchTopLeft.style.display = 'flex';
+    watchTopLeft.querySelector('.time-pill').textContent = '오전 09:20';
+    watchTopLeft.querySelector('.rec').style.display = 'flex';
+    watchStamp.style.display = 'block';
+    const now = new Date();
+    watchStamp.textContent = now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'  판독 중';
+    watchBottomLeft.style.display = 'flex';
+    watchCamBadge.textContent = 'CAM 01';
+    watchSiteLabel.textContent = '판독 중';
+    watchWatermark.style.display = 'block';
+    watchWatermark.textContent = '판독 진행 중 · 실제 탐지 데이터';
+    watchAlertOverlay.style.display = 'none';
+    watchBoxLayer.style.display = 'none';
+    watchStageImg.style.display = 'none';
+    // 빈 플레이스홀더 배경
+    watchStage.style.background = 'rgba(5,7,10,.85)';
+  }
+
+  function enterWatchPolling(){
+    // 분석 중 상태 유지
+  }
+
+  function stopWatchPolling(){
+    if(WATCH.pollTimer){ clearTimeout(WATCH.pollTimer); WATCH.pollTimer = null; }
+    WATCH.kind = 'ready';
+  }
+
+  function resetWatchStage(){
+    WATCH.kind = 'idle';
+    watchIdle.style.display = 'flex';
+    watchStageImg.style.display = 'none';
+    watchBoxLayer.style.display = 'none';
+    watchScanBand.style.display = 'none';
+    watchEdgeFlash.style.display = 'none';
+    watchStatusTip.style.display = 'none';
+    watchTopLeft.style.display = 'none';
+    watchStamp.style.display = 'none';
+    watchBottomLeft.style.display = 'none';
+    watchWatermark.style.display = 'none';
+    watchAlertOverlay.style.display = 'none';
+    watchStage.style.background = '';
+    watchFileInfo.textContent = '선택된 파일 없음';
+    watchPhotoOpt.classList.remove('disabled');
+    watchVideoOpt.classList.remove('disabled');
+  }
+
+  // ── 이벤트 로그 ──────────────────────────────────────────────────────────────
+  function addWatchLog(tag, msg){
+    WATCH.log.push({t:new Date(), tag, msg, risk:0});
+    renderWatchEventLog();
+  }
+  function renderWatchEventLog(){
+    if(!WATCH.log.length){ watchEventList.innerHTML = '<div class="ev"><span class="t">—</span><span class="d">이벤트 없음</span></div>'; return; }
+    let html = '';
+    WATCH.log.slice().reverse().forEach(ev => {
+      const tagCls = ev.risk>=4 ? 'r4' : (ev.risk>=3 ? 'r3' : '');
+      html += '<div class="ev">'+
+        '<span class="t">'+padTime(ev.t)+'</span>'+
+        '<span class="tag '+tagCls+'">'+escapeHtml(ev.tag)+'</span>'+
+        '<span class="d">'+escapeHtml(ev.msg)+'</span>'+
+        '</div>';
+    });
+    watchEventList.innerHTML = html;
+  }
+  function padTime(d){
+    const p = n => (n<10?'0':'')+n;
+    return d.getHours()+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+
+  // ── 관제 샘플 체험 (GET /watch/demo) ─────────────────────────────────────────
+  watchDemoBtn.addEventListener('click', function(){
+    this.disabled = true;
+    this.textContent = '체험 로딩 중…';
+    addWatchLog('샘플','GET /watch/demo');
+    fetch('/watch/demo')
+      .then(r => r.json())
+      .then(data => {
+        this.disabled = false;
+        this.textContent = '🎯 관제 샘플 체험';
+        if(data.error){
+          showErrorBanner('샘플 체험 실패: '+data.error);
+          addWatchLog('오류','/watch/demo 오류: '+data.error);
+          return;
+        }
+        if(data.frames && data.frames.length){
+          WATCH.jobId = data.job_id || 'demo';
+          WATCH.frames = data.frames;
+          WATCH.log = [];
+          addWatchLog('샘플','데모 프레임 '+data.frames.length+'장');
+          // 법 참조·액션이 있으면 중앙 경보로
+          finishWatchFromResult({
+            frames: data.frames,
+            law_refs: data.law_refs || [],
+            action: data.action || ''
+          });
+        } else {
+          showErrorBanner('샘플 데이터가 없습니다.');
+          addWatchLog('오류','데모 프레임 없음');
+        }
+      })
+      .catch(err => {
+        this.disabled = false;
+        this.textContent = '🎯 관제 샘플 체험';
+        showErrorBanner('샘플 체험 실패: '+err.message);
+        addWatchLog('오류','데모 예외: '+err.message);
+      });
+  });
+
+  // ═════════════════════════════════════════════════════════════════════════════
+  // 2) 리포트 탭 (#report)
+  // ═════════════════════════════════════════════════════════════════════════════
+  const reportDate = $('reportDate');
+  const reportTitle = $('reportTitle');
+  const reportLede  = $('reportLede');
+  const reportKpiRow= $('reportKpiRow');
+  const reportSumBody = $('reportSumBody');
+  const reportResultGrid = $('reportResultGrid');
+  const reportHonestNote = $('reportHonestNote');
+  const reportActions = $('reportActions');
+  const reportEmpty = $('reportEmpty');
+  const reportSampleBtn = $('reportSampleBtn');
+
+  reportSampleBtn.addEventListener('click', () => {
+    reportSampleBtn.disabled = true;
+    reportSampleBtn.textContent = '로딩 중…';
+    // 관제 탭 데모를 호출한 뒤 리포트로 결과 반영
+    showReportFromWatchDemo();
+  });
+
+  function showReportFromWatchDemo(){
+    fetch('/watch/demo')
+      .then(r => r.json())
+      .then(data => {
+        reportSampleBtn.disabled = false;
+        reportSampleBtn.textContent = '📷 샘품으로 보기';
+        if(!data.frames || !data.frames.length){
+          showErrorBanner('리포트 샘플이 없습니다.');
+          return;
+        }
+        WATCH.jobId = data.job_id || 'demo';
+        WATCH.frames = data.frames;
+        renderReportFromFrames(data);
+      })
+      .catch(err => {
+        reportSampleBtn.disabled = false;
+        reportSampleBtn.textContent = '📷 샘품으로 보기';
+        showErrorBanner('리포트 로드 실패: '+err.message);
+      });
+  }
+
+  // ── 실제 분석 결과로 리포트 렌더 ─────────────────────────────────────────────
+  function renderReportFromFrames(data){
+    const frames = data.frames || [];
+    if(!frames.length){
+      reportEmpty.style.display = 'block';
+      reportKpiRow.style.display = 'none';
+      reportSumBody.innerHTML = '';
+      reportResultGrid.innerHTML = '';
+      reportHonestNote.style.display = 'none';
+      reportActions.style.display = 'none';
+      reportSampleBtn.style.display = 'inline-block';
+      return;
+    }
+    reportEmpty.style.display = 'none';
+    reportSampleBtn.style.display = 'none';
+
+    // 오늘 날짜
+    const now = new Date();
+    reportDate.textContent = now.getFullYear()+'. '+(now.getMonth()+1)+'. '+now.getDate();
+
+    // KPI 집계
+    let nShots = frames.length, nKept = 0, nBad = 0, nWarn = 0;
+    frames.forEach(f => {
+      const kept = (f.detections || []).filter(d => d.conf >= TH(d.label));
+      nKept += kept.length;
+      kept.forEach(d => {
+        const r = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]].r : 0;
+        if(r >= 3) nBad++;
+        else if(r === 2) nWarn++;
+      });
+    });
+    reportKpiRow.innerHTML = `
+      <div class="kpi"><div class="k">점검 이미지</div><div class="v">${nShots}</div></div>
+      <div class="kpi"><div class="k">검출 채택</div><div class="v">${nKept}</div></div>
+      <div class="kpi"><div class="k">위험</div><div class="v red">${nBad}</div></div>
+      <div class="kpi"><div class="k">주의</div><div class="v orange">${nWarn}</div></div>
+    `;
+
+    // 요약 테이블
+    let sumHtml = '';
+    frames.forEach((f,i) => {
+      const kept = (f.detections||[]).filter(d => d.conf >= TH(d.label));
+      const bad = kept.filter(d => { const r = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]].r : 0; return r>=3; });
+      const top = {};
+      kept.forEach(d => { const c = d.label; top[c] = (top[c]||0)+1; });
+      const topStr = Object.keys(top).sort((a,b)=>top[b]-top[a]).slice(0,3)
+        .map(c => (KO[c]||c)+' '+top[c]).join(' · ') || '검출 없음';
+      sumHtml += '<tr>'+
+        '<td>'+escapeHtml(f.info?.name || '프레임 '+(i+1))+'</td>'+
+        '<td class="num">1</td>'+
+        '<td class="num">'+kept.length+'</td>'+
+        '<td class="num '+(bad.length?'bad':'')+'">'+(bad.length||'—')+'</td>'+
+        '<td class="muted">'+escapeHtml(topStr)+'</td>'+
+        '</tr>';
+    });
+    reportSumBody.innerHTML = sumHtml;
+
+    // 이미지별 결과 카드
+    let gridHtml = '';
+    frames.forEach((f,i) => {
+      const kept = (f.detections||[]).filter(d => d.conf >= TH(d.label));
+      const bad = kept.filter(d => { const r = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]].r : 0; return r>=3; });
+      const urgent = bad.some(d => { const r = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]].r : 0; return r>=4; });
+      const vcol = urgent ? '#c2181f' : bad.length ? '#c2410c' : '#0f7a52';
+      const verdict = urgent ? '긴급' : bad.length ? '부적합' : '적합';
+      const imgSrc = f.annotated ? '/jobs/'+WATCH.jobId+'/annotated/'+i : '';
+      let boxesHtml = '';
+      kept.slice(0,14).forEach((d, j) => {
+        const col = vcol;
+        const b = d.bbox;
+        const labCls = b[0] > 0.7 ? 'r' : 'l';
+        boxesHtml += '<div class="bx" style="left:'+(b[0]*100)+'%;top:'+(b[1]*100)+'%;width:'+(b[2]*100)+'%;height:'+(b[3]*100)+'%;border-color:'+col+'">'+
+          '<span class="lab '+labCls+'" style="background:'+col+'">'+(KO[d.label]||d.label)+' '+Math.round(d.conf*100)+'</span></div>';
+      });
+      const itemsStr = Object.keys(top||{}).sort((a,b)=>(top[b]-top[a])).slice(0,4)
+        .map(c => (KO[c]||c)+' '+(top[c]||0)).join(' · ') || '검출 없음';
+      // 법 조문 접기 (결과에서 law_refs 있으면 사용)
+      let lawHtml = '';
+      if(data.law_refs && data.law_refs.length){
+        const items = data.law_refs.map(ref =>
+          '<div><b>'+escapeHtml(ref.법령||'')+' '+escapeHtml(ref.조||'')+'</b><br>'+escapeHtml(ref.발췌||'')+'</div>'
+        ).join('');
+        lawHtml = '<details class="law-fold"><summary>관련 법령·조문 발췌 '+(data.law_refs.length)+'건 (접기)</summary><div class="inner">'+items+'</div></details>';
+      }
+      gridHtml += '<figure class="result-card">'+
+        '<div class="shot" style="background-image:url('+escapeAttr(imgSrc||'')+')">'+
+          (imgSrc ? '<img src="'+escapeAttr(imgSrc)+'" alt="프레임 '+(i+1)+'">' : '')+
+          '<div class="bx-layer">'+boxesHtml+'</div></div>'+
+        '<div class="cap"><span class="no">'+String(i+1).padStart(2,'0')+'</span>'+
+          '<span class="role">'+escapeHtml(f.info?.role||'관제조직')+'</span>'+
+          '<span class="spacer"></span>'+
+          '<span class="verdict" style="background:'+vcol+'">'+escapeHtml(verdict)+'</span></div>'+
+        '<div class="items">'+escapeHtml(itemsStr)+'</div>'+
+        lawHtml+
+        '</figure>';
+    });
+    reportResultGrid.innerHTML = gridHtml;
+
+    // 정직 집계 문구
+    const missed = frames.reduce((a,f)=>{
+      const kept = (f.detections||[]).filter(d => d.conf >= TH(d.label));
+      const total = (f.detections||[]).length;
+      return a + (total - kept.length);
+    }, 0);
+    reportHonestNote.textContent = '검출 '+nKept+'건 채택 · 임계값(0.45) 미달 '+missed+'건 제외';
+    reportHonestNote.style.display = 'block';
+
+    // 하단 액션: 초안 다운로드 + 검증 투입
+    reportActions.style.display = 'flex';
+    reportActions.innerHTML = '';
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'btn primary';
+    dlBtn.textContent = '점검 보고서 초안 다운로드 (.md)';
+    dlBtn.addEventListener('click', function(){
+      // 서버가 별도 엔드포인트를 제공하면 fetch; 없으면 안내
+      fetch('/jobs/'+(WATCH.jobId||'demo')+'/draft_md')
+        .then(r => r.text())
+        .then(t => {
+          const blob = new Blob([t], {type:'text/markdown;charset=utf-8'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = '안전점검_초안_'+(WATCH.jobId||'demo')+'.md';
+          a.click(); URL.revokeObjectURL(url);
+        })
+        .catch(() => showErrorBanner('초안(draft_md)을 제공할 수 없습니다. (서버 설정 필요)'));
+    });
+    reportActions.appendChild(dlBtn);
+
+    const toVerifyBtn = document.createElement('button');
+    toVerifyBtn.className = 'btn';
+    toVerifyBtn.textContent = '이 초안을 보고서 검증에 넣기';
+    toVerifyBtn.addEventListener('click', function(){
+      // 검증 탭으로 이동 + 모드 전환
+      activateTab('verify', true);
       mode.kind = 'verify';
-    }
-    renderChips();
-    updateStartButton();
-  });
-
-  noticeInput.addEventListener('change', () => {
-    if (noticeInput.files.length) {
-      state.notice = noticeInput.files[0];
-    }
-    renderChips();
-    updateStartButton();
-  });
-
-  function updateStartButton() {
-    const btn = document.getElementById('startBtn');
-    if (mode.kind === 'inspect' && state.photos.length > 0) {
-      btn.disabled = false;
-      btn.classList.add('active');
-      btn.textContent = '안전 점검 시작';
-    } else if (mode.kind === 'verify' && state.doc) {
-      btn.disabled = false;
-      btn.classList.add('active');
-      btn.textContent = mode.photos.length > 0
-        ? '검사 시작 (문서 + 사진)'
-        : '검사 시작';
-    } else {
-      btn.disabled = true;
-      btn.classList.remove('active');
-      btn.textContent = mode.kind === 'inspect'
-        ? '사진을 선택해 주세요'
-        : '보고서와 사진을 선택해 주세요';
-    }
+      // 검증 탭 start 버튼이 활성화되도록 문서/사진 상태 구성
+      state.doc = null;
+      state.photos = WATCH.frames.map((_,i)=>({name:'프레임'+(i+1)+'.jpg'}));
+      // 검증 탭의 UI 업데이트를 트리거 (renderChips/updateStartButton 호출)
+      // 검증 탭 스크립트는 별도의 IIFE지만, 전역 state/mode 공유
+      // 여기서 바로 검증 시작 절차를 밟는다.
+      startVerifyFromReport();
+    });
+    reportActions.appendChild(toVerifyBtn);
   }
 
-  // ── 샘플 체험 (점검 모드 전용: GET /inspect/demo) ──────────────────────────
-  document.getElementById('inspectDemoBtn').addEventListener('click', function () {
-    this.disabled = true;
-    this.textContent = '점검 체험 로딩 중…';
-    fetch('/inspect/demo')
-      .then(r => r.json())
-      .then(data => {
-        if (data.status === 'skipped_api') {
-          // API 키 없이 엔진 결과만 받은 경우: inspect_result 로 결과 화면 진입
-          renderInspectResult(data.inspect_result, data.draft_md || null);
-          this.disabled = false;
-          this.textContent = '📷 점검 샘플 체험 (사진 3장)';
-          return;
-        }
-        if (data.error) {
-          this.disabled = false;
-          this.textContent = '📷 점검 샘플 체험 (사진 3장)';
-          showErrorBanner('점검 체험 실패: ' + data.error);
-          return;
-        }
-        // 정상: inspect_result + draft_md 모두 있음
-        renderInspectResult(data.inspect_result, data.draft_md || null);
-        this.disabled = false;
-        this.textContent = '📷 점검 샘플 체험 (사진 3장)';
-      })
-      .catch(err => {
-        this.disabled = false;
-        this.textContent = '📷 점검 샘플 체험 (사진 3장)';
-        showErrorBanner('점검 체험 실패: ' + err.message);
-      });
-  });
-
-  // ── 검증 샘플 체험 (POST /jobs/demo → 완료 시 renderVerifyReport) ──────────
-  document.getElementById('verifyDemoBtn').addEventListener('click', function () {
-    this.disabled = true;
-    this.textContent = '검증 체험 로딩 중…';
-    mode.kind = 'verify';
-    fetch('/jobs/demo', { method: 'POST' })
-      .then(r => r.json())
-      .then(data => {
-        if (data.error || data.detail) {
-          this.disabled = false;
-          this.textContent = '📄 검증 샘플 체험 (보고서+사진)';
-          showErrorBanner('검증 체험 실패: ' + (data.error || data.detail));
-          return;
-        }
-        jobId = data.job_id;
-        enterProgress();
-        pollJob();
-        this.disabled = false;
-        this.textContent = '📄 검증 샘플 체험 (보고서+사진)';
-      })
-      .catch(err => {
-        this.disabled = false;
-        this.textContent = '📄 검증 샘플 체험 (보고서+사진)';
-        showErrorBanner('검증 체험 실패: ' + err.message);
-      });
-  });
-
-  // ── 검사 시작 ─────────────────────────────────────────────────────────────
-  document.getElementById('startBtn').addEventListener('click', startJob);
-
-  function startJob() {
-    if (mode.kind === 'inspect') {
-      startInspectJob();
-    } else {
+  // ── 리포트 탭에서 검증으로 넘기는 흐름 (mode.kind 전환 3곳 중 하나) ─────────
+  function startVerifyFromReport(){
+    // 검증 탭 업로드 영역 활성화 + 진행 진입
+    const vStartBtn = $('verifyStartBtn');
+    // 검증 탭의 state는 공유된 state 객체를 쓰므로, photos 가 이미 들어있음.
+    // 검증용 start 흐름: verifyStartBtn 클릭 시뮬레이션 대신 직접 시작
+    if(state.photos.length === 0){
+      showErrorBanner('검증에 넣을 사진 데이터가 없습니다. 관제 탭에서 먼저 분석해주세요.');
+      return;
+    }
+    // 검증 탭의 기존 검증 시작 로직 재사용: startVerifyJob()
+    // (전역에 선언되어 있음)
+    if(typeof startVerifyJob === 'function'){
       startVerifyJob();
     }
   }
 
-  function startInspectJob() {
-    if (!state.photos.length) return;
+  // ═════════════════════════════════════════════════════════════════════════════
+  // 3) 검증 탭 (#verify) — 기존 index.html 검증 UI 전부 이식
+  //    (renderVerifyReport·renderInspectResult·pollJob·verifyDemoBtn·alert→배너 등 보존)
+  // ═════════════════════════════════════════════════════════════════════════════
+
+  // ── 검증 탭 DOM 캐시 ──────────────────────────────────────────────────────────
+  const verifyPhotoInput  = $('verifyPhotoInput');
+  const verifyDocInput    = $('verifyDocInput');
+  const verifyNoticeInput = $('verifyNoticeInput');
+  const verifyFileChips   = $('verifyFileChips');
+  const verifyUploadArea  = $('verifyUploadArea');
+  const verifyProgressScreen = $('verifyProgressScreen');
+  const verifyResultScreen   = $('verifyResultScreen');
+  const verifyStartBtn    = $('verifyStartBtn');
+  const verifyDemoBtn     = $('verifyDemoBtn');
+  const verifyInspectDemoBtn = $('verifyInspectDemoBtn');
+  const verifyProgressFill= $('verifyProgressFill');
+  const verifyProgressLabel = $('verifyProgressLabel');
+  const verifyRetryBadge  = $('verifyRetryBadge');
+  const verifyStep1 = $('verifyStep1');
+  const verifyStep2 = $('verifyStep2');
+  const verifyStep3 = $('verifyStep3');
+  const verifyStep4 = $('verifyStep4');
+
+  // ── 파일 칩 렌더링 (검증 탭 전용) ────────────────────────────────────────────
+  function renderVerifyChips(){
+    verifyFileChips.innerHTML = '';
+    const items = [];
+    if(state.doc) items.push({ type:'문서', file:state.doc });
+    state.photos.forEach(f => items.push({ type:'사진', file:f }));
+    if(state.notice) items.push({ type:'공고문', file:state.notice });
+    items.forEach(({ type, file }) => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML =
+        '<span class="name">'+escapeHtml(file.name)+'</span>'+
+        '<span class="size">'+formatSize(file.size)+'</span>'+
+        '<button data-type="'+type+'" data-name="'+escapeAttr(file.name)+'">×</button>';
+      verifyFileChips.appendChild(chip);
+    });
+    verifyFileChips.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', function(){
+        const type = this.dataset.type;
+        const name = this.dataset.name;
+        if(type === '문서') state.doc = null;
+        else if(type === '사진'){ state.photos = state.photos.filter(f => f.name !== name); }
+        else if(type === '공고문') state.notice = null;
+        renderVerifyChips();
+        updateVerifyStartButton();
+      });
+    });
+  }
+  function formatSize(bytes){
+    if(bytes > 1024*1024) return (bytes/(1024*1024)).toFixed(1)+'MB';
+    if(bytes > 1024) return (bytes/1024).toFixed(0)+'KB';
+    return bytes+'B';
+  }
+
+  // ── 검증 탭 모드.kind 전환 3곳 ───────────────────────────────────────────────
+  //  (1) 사진 선택 → inspect
+  verifyPhotoInput.addEventListener('change', () => {
+    if(verifyPhotoInput.files.length){
+      state.photos = Array.from(verifyPhotoInput.files);
+      mode.kind = 'inspect';
+    }
+    renderVerifyChips();
+    updateVerifyStartButton();
+  });
+  //  (2) 문서 선택 → verify
+  verifyDocInput.addEventListener('change', () => {
+    if(verifyDocInput.files.length){
+      state.doc = verifyDocInput.files[0];
+      mode.kind = 'verify';
+    }
+    renderVerifyChips();
+    updateVerifyStartButton();
+  });
+  //  (3) 공고문
+  verifyNoticeInput.addEventListener('change', () => {
+    if(verifyNoticeInput.files.length){
+      state.notice = verifyNoticeInput.files[0];
+    }
+    renderVerifyChips();
+    updateVerifyStartButton();
+  });
+
+  function updateVerifyStartButton(){
+    const btn = verifyStartBtn;
+    if(mode.kind === 'inspect' && state.photos.length > 0){
+      btn.disabled = false;
+      btn.classList.add('active');
+      btn.textContent = '안전 점검 시작';
+    } else if(mode.kind === 'verify' && state.doc){
+      btn.disabled = false;
+      btn.classList.add('active');
+      btn.textContent = state.photos.length > 0 ? '검사 시작 (문서 + 사진)' : '검사 시작';
+    } else {
+      btn.disabled = true;
+      btn.classList.remove('active');
+      btn.textContent = mode.kind === 'inspect' ? '사진을 선택해 주세요' : '보고서와 사진을 선택해 주세요';
+    }
+  }
+
+  verifyStartBtn.addEventListener('click', startJob);
+
+  // ── 검사 시작 ────────────────────────────────────────────────────────────────
+  function startJob(){
+    if(mode.kind === 'inspect'){ startInspectJob(); }
+    else { startVerifyJob(); }
+  }
+
+  function startInspectJob(){
+    if(!state.photos.length) return;
     const formData = new FormData();
     state.photos.forEach(p => formData.append('files', p));
     formData.append('gauge', 'false');
 
-    const startBtn = document.getElementById('startBtn');
-    startBtn.disabled = true;
-    startBtn.textContent = '점검 시작 중…';
+    const btn = verifyStartBtn;
+    btn.disabled = true;
+    btn.textContent = '점검 시작 중…';
 
-    fetch('/inspect', { method: 'POST', body: formData })
+    fetch('/inspect', { method:'POST', body:formData })
       .then(r => r.json())
       .then(data => {
-        if (data.error || data.detail) {
-          startBtn.disabled = false;
-          startBtn.textContent = '안전 점검 시작';
-          alert('점검 시작 실패: ' + (data.error || data.detail));
+        if(data.error || data.detail){
+          btn.disabled = false;
+          btn.textContent = '안전 점검 시작';
+          showErrorBanner('점검 시작 실패: '+(data.error || data.detail));
           return;
         }
         jobId = data.job_id;
-        enterProgress();
+        enterVerifyProgress();
         pollJob();
       })
       .catch(err => {
-        startBtn.disabled = false;
-        startBtn.textContent = '안전 점검 시작';
-        alert('요청 실패: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = '안전 점검 시작';
+        showErrorBanner('요청 실패: '+err.message);
       });
   }
 
-  function startVerifyJob() {
-    if (!state.doc) return;
+  function startVerifyJob(){
+    if(!state.doc) return;
     const formData = new FormData();
     formData.append('document', state.doc);
     state.photos.forEach(p => formData.append('photos', p));
-    if (state.notice) formData.append('notice', state.notice);
+    if(state.notice) formData.append('notice', state.notice);
 
-    const startBtn = document.getElementById('startBtn');
-    startBtn.disabled = true;
-    startBtn.textContent = '검사 시작 중…';
+    const btn = verifyStartBtn;
+    btn.disabled = true;
+    btn.textContent = '검사 시작 중…';
 
-    fetch('/jobs', { method: 'POST', body: formData })
+    fetch('/jobs', { method:'POST', body:formData })
       .then(r => r.json())
       .then(data => {
-        if (data.error || data.detail) {
-          startBtn.disabled = false;
-          startBtn.textContent = mode.photos.length > 0
-            ? '검사 시작 (문서 + 사진)'
-            : '검사 시작';
-          alert('검사 시작 실패: ' + (data.error || data.detail));
+        if(data.error || data.detail){
+          btn.disabled = false;
+          btn.textContent = state.photos.length > 0 ? '검사 시작 (문서 + 사진)' : '검사 시작';
+          showErrorBanner('검사 시작 실패: '+(data.error || data.detail));
           return;
         }
         jobId = data.job_id;
-        enterProgress();
+        enterVerifyProgress();
         pollJob();
       })
       .catch(err => {
-        startBtn.disabled = false;
-        startBtn.textContent = mode.photos.length > 0
-          ? '검사 시작 (문서 + 사진)'
-          : '검사 시작';
-        alert('요청 실패: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = state.photos.length > 0 ? '검사 시작 (문서 + 사진)' : '검사 시작';
+        showErrorBanner('요청 실패: '+err.message);
       });
   }
 
-  // ── 진행 화면 진입 ────────────────────────────────────────────────────────
-  function enterProgress() {
-    document.getElementById('uploadArea').style.display = 'none';
-    const ps = document.getElementById('progressScreen');
-    ps.style.display = 'block';
-    ps.querySelectorAll('.step').forEach(s => { s.classList.remove('active', 'done'); });
-    document.getElementById('step1').classList.add('active');
-    document.getElementById('progressFill').style.width = '0%';
-    document.getElementById('progressLabel').textContent = '0%';
-    document.getElementById('retryBadge').style.display = 'none';
+  // ── 검증 탭 진행 화면 진입 ───────────────────────────────────────────────────
+  function enterVerifyProgress(){
+    verifyUploadArea.style.display = 'none';
+    verifyProgressScreen.style.display = 'block';
+    [verifyStep1,verifyStep2,verifyStep3,verifyStep4].forEach(s => s.classList.remove('active','done'));
+    verifyStep1.classList.add('active');
+    verifyProgressFill.style.width = '0%';
+    verifyProgressLabel.textContent = '0%';
+    verifyRetryBadge.style.display = 'none';
     retryCount = 0;
-    if (pollRestartTimer) { clearTimeout(pollRestartTimer); pollRestartTimer = null; }
+    if(pollRestartTimer){ clearTimeout(pollRestartTimer); pollRestartTimer = null; }
   }
 
-  // ── 폴링 ──────────────────────────────────────────────────────────────────
-  function pollJob() {
-    fetch('/jobs/' + jobId)
+  // ── 폴링 (setTimeout 체인, setInterval 금지) ────────────────────────────────
+  function pollJob(){
+    fetch('/jobs/'+jobId)
       .then(r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
+        if(!r.ok) throw new Error('HTTP '+r.status);
         return r.json();
       })
       .then(data => {
         retryCount = 0;
-        document.getElementById('retryBadge').style.display = 'none';
+        verifyRetryBadge.style.display = 'none';
 
-        if (data.error) {
+        if(data.error){
           showFatalError(data.error);
           return;
         }
 
         const progress = data.progress || 0;
-        document.getElementById('progressFill').style.width = progress + '%';
-        document.getElementById('progressLabel').textContent = progress + '%';
+        verifyProgressFill.style.width = progress+'%';
+        verifyProgressLabel.textContent = progress+'%';
 
         // 스텝퍼 업데이트
-        const step1 = document.getElementById('step1');
-        const step2 = document.getElementById('step2');
-        const step3 = document.getElementById('step3');
-        const step4 = document.getElementById('step4');
-        step1.classList.remove('active', 'done');
-        step2.classList.remove('active', 'done');
-        step3.classList.remove('active', 'done');
-        step4.classList.remove('active', 'done');
+        verifyStep1.classList.remove('active','done');
+        verifyStep2.classList.remove('active','done');
+        verifyStep3.classList.remove('active','done');
+        verifyStep4.classList.remove('active','done');
 
         const step = data.step || '';
-        if (step.includes('문서 판독') || progress < 20) {
-          step1.classList.add('active');
-        } else if (step.includes('법령') || step.includes('문헌') || (progress >= 20 && progress < 50)) {
-          step1.classList.add('done');
-          step2.classList.add('active');
-        } else if (step.includes('사진') || (progress >= 50 && progress < 80)) {
-          step1.classList.add('done');
-          step2.classList.add('done');
-          step3.classList.add('active');
-        } else if (step.includes('종합') || progress >= 80) {
-          step1.classList.add('done');
-          step2.classList.add('done');
-          step3.classList.add('done');
-          step4.classList.add('active');
-        } else if (progress >= 100) {
-          step1.classList.add('done');
-          step2.classList.add('done');
-          step3.classList.add('done');
-          step4.classList.add('done');
+        if(step.includes('문서 판독') || progress < 20){
+          verifyStep1.classList.add('active');
+        } else if(step.includes('법령') || step.includes('문헌') || (progress>=20 && progress<50)){
+          verifyStep1.classList.add('done');
+          verifyStep2.classList.add('active');
+        } else if(step.includes('사진') || (progress>=50 && progress<80)){
+          verifyStep1.classList.add('done');
+          verifyStep2.classList.add('done');
+          verifyStep3.classList.add('active');
+        } else if(step.includes('종합') || progress>=80){
+          verifyStep1.classList.add('done');
+          verifyStep2.classList.add('done');
+          verifyStep3.classList.add('done');
+          verifyStep4.classList.add('active');
+        } else if(progress >= 100){
+          verifyStep1.classList.add('done');
+          verifyStep2.classList.add('done');
+          verifyStep3.classList.add('done');
+          verifyStep4.classList.add('done');
         }
 
-        if (data.status === 'done') {
-          clearInterval(pollTimer);
+        if(data.status === 'done'){
+          // clearInterval 대신 clearTimeout (pollTimer는 setTimeout 체인)
+          clearTimeout(pollTimer);
           pollTimer = null;
           showReport();
-        } else if (data.status === 'error') {
-          clearInterval(pollTimer);
+        } else if(data.status === 'error'){
+          clearTimeout(pollTimer);
           pollTimer = null;
           showFatalError(data.error || '처리 중 오류가 발생했습니다.');
         } else {
@@ -979,118 +1847,101 @@ body {
         }
       })
       .catch(err => {
-        // 폴링 오류: 원문 노출 금지, 회색 배지 + 지수 백오프
-        document.getElementById('retryBadge').style.display = 'inline-block';
-        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        verifyRetryBadge.style.display = 'inline-block';
+        if(pollTimer){ clearTimeout(pollTimer); pollTimer = null; }
         retryCount++;
-        const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 30000);
+        const delay = Math.min(1000 * Math.pow(2, retryCount-1), 30000);
         pollRestartTimer = setTimeout(pollJob, delay);
       });
   }
 
-  function showFatalError(msg) {
-    clearInterval(pollTimer);
+  function showFatalError(msg){
+    clearTimeout(pollTimer);
     pollTimer = null;
-    if (pollRestartTimer) { clearTimeout(pollRestartTimer); pollRestartTimer = null; }
-    document.getElementById('progressScreen').style.display = 'none';
-    document.getElementById('uploadArea').style.display = 'block';
+    if(pollRestartTimer){ clearTimeout(pollRestartTimer); pollRestartTimer = null; }
+    verifyProgressScreen.style.display = 'none';
+    verifyUploadArea.style.display = 'block';
     showErrorBanner(msg);
   }
 
-  function showErrorBanner(msg) {
-    const banner = document.getElementById('errorBanner');
-    banner.style.display = 'block';
-    banner.className = 'error-banner';
-    banner.innerHTML =
-      '<span class="msg">' + escapeHtml(msg).replace(/\n/g, '<br>') + '</span>' +
-      '<button class="close-btn" type="button">닫기</button>';
-    banner.querySelector('.close-btn').addEventListener('click', function () {
-      banner.style.display = 'none';
-    });
-  }
-
-  // ── 결과 화면 ─────────────────────────────────────────────────────────────
-  function showReport() {
-    if (mode.kind === 'inspect') {
-      // 점검 모드: /jobs/{id} 결과는 {inspect_result, draft_md} 구조
-      fetch('/jobs/' + jobId)
+  // ── 결과 화면 진입 (검증 모드: /jobs/{id}/report) ────────────────────────────
+  function showReport(){
+    if(mode.kind === 'inspect'){
+      fetch('/jobs/'+jobId)
         .then(r => r.json())
         .then(data => {
-          if (data.error) { showFatalError(data.error); return; }
+          if(data.error){ showFatalError(data.error); return; }
           const result = data.result;
-          if (!result) { showFatalError('점검 결과가 없습니다.'); return; }
+          if(!result){ showFatalError('점검 결과가 없습니다.'); return; }
           renderInspectResult(result.inspect_result, result.draft_md || null);
         })
         .catch(err => {
-          document.getElementById('progressScreen').style.display = 'none';
-          document.getElementById('uploadArea').style.display = 'block';
-          alert('리포트 로드 실패: ' + err.message);
+          verifyProgressScreen.style.display = 'none';
+          verifyUploadArea.style.display = 'block';
+          showErrorBanner('리포트 로드 실패: '+err.message);
         });
       return;
     }
-    // 검증 모드(기존): /jobs/{id}/report
-    fetch('/jobs/' + jobId + '/report')
+    // 검증 모드: /jobs/{id}/report
+    fetch('/jobs/'+jobId+'/report')
       .then(r => r.json())
       .then(report => renderVerifyReport(report))
       .catch(err => {
-        document.getElementById('progressScreen').style.display = 'none';
-        document.getElementById('uploadArea').style.display = 'block';
-        alert('리포트 로드 실패: ' + err.message);
+        verifyProgressScreen.style.display = 'none';
+        verifyUploadArea.style.display = 'block';
+        showErrorBanner('리포트 로드 실패: '+err.message);
       });
   }
 
-  function renderReport(r) {
-    if (r.inspect_result !== undefined) {
+  function renderReport(r){
+    if(r.inspect_result !== undefined){
       renderInspectResult(r.inspect_result, r.draft_md);
       return;
     }
     renderVerifyReport(r);
   }
 
-  // ── 점검 결과 화면 ─────────────────────────────────────────────────────────
-  function renderInspectResult(inspect_result, draft_md) {
-    const screen = document.getElementById('resultScreen');
-    screen.style.display = 'block';
-    screen.innerHTML = '';
+  // ── 점검 결과 화면 (renderInspectResult — 기존 블록 그대로) ─────────────────
+  function renderInspectResult(inspect_result, draft_md){
+    verifyResultScreen.style.display = 'block';
+    verifyResultScreen.innerHTML = '';
 
     const photos = inspect_result && inspect_result.photos ? inspect_result.photos : [];
     const summary = inspect_result && inspect_result.summary ? inspect_result.summary : {};
 
-    // 종합 배지
     const verdict = summary.판정 || '양호';
     const badgeMap = {
-      '조치 필요': { cls: 'badge-danger', css: 'var(--red)', bg: 'var(--red-bg)', fg: 'var(--red-fg)', icon: '🔴', label: '조치 필요' },
-      '주의':      { cls: 'badge-warning', css: 'var(--orange)', bg: 'var(--orange-bg)', fg: 'var(--orange-fg)', icon: '⚠️', label: '주의' },
-      '양호':      { cls: 'badge-caution', css: 'var(--yellow)', bg: 'var(--yellow-bg)', fg: 'var(--yellow-fg)', icon: '✅', label: '양호' },
+      '조치 필요':{ cls:'badge-danger', css:'var(--red)', bg:'var(--red-bg)', fg:'var(--red-fg)', icon:'🔴', label:'조치 필요' },
+      '주의':     { cls:'badge-warning', css:'var(--orange)', bg:'var(--orange-bg)', fg:'var(--orange-fg)', icon:'⚠️', label:'주의' },
+      '양호':     { cls:'badge-caution', css:'var(--yellow)', bg:'var(--yellow-bg)', fg:'var(--yellow-fg)', icon:'✅', label:'양호' },
     };
     const b = badgeMap[verdict] || badgeMap['양호'];
 
     const summaryBox = document.createElement('div');
     summaryBox.style.cssText =
-      'padding:14px 16px;border-radius:10px;background:' + b.bg +
-      ';color:' + b.fg + ';border:1px solid;border-bottom:4px solid ' + b.css +
+      'padding:14px 16px;border-radius:10px;background:'+b.bg+
+      ';color:'+b.fg+';border:1px solid;border-bottom:4px solid '+b.css+
       ';font-weight:600;display:flex;align-items:center;gap:12px;margin-bottom:20px;';
     summaryBox.innerHTML =
-      '<span style="font-size:24px;">' + b.icon + '</span>' +
-      '<div>' +
-      '<div style="font-size:18px;">종합 판정: <b>' + b.label + '</b></div>' +
-      '<div style="font-size:13px;opacity:0.85;margin-top:2px;">' +
-      '위험 ' + (summary.위험 || 0) + '건 · 주의 ' + (summary.주의 || 0) + '건 · 양호 ' + (summary.양호 || 0) + '건' +
-      '</div>' +
+      '<span style="font-size:24px;">'+b.icon+'</span>'+
+      '<div>'+
+      '<div style="font-size:18px;">종합 판정: <b>'+b.label+'</b></div>'+
+      '<div style="font-size:13px;opacity:0.85;margin-top:2px;">'+
+      '위험 '+(summary.위험||0)+'건 · 주의 '+(summary.주의||0)+'건 · 양호 '+(summary.양호||0)+'건'+
+      '</div>'+
       '</div>';
-    screen.appendChild(summaryBox);
+    verifyResultScreen.appendChild(summaryBox);
 
-    // 사진별 카드
-    if (photos.length === 0) {
+    if(photos.length === 0){
       const empty = document.createElement('p');
       empty.className = 'empty-state';
       empty.textContent = '점검할 사진이 없습니다.';
-      screen.appendChild(empty);
+      verifyResultScreen.appendChild(empty);
     } else {
       const heading = document.createElement('div');
       heading.className = 'section-heading';
-      heading.innerHTML = '사진별 점검 결과 <span class="count">' + photos.length + '</span>장';
-      screen.appendChild(heading);
+      heading.innerHTML = '사진별 점검 결과 <span class="count">'+photos.length+'</span>장';
+      verifyResultScreen.appendChild(heading);
 
       const cards = document.createElement('div');
       cards.className = 'action-cards';
@@ -1103,71 +1954,55 @@ body {
         const action = ph.action || '';
 
         const card = document.createElement('div');
-        card.className = 'card ' + (
-          risk_level === '위험' ? 'badge-danger' :
-          risk_level === '주의' ? 'badge-warning' : 'badge-caution'
-        );
+        card.className = 'card '+(risk_level==='위험'?'badge-danger':risk_level==='주의'?'badge-warning':'badge-caution');
 
-        // 썸네일(서버 서빙 엔드포인트 사용)
-        const photoN = idx + 1;
+        const photoN = idx+1;
         let thumbUrl = '';
         const jobIdForThumb = jobId || '';
-        if (jobIdForThumb) {
-          thumbUrl = '/jobs/' + jobIdForThumb + '/photos/' + photoN;
-        }
+        if(jobIdForThumb) thumbUrl = '/jobs/'+jobIdForThumb+'/photos/'+photoN;
 
-        // 검출 라벨 칩
         const labelChips = detections.map(d => {
           const label = d.label || '';
           const conf = d.conf != null ? d.conf : 0;
-          return '<span class="detection-label">' + escapeHtml(label) + ' ' + conf.toFixed(2) + '</span>';
+          return '<span class="detection-label">'+escapeHtml(label)+' '+conf.toFixed(2)+'</span>';
         }).join(' ');
 
-        // 위험도에 따른 색상 표시
-        const riskColorMap = {
-          '위험': 'var(--red)',
-          '주의': 'var(--orange)',
-          '양호': 'var(--green)',
-        };
+        const riskColorMap = { '위험':'var(--red)', '주의':'var(--orange)', '양호':'var(--green)' };
 
-        // 관련 법령 발췌 (접기)
         let lawAccordionHtml = '';
-        if (law_refs.length > 0) {
+        if(law_refs.length > 0){
           const items = law_refs.map(ref => {
             const law = ref.법령 || '';
             const jo = ref.조 || '';
             const excerpt = ref.발췌 || '';
-            return '<div class="item">' +
-              '<div class="item-label">' + escapeHtml(law) + ' ' + escapeHtml(jo) + '</div>' +
-              '<div style="margin-top:2px;">' + escapeHtml(excerpt) + '</div>' +
+            return '<div class="item">'+
+              '<div class="item-label">'+escapeHtml(law)+' '+escapeHtml(jo)+'</div>'+
+              '<div style="margin-top:2px;">'+escapeHtml(excerpt)+'</div>'+
               '</div>';
           }).join('');
           lawAccordionHtml =
-            '<details class="accordion" style="margin-top:10px;">' +
-            '<summary>관련 법령·조문 발췌 ' + law_refs.length + '건 (접기)</summary>' +
-            '<div class="inner">' + items + '</div>' +
+            '<details class="accordion" style="margin-top:10px;">'+
+            '<summary>관련 법령·조문 발췌 '+law_refs.length+'건 (접기)</summary>'+
+            '<div class="inner">'+items+'</div>'+
             '</details>';
         }
 
         card.innerHTML =
-          '<div class="card-head">' +
-          '<span class="card-badge ' +
-            (risk_level === '위험' ? 'danger' :
-             risk_level === '주의' ? 'warning' : 'caution') + '">' +
-            risk_level.toUpperCase() + '</span>' +
-          '<p class="card-title">' + escapeHtml(photoName) + '</p>' +
-          '</div>' +
-          '<p class="card-problem">' + escapeHtml(action) + '</p>' +
-          '<div class="card-evidence">' +
-          (thumbUrl ? '<img class="photo-thumb" src="' + escapeAttr(thumbUrl) + '" alt="사진 ' + photoN + '">' : '') +
-          (labelChips ? '<div style="margin-top:6px;">' + labelChips + '</div>' : '') +
-          '</div>' +
+          '<div class="card-head">'+
+          '<span class="card-badge '+(risk_level==='위험'?'danger':risk_level==='주의'?'warning':'caution')+'">'+risk_level.toUpperCase()+'</span>'+
+          '<p class="card-title">'+escapeHtml(photoName)+'</p>'+
+          '</div>'+
+          '<p class="card-problem">'+escapeHtml(action)+'</p>'+
+          '<div class="card-evidence">'+
+          (thumbUrl ? '<img class="photo-thumb" src="'+escapeAttr(thumbUrl)+'" alt="사진 '+photoN+'">' : '')+
+          (labelChips ? '<div style="margin-top:6px;">'+labelChips+'</div>' : '')+
+          '</div>'+
           lawAccordionHtml;
 
         cards.appendChild(card);
       });
 
-      screen.appendChild(cards);
+      verifyResultScreen.appendChild(cards);
     }
 
     // 초안 다운로드 + 검증 보내기 버튼
@@ -1176,16 +2011,16 @@ body {
 
     const downloadBtn = document.createElement('button');
     downloadBtn.textContent = '점검 보고서 초안 다운로드 (.md)';
-    downloadBtn.addEventListener('click', function () {
-      if (!draft_md) {
-        alert('보고서 초안(draft_md)이 없습니다. (UPSTAGE_API_KEY 미설정 시 생성되지 않습니다)');
+    downloadBtn.addEventListener('click', function(){
+      if(!draft_md){
+        showErrorBanner('보고서 초안(draft_md)이 없습니다. (UPSTAGE_API_KEY 미설정 시 생성되지 않습니다)');
         return;
       }
-      const blob = new Blob([draft_md], { type: 'text/markdown;charset=utf-8' });
+      const blob = new Blob([draft_md], { type:'text/markdown;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = '안전점검_초안_' + (jobId || 'demo') + '.md';
+      a.download = '안전점검_초안_'+(jobId||'demo')+'.md';
       a.click();
       URL.revokeObjectURL(url);
     });
@@ -1193,66 +2028,64 @@ body {
 
     const verifyBtn = document.createElement('button');
     verifyBtn.textContent = '이 초안을 보고서 검증에 넣기';
-    verifyBtn.addEventListener('click', function () {
-      if (!draft_md) {
+    verifyBtn.addEventListener('click', function(){
+      if(!draft_md){
         showErrorBanner('초안이 없어 검증 흐름으로 보낼 수 없습니다. (UPSTAGE_API_KEY 미설정 시 생성되지 않습니다)');
         return;
       }
-      // 초안을 텍스트로 기존 검증 흐름(/jobs)에 투입: 문서 대신 초안 텍스트를 임시 파일로 제출
+      // 초안을 텍스트로 기존 검증 흐름(/jobs)에 투입
       const formData = new FormData();
-      const blob = new Blob([draft_md], { type: 'text/markdown' });
+      const blob = new Blob([draft_md], { type:'text/markdown' });
       formData.append('document', blob, '안전점검_초안.md');
-      // 사진 점검 결과 자체를 검증 관점으로 다시 보고 싶다면, photos 로 재구성하지 않고
-      // 여기서는 "초안만" 보내는 순환 데모로 동작한다.
-      fetch('/jobs', { method: 'POST', body: formData })
+      fetch('/jobs', { method:'POST', body:formData })
         .then(r => r.json())
         .then(data => {
-          if (data.error || data.detail) {
-            showErrorBanner('검증 흐름 투입 실패: ' + (data.error || data.detail));
+          if(data.error || data.detail){
+            showErrorBanner('검증 흐름 투입 실패: '+(data.error || data.detail));
             return;
           }
           jobId = data.job_id;
+          // 🔴 checklist: mode.kind 전환 3곳 중 하나 — 여기
           mode.kind = 'verify';
-          enterProgress();
+          enterVerifyProgress();
           pollJob();
         })
         .catch(err => {
-          showErrorBanner('요청 실패: ' + err.message);
+          showErrorBanner('요청 실패: '+err.message);
         });
     });
     actions.appendChild(verifyBtn);
 
-    screen.appendChild(actions);
+    verifyResultScreen.appendChild(actions);
   }
 
-  // ── 검증 결과 화면 (기존 렌더, 이름만 변경) ────────────────────────────────
-  function renderVerifyReport(r) {
-    const screen = document.getElementById('resultScreen');
-    screen.style.display = 'block';
-    screen.innerHTML = '';
+  // ── 검증 결과 화면 (renderVerifyReport — 조치 필요 카드 렌더 블록 포함) ───
+  function renderVerifyReport(r){
+    verifyResultScreen.style.display = 'block';
+    verifyResultScreen.innerHTML = '';
 
     const gate = r.gate || {};
     const status = gate.status || '확인 필요';
     const reason = gate.reason || '';
 
-    // ── 게이트 배너 ────────────────────────────────────────────────────────
+    // 게이트 배너
     const statusMap = {
-      '제출 가능': { cls: 'submittable', icon: '✅', label: '보고 가능' },
-      '보완 필요': { cls: 'revision', icon: '⚠️', label: '보완 필요' },
-      '확인 필요': { cls: 'check', icon: '🔍', label: '확인 필요' },
+      '제출 가능':{ cls:'submittable', icon:'✅', label:'보고 가능' },
+      '보완 필요':{ cls:'revision', icon:'⚠️', label:'보완 필요' },
+      '확인 필요':{ cls:'check', icon:'🔍', label:'확인 필요' },
     };
     const s = statusMap[status] || statusMap['확인 필요'];
     const banner = document.createElement('div');
-    banner.className = 'gate-banner ' + s.cls;
+    banner.className = 'gate-banner '+s.cls;
     banner.innerHTML =
-      '<span class="icon">' + s.icon + '</span>' +
-      '<div>' +
-      '<div><b>' + s.label + '</b></div>' +
-      '<div class="reason">' + escapeHtml(reason) + '</div>' +
+      '<span class="icon">'+s.icon+'</span>'+
+      '<div>'+
+      '<div><b>'+s.label+'</b></div>'+
+      '<div class="reason">'+escapeHtml(reason)+'</div>'+
       '</div>';
-    screen.appendChild(banner);
+    verifyResultScreen.appendChild(banner);
 
-    // ── 집계 ───────────────────────────────────────────────────────────────
+    // 집계
     const lawItems = (r.law_section && r.law_section.items) || [];
     const scResults = (r.subcontract_section && r.subcontract_section.results) || [];
     const photoMatches = (r.photo_section && r.photo_section.matches) || [];
@@ -1261,246 +2094,235 @@ body {
 
     const realRefIds = new Set();
     refsVerified.forEach(rv => {
-      if (rv.status === 'verified' || rv.status === 'partial') realRefIds.add(rv.id);
+      if(rv.status === 'verified' || rv.status === 'partial') realRefIds.add(rv.id);
     });
 
-    // 조치 필요
     const actionItems = [];
 
     // ① 법령 ❌ (해당 조 없음)
     lawItems.forEach(item => {
-      if (item.verdict === '해당 조 없음') {
-        const artStr = '제' + item.article + '조' + (item.paragraph ? ' 제' + item.paragraph + '항' : '');
+      if(item.verdict === '해당 조 없음'){
+        const artStr = '제'+item.article+'조'+(item.paragraph ? ' 제'+item.paragraph+'항' : '');
         actionItems.push({
-          badge: 'danger',
-          badgeLabel: '법령 ❌',
-          title: item.law_name_raw + ' ' + artStr,
-          problem: '인용한 법령이 실재하지 않습니다. 법령명·조문번호를 다시 확인하세요.',
-          evidence: item.note ? item.note : '해당 조문이 실재하지 않음',
-          action: '법령명·조문 재확인 후 보고서 수정',
-          tags: ['환각 조항'],
+          badge:'danger',
+          badgeLabel:'법령 ❌',
+          title:item.law_name_raw+' '+artStr,
+          problem:'인용한 법령이 실재하지 않습니다. 법령명·조문번호를 다시 확인하세요.',
+          evidence:item.note ? item.note : '해당 조문이 실재하지 않음',
+          action:'법령명·조문 재확인 후 보고서 수정',
+          tags:['환각 조항'],
         });
       }
     });
 
     // ② 사진 뒷받침 안 함
     photoMatches.forEach((m) => {
-      if (m.verdict === '뒷받침 안 함') {
-        const thumbUrl = m.photo_n ? '/jobs/' + jobId + '/photos/' + m.photo_n : null;
-        const label = (m.quote ? m.quote + ' 검출' : (m.domain || '')) + ' · ' + (m.verdict || '');
+      if(m.verdict === '뒷받침 안 함'){
+        const thumbUrl = m.photo_n ? '/jobs/'+jobId+'/photos/'+m.photo_n : null;
+        const label = (m.quote ? m.quote+' 검출' : (m.domain || ''))+' · '+(m.verdict || '');
         actionItems.push({
-          badge: 'danger',
-          badgeLabel: '사진 🔴',
-          title: (m.sentence || '').slice(0, 70),
-          problem: '현장 사진이 보고서 주장을 뒷받침하지 않습니다.',
-          evidence: '',
-          action: '사진 재촬영 또는 해당 주장 수정',
-          tags: ['사진 뒷받침 안 함'],
-          photoN: m.photo_n,
-          thumbUrl: thumbUrl,
-          label: label,
-          quote: m.quote || '',
-          reason: m.reason || '',
+          badge:'danger',
+          badgeLabel:'사진 🔴',
+          title:(m.sentence || '').slice(0,70),
+          problem:'현장 사진이 보고서 주장을 뒷받침하지 않습니다.',
+          evidence:'',
+          action:'사진 재촬영 또는 해당 주장 수정',
+          tags:['사진 뒷받침 안 함'],
+          photoN:m.photo_n,
+          thumbUrl:thumbUrl,
+          label:label,
+          quote:m.quote || '',
+          reason:m.reason || '',
         });
       }
     });
 
     // ③ 오인용 (🔴) — 실재 문헌인데 뒷받침 안 함
     matchResults.forEach(mr => {
-      if (mr.verdict === '뒷받침 안 함' && realRefIds.has(mr.ref_id)) {
+      if(mr.verdict === '뒷받침 안 함' && realRefIds.has(mr.ref_id)){
         actionItems.push({
-          badge: 'danger',
-          badgeLabel: '오인용 🔴',
-          title: (mr.claim || '').slice(0, 70),
-          problem: '실재하는 문헌을 내용과 다르게 인용했습니다.',
-          evidence: '',
-          action: '문헌 원문과 대조 후 인용 수정',
-          tags: ['오인용'],
-          quote: mr.quote || '',
-          reason: mr.reason || '',
-          refTitle: mr.metadata_title || '',
+          badge:'danger',
+          badgeLabel:'오인용 🔴',
+          title:(mr.claim || '').slice(0,70),
+          problem:'실재하는 문헌을 내용과 다르게 인용했습니다.',
+          evidence:'',
+          action:'문헌 원문과 대조 후 인용 수정',
+          tags:['오인용'],
+          quote:mr.quote || '',
+          reason:mr.reason || '',
+          refTitle:mr.metadata_title || '',
         });
       }
     });
 
     // ④ 적법도급 위험 신호
     scResults.forEach(item => {
-      if (item.label === '위험 신호') {
+      if(item.label === '위험 신호'){
         const ev = (item.evidence_sentences || []).join(' ');
         actionItems.push({
-          badge: 'warning',
-          badgeLabel: '적법도급 ⚠️',
-          title: item.name || ('축 ' + item.axis + ' 항목 ' + item.item),
-          problem: item.risk_keywords_hit ? item.risk_keywords_hit.join(', ') : '적법도급 기준 위반 가능성',
-          evidence: ev,
-          action: '적법도급 기준 준수 여부 재확인',
-          tags: ['위험 신호'],
+          badge:'warning',
+          badgeLabel:'적법도급 ⚠️',
+          title:item.name || ('축 '+item.axis+' 항목 '+item.item),
+          problem:item.risk_keywords_hit ? item.risk_keywords_hit.join(', ') : '적법도급 기준 위반 가능성',
+          evidence:ev,
+          action:'적법도급 기준 준수 여부 재확인',
+          tags:['위험 신호'],
         });
       }
     });
 
-    // ── 조치 필요 섹션 ─────────────────────────────────────────────────────
-    if (actionItems.length > 0) {
+    // 조치 필요 섹션
+    if(actionItems.length > 0){
       const heading = document.createElement('div');
       heading.className = 'section-heading';
-      heading.innerHTML = '조치 필요 <span class="count">' + actionItems.length + '</span>건';
-      screen.appendChild(heading);
+      heading.innerHTML = '조치 필요 <span class="count">'+actionItems.length+'</span>건';
+      verifyResultScreen.appendChild(heading);
 
       const cards = document.createElement('div');
       cards.className = 'action-cards';
 
       actionItems.forEach(item => {
         const card = document.createElement('div');
-        card.className = 'card ' + (
-          item.badge === 'danger' ? 'badge-danger' :
-          item.badge === 'warning' ? 'badge-warning' : 'badge-caution'
-        );
+        card.className = 'card '+(item.badge==='danger'?'badge-danger':item.badge==='warning'?'badge-warning':'badge-caution');
 
         let evidenceHtml = '';
-        if (item.photoN) {
+        if(item.photoN){
           evidenceHtml =
-            '<img class="photo-thumb" src="' + escapeAttr(item.thumbUrl) + '" alt="사진">' +
-            '<span class="detection-label">' + escapeHtml(item.label) + '</span>' +
-            (item.quote ? '<br><div style="font-size:12px;margin-top:4px;">주장: ' + escapeHtml(item.quote) + '</div>' : '') +
-            (item.reason ? '<div style="font-size:12px;color:#555;margin-top:2px;">사유: ' + escapeHtml(item.reason) + '</div>' : '');
-        } else if (item.refTitle) {
+            '<img class="photo-thumb" src="'+escapeAttr(item.thumbUrl)+'" alt="사진">'+
+            '<span class="detection-label">'+escapeHtml(item.label)+'</span>'+
+            (item.quote ? '<br><div style="font-size:12px;margin-top:4px;">주장: '+escapeHtml(item.quote)+'</div>' : '')+
+            (item.reason ? '<div style="font-size:12px;color:#555;margin-top:2px;">사유: '+escapeHtml(item.reason)+'</div>' : '');
+        } else if(item.refTitle){
           evidenceHtml =
-            '<div style="font-size:12px;margin-bottom:2px;"><b>인용 문헌:</b> ' + escapeHtml(item.refTitle) + '</div>' +
-            (item.quote ? '<div style="font-size:12px;">quote: ' + escapeHtml(item.quote) + '</div>' : '') +
-            (item.reason ? '<div style="font-size:12px;color:#555;margin-top:2px;">사유: ' + escapeHtml(item.reason) + '</div>' : '');
+            '<div style="font-size:12px;margin-bottom:2px;"><b>인용 문헌:</b> '+escapeHtml(item.refTitle)+'</div>'+
+            (item.quote ? '<div style="font-size:12px;">quote: '+escapeHtml(item.quote)+'</div>' : '')+
+            (item.reason ? '<div style="font-size:12px;color:#555;margin-top:2px;">사유: '+escapeHtml(item.reason)+'</div>' : '');
         } else {
           evidenceHtml = item.evidence ? escapeHtml(item.evidence) : '';
         }
 
         card.innerHTML =
-          '<div class="card-head">' +
-          '<span class="card-badge ' + item.badge + '">' + item.badgeLabel + '</span>' +
-          '<p class="card-title">' + escapeHtml(item.title) + '</p>' +
-          '</div>' +
-          '<p class="card-problem">' + escapeHtml(item.problem) + '</p>' +
-          '<div class="card-evidence">' + evidenceHtml + '</div>' +
-          '<p class="card-actions">' + escapeHtml(item.action) + '</p>';
+          '<div class="card-head">'+
+          '<span class="card-badge '+item.badge+'">'+item.badgeLabel+'</span>'+
+          '<p class="card-title">'+escapeHtml(item.title)+'</p>'+
+          '</div>'+
+          '<p class="card-problem">'+escapeHtml(item.problem)+'</p>'+
+          '<div class="card-evidence">'+evidenceHtml+'</div>'+
+          '<p class="card-actions">'+escapeHtml(item.action)+'</p>';
 
         cards.appendChild(card);
       });
 
-      screen.appendChild(cards);
+      verifyResultScreen.appendChild(cards);
     } else {
       const h = document.createElement('div');
       h.className = 'section-heading';
       h.innerHTML = '조치 필요 <span class="count">0</span>건';
-      screen.appendChild(h);
+      verifyResultScreen.appendChild(h);
       const es = document.createElement('p');
       es.className = 'empty-state';
       es.textContent = '즉시 보완이 필요한 항목이 없습니다.';
-      screen.appendChild(es);
+      verifyResultScreen.appendChild(es);
     }
 
-    // ── 확인 필요 (아코디언) ───────────────────────────────────────────────
+    // 확인 필요 (아코디언)
     const checkItems = [];
-
     lawItems.forEach(item => {
-      if (item.verdict === '스냅샷 미보유') {
+      if(item.verdict === '스냅샷 미보유'){
         checkItems.push({
-          label: item.law_name_raw + ' 제' + item.article + '조' + (item.paragraph ? ' 제' + item.paragraph + '항' : ''),
-          detail: '스냅샷 미보유 — 법령 내용 변동 가능성 있음',
+          label:item.law_name_raw+' 제'+item.article+'조'+(item.paragraph ? ' 제'+item.paragraph+'항' : ''),
+          detail:'스냅샷 미보유 — 법령 내용 변동 가능성 있음',
         });
       }
     });
-
     photoMatches.forEach(m => {
-      if (m.verdict === '판단 불가') {
+      if(m.verdict === '판단 불가'){
         checkItems.push({
-          label: (m.sentence || '').slice(0, 60) + ' (사진: ' + (m.photo_file || '?') + ')',
-          detail: m.reason || '객체 검출·대조 실패',
+          label:(m.sentence || '').slice(0,60)+' (사진: '+(m.photo_file || '?')+')',
+          detail:m.reason || '객체 검출·대조 실패',
         });
       }
     });
-
     scResults.forEach(item => {
-      if (item.label === '근거 없음-확인 필요') {
+      if(item.label === '근거 없음-확인 필요'){
         checkItems.push({
-          label: item.name || ('축 ' + item.axis + ' 항목 ' + item.item),
-          detail: '적법도급 판정 근거 부족 — 추가 자료 확인 필요',
+          label:item.name || ('축 '+item.axis+' 항목 '+item.item),
+          detail:'적법도급 판정 근거 부족 — 추가 자료 확인 필요',
         });
       }
     });
-
     matchResults.forEach(mr => {
-      if (mr.verdict === '판단 불가') {
+      if(mr.verdict === '판단 불가'){
         checkItems.push({
-          label: (mr.claim || '').slice(0, 60),
-          detail: mr.reason || '근거 대조 불가',
+          label:(mr.claim || '').slice(0,60),
+          detail:mr.reason || '근거 대조 불가',
         });
       }
     });
 
-    if (checkItems.length > 0) {
+    if(checkItems.length > 0){
       const heading = document.createElement('div');
       heading.className = 'section-heading';
-      heading.innerHTML = '확인 필요 <span class="count">' + checkItems.length + '</span>건';
-      screen.appendChild(heading);
+      heading.innerHTML = '확인 필요 <span class="count">'+checkItems.length+'</span>건';
+      verifyResultScreen.appendChild(heading);
 
       const acc = document.createElement('details');
       acc.className = 'accordion';
-      acc.innerHTML = '<summary>확인 필요 ' + checkItems.length + '건</summary><div class="inner"></div>';
+      acc.innerHTML = '<summary>확인 필요 '+checkItems.length+'건</summary><div class="inner"></div>';
       const inner = acc.querySelector('.inner');
       checkItems.forEach(item => {
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML =
-          '<div class="item-label">• ' + escapeHtml(item.label) + '</div>' +
-          '<div style="margin-top:2px;">' + escapeHtml(item.detail) + '</div>';
+          '<div class="item-label">• '+escapeHtml(item.label)+'</div>'+
+          '<div style="margin-top:2px;">'+escapeHtml(item.detail)+'</div>';
         inner.appendChild(div);
       });
-      screen.appendChild(acc);
+      verifyResultScreen.appendChild(acc);
     }
 
-    // ── 정상 (한 줄 요약 + 펼치기) ─────────────────────────────────────────
+    // 정상 (한 줄 요약 + 펼치기)
     const okItems = [];
-
     lawItems.forEach(item => {
-      if (item.verdict === '실존') {
+      if(item.verdict === '실존'){
         okItems.push({
-          label: item.law_name_raw + ' 제' + item.article + '조' + (item.paragraph ? ' 제' + item.paragraph + '항' : ''),
-          detail: '실존 확인',
+          label:item.law_name_raw+' 제'+item.article+'조'+(item.paragraph ? ' 제'+item.paragraph+'항' : ''),
+          detail:'실존 확인',
         });
       }
     });
-
     photoMatches.forEach(m => {
-      if (m.verdict === '뒷받침함') {
+      if(m.verdict === '뒷받침함'){
         okItems.push({
-          label: (m.sentence || '').slice(0, 60) + ' (사진: ' + (m.photo_file || '?') + ')',
-          detail: '사진으로 뒷받침됨',
+          label:(m.sentence || '').slice(0,60)+' (사진: '+(m.photo_file || '?')+')',
+          detail:'사진으로 뒷받침됨',
         });
       }
     });
-
     scResults.forEach(item => {
-      if (item.label === '적법 방향') {
+      if(item.label === '적법 방향'){
         okItems.push({
-          label: item.name || ('축 ' + item.axis + ' 항목 ' + item.item),
-          detail: '적법 방향 — 기준 충족',
+          label:item.name || ('축 '+item.axis+' 항목 '+item.item),
+          detail:'적법 방향 — 기준 충족',
         });
       }
     });
 
-    if (okItems.length > 0) {
+    if(okItems.length > 0){
       const heading = document.createElement('div');
       heading.className = 'section-heading';
-      heading.innerHTML = '정상 <span class="count">' + okItems.length + '</span>건';
-      screen.appendChild(heading);
+      heading.innerHTML = '정상 <span class="count">'+okItems.length+'</span>건';
+      verifyResultScreen.appendChild(heading);
 
       const summary = document.createElement('p');
       summary.className = 'ok-summary';
-      summary.textContent = okItems.length + '건 모두 기준이 확인되었습니다.';
-      screen.appendChild(summary);
+      summary.textContent = okItems.length+'건 모두 기준이 확인되었습니다.';
+      verifyResultScreen.appendChild(summary);
 
       const expandBtn = document.createElement('button');
       expandBtn.className = 'expand-btn';
-      expandBtn.textContent = '펼치기 (' + okItems.length + '건)';
-      screen.appendChild(expandBtn);
+      expandBtn.textContent = '펼치기 ('+okItems.length+'건)';
+      verifyResultScreen.appendChild(expandBtn);
 
       const list = document.createElement('div');
       list.className = 'ok-items';
@@ -1509,50 +2331,44 @@ body {
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML =
-          '<div class="item-label">• ' + escapeHtml(item.label) + '</div>' +
-          '<div style="margin-top:2px;color:var(--green);">' + escapeHtml(item.detail) + '</div>';
+          '<div class="item-label">• '+escapeHtml(item.label)+'</div>'+
+          '<div style="margin-top:2px;color:var(--green);">'+escapeHtml(item.detail)+'</div>';
         list.appendChild(div);
       });
-      screen.appendChild(list);
+      verifyResultScreen.appendChild(list);
 
-      expandBtn.addEventListener('click', function () {
+      expandBtn.addEventListener('click', function(){
         const visible = list.style.display === 'block';
         list.style.display = visible ? 'none' : 'block';
-        expandBtn.textContent = visible ? '펼치기 (' + okItems.length + '건)' : '접기 (' + okItems.length + '건)';
+        expandBtn.textContent = visible ? '펼치기 ('+okItems.length+'건)' : '접기 ('+okItems.length+'건)';
       });
     }
 
-    // ── 적법도급 요약 배지 + 아코디언 ─────────────────────────────────────
+    // 적법도급 요약 배지 + 아코디언
     const riskTotal = scResults.filter(x => x.label === '위험 신호').length;
     const compliantTotal = scResults.filter(x => x.label === '적법 방향').length;
     const noneedTotal = scResults.filter(x => x.label === '근거 없음-확인 필요').length;
 
     const scHeading = document.createElement('div');
     scHeading.className = 'section-heading';
-    scHeading.innerHTML = '적법도급 체크리스트 <span class="count">' + scResults.length + '</span>건';
-    screen.appendChild(scHeading);
+    scHeading.innerHTML = '적법도급 체크리스트 <span class="count">'+scResults.length+'</span>건';
+    verifyResultScreen.appendChild(scHeading);
 
     const badges = document.createElement('div');
     badges.className = 'subcontract-badges';
-    if (riskTotal > 0) {
-      badges.innerHTML += '<span class="subbadge risk">⚠️ 위험 ' + riskTotal + '건</span>';
-    }
-    if (compliantTotal > 0) {
-      badges.innerHTML += '<span class="subbadge compliant">✅ 적법 방향 ' + compliantTotal + '건</span>';
-    }
-    if (noneedTotal > 0) {
-      badges.innerHTML += '<span class="subbadge noneed">🔍 확인 필요 ' + noneedTotal + '건</span>';
-    }
-    if (riskTotal === 0 && compliantTotal === 0 && noneedTotal === 0 && scResults.length > 0) {
+    if(riskTotal > 0) badges.innerHTML += '<span class="subbadge risk">⚠️ 위험 '+riskTotal+'건</span>';
+    if(compliantTotal > 0) badges.innerHTML += '<span class="subbadge compliant">✅ 적법 방향 '+compliantTotal+'건</span>';
+    if(noneedTotal > 0) badges.innerHTML += '<span class="subbadge noneed">🔍 확인 필요 '+noneedTotal+'건</span>';
+    if(riskTotal===0 && compliantTotal===0 && noneedTotal===0 && scResults.length>0){
       badges.innerHTML = '<span class="subbadge compliant">✅ 전부 적법 방향</span>';
     }
-    screen.appendChild(badges);
+    verifyResultScreen.appendChild(badges);
 
-    if (riskTotal > 0) {
+    if(riskTotal > 0){
       const riskHeading = document.createElement('div');
       riskHeading.style.cssText = 'font-size:13px;font-weight:600;margin:10px 0 6px;color:var(--red);';
-      riskHeading.textContent = '⚠️ 위험 신호 ' + riskTotal + '건';
-      screen.appendChild(riskHeading);
+      riskHeading.textContent = '⚠️ 위험 신호 '+riskTotal+'건';
+      verifyResultScreen.appendChild(riskHeading);
 
       const riskList = document.createElement('div');
       riskList.style.cssText = 'font-size:13px;color:var(--text-secondary);margin-bottom:12px;';
@@ -1561,82 +2377,140 @@ body {
         div.style.cssText = 'padding:4px 0;border-bottom:1px solid var(--gray-bg);';
         const ev = (item.evidence_sentences || []).join(' ');
         div.innerHTML =
-          '<b>' + escapeHtml(item.name || ('축 ' + item.axis + ' 항목 ' + item.item)) + '</b>' +
-          (item.risk_keywords_hit ? ' — ' + escapeHtml(item.risk_keywords_hit.join(', ')) : '') +
-          (ev ? '<br><span style="font-size:12px;">근거: ' + escapeHtml(ev) + '</span>' : '');
+          '<b>'+escapeHtml(item.name || ('축 '+item.axis+' 항목 '+item.item))+'</b>'+
+          (item.risk_keywords_hit ? ' — '+escapeHtml(item.risk_keywords_hit.join(', ')) : '')+
+          (ev ? '<br><span style="font-size:12px;">근거: '+escapeHtml(ev)+'</span>' : '');
         riskList.appendChild(div);
       });
-      screen.appendChild(riskList);
+      verifyResultScreen.appendChild(riskList);
     }
 
-    // 전체 18항목 아코디언
-    if (scResults.length > 0) {
+    if(scResults.length > 0){
       const acc = document.createElement('details');
       acc.className = 'accordion';
       const total = scResults.length;
-      acc.innerHTML = '<summary>전체 ' + total + '항목</summary><div class="inner"></div>';
+      acc.innerHTML = '<summary>전체 '+total+'항목</summary><div class="inner"></div>';
       const inner = acc.querySelector('.inner');
       scResults.forEach(item => {
         const div = document.createElement('div');
         div.className = 'item';
         const labelColor = {
-          '위험 신호': 'var(--red)',
-          '적법 방향': 'var(--green)',
-          '근거 없음-확인 필요': 'var(--yellow)',
-        } [item.label] || 'var(--text)';
+          '위험 신호':'var(--red)',
+          '적법 방향':'var(--green)',
+          '근거 없음-확인 필요':'var(--yellow)',
+        }[item.label] || 'var(--text)';
         div.innerHTML =
-          '<div class="item-label">' +
-          '[축 ' + item.axis + '·항목 ' + item.item + '] ' + escapeHtml(item.name || '') +
-          ' — <span style="color:' + labelColor + ';">' + escapeHtml(item.label) + '</span>' +
-          '</div>' +
+          '<div class="item-label">'+
+          '[축 '+item.axis+'·항목 '+item.item+'] '+escapeHtml(item.name || '')+
+          ' — <span style="color:'+labelColor+';">'+escapeHtml(item.label)+'</span>'+
+          '</div>'+
           (item.evidence_sentences && item.evidence_sentences.length > 0 ?
-            '<div style="margin-top:2px;font-size:12px;color:var(--text-secondary);">근거: ' +
-            escapeHtml(item.evidence_sentences.join(' ')) + '</div>' : '');
+            '<div style="margin-top:2px;font-size:12px;color:var(--text-secondary);">근거: '+
+            escapeHtml(item.evidence_sentences.join(' '))+'</div>' : '');
         inner.appendChild(div);
       });
-      screen.appendChild(acc);
+      verifyResultScreen.appendChild(acc);
     } else {
       const es = document.createElement('p');
       es.className = 'empty-state';
       es.textContent = '적법도급 체크리스트 결과가 없습니다.';
-      screen.appendChild(es);
+      verifyResultScreen.appendChild(es);
     }
 
-    // ── 하단 버튼 ──────────────────────────────────────────────────────────
+    // 하단 버튼
     const actions = document.createElement('div');
     actions.className = 'result-actions';
     const saveBtn = document.createElement('button');
     saveBtn.textContent = '결과 JSON 저장';
-    saveBtn.addEventListener('click', function () {
-      const blob = new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' });
+    saveBtn.addEventListener('click', function(){
+      const blob = new Blob([JSON.stringify(r, null, 2)], { type:'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = '검증결과_' + jobId + '.json';
+      a.download = '검증결과_'+jobId+'.json';
       a.click();
       URL.revokeObjectURL(url);
     });
     const rescanBtn = document.createElement('button');
     rescanBtn.textContent = '다시 점검';
-    rescanBtn.addEventListener('click', function () {
-      screen.style.display = 'none';
-      document.getElementById('uploadArea').style.display = 'block';
-      document.getElementById('startBtn').disabled = true;
-      document.getElementById('startBtn').classList.remove('active');
-      document.getElementById('startBtn').textContent = '사진 선택 후 안전 점검 시작';
+    rescanBtn.addEventListener('click', function(){
+      verifyResultScreen.style.display = 'none';
+      verifyUploadArea.style.display = 'block';
+      verifyStartBtn.disabled = true;
+      verifyStartBtn.classList.remove('active');
+      verifyStartBtn.textContent = '사진 선택 후 안전 점검 시작';
       state.photos = [];
       state.doc = null;
       state.notice = null;
-      photoInput.value = '';
-      docInput.value = '';
-      noticeInput.value = '';
-      renderChips();
-      updateStartButton();
+      verifyPhotoInput.value = '';
+      verifyDocInput.value = '';
+      verifyNoticeInput.value = '';
+      renderVerifyChips();
+      updateVerifyStartButton();
     });
     actions.appendChild(saveBtn);
     actions.appendChild(rescanBtn);
-    screen.appendChild(actions);
+    verifyResultScreen.appendChild(actions);
   }
+
+  // ── 검증 샘플 체험 (verifyDemoBtn / POST /jobs/demo) ─────────────────────────
+  // 🔴 checklist: verifyDemoBtn — 기존 함수 그대로, /jobs/demo 사용
+  verifyDemoBtn.addEventListener('click', function(){
+    this.disabled = true;
+    this.textContent = '검증 체험 로딩 중…';
+    mode.kind = 'verify';
+    fetch('/jobs/demo', { method:'POST' })
+      .then(r => r.json())
+      .then(data => {
+        if(data.error || data.detail){
+          this.disabled = false;
+          this.textContent = '📄 검증 샘플 체험 (보고서+사진)';
+          showErrorBanner('검증 체험 실패: '+(data.error || data.detail));
+          return;
+        }
+        jobId = data.job_id;
+        enterVerifyProgress();
+        pollJob();
+        this.disabled = false;
+        this.textContent = '📄 검증 샘플 체험 (보고서+사진)';
+      })
+      .catch(err => {
+        this.disabled = false;
+        this.textContent = '📄 검증 샘플 체험 (보고서+사진)';
+        showErrorBanner('검증 체험 실패: '+err.message);
+      });
+  });
+
+  // ── 점검 샘플 체험 (검증 탭에도 배치, 기존 inspectDemoBtn 동작 유지) ────────
+  verifyInspectDemoBtn.addEventListener('click', function(){
+    this.disabled = true;
+    this.textContent = '점검 체험 로딩 중…';
+    mode.kind = 'inspect';
+    fetch('/inspect/demo')
+      .then(r => r.json())
+      .then(data => {
+        if(data.status === 'skipped_api'){
+          renderInspectResult(data.inspect_result, data.draft_md || null);
+          this.disabled = false;
+          this.textContent = '📷 점검 샘플 체험 (사진 3장)';
+          return;
+        }
+        if(data.error){
+          this.disabled = false;
+          this.textContent = '📷 점검 샘플 체험 (사진 3장)';
+          showErrorBanner('점검 체험 실패: '+data.error);
+          return;
+        }
+        renderInspectResult(data.inspect_result, data.draft_md || null);
+        this.disabled = false;
+        this.textContent = '📷 점검 샘플 체험 (사진 3장)';
+      })
+      .catch(err => {
+        this.disabled = false;
+        this.textContent = '📷 점검 샘플 체험 (사진 3장)';
+        showErrorBanner('점검 체험 실패: '+err.message);
+      });
+  });
 
 })();
 </script>
