@@ -1554,12 +1554,15 @@ figure.result-card{margin:0;break-inside:avoid}
       kept.slice(0,14).forEach((d, j) => {
         const col = vcol;
         const b = d.bbox;
+        if(!b) return;
         const labCls = b[0] > 0.7 ? 'r' : 'l';
         boxesHtml += '<div class="bx" style="left:'+(b[0]*100)+'%;top:'+(b[1]*100)+'%;width:'+(b[2]*100)+'%;height:'+(b[3]*100)+'%;border-color:'+col+'">'+
           '<span class="lab '+labCls+'" style="background:'+col+'">'+(KO[d.label]||d.label)+' '+Math.round(d.conf*100)+'</span></div>';
       });
-      const itemsStr = Object.keys(top||{}).sort((a,b)=>(top[b]-top[a])).slice(0,4)
-        .map(c => (KO[c]||c)+' '+(top[c]||0)).join(' · ') || '검출 없음';
+      const cnt = {};
+      kept.forEach(d => { cnt[d.label] = (cnt[d.label]||0)+1; });
+      const itemsStr = Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,4)
+        .map(c => (KO[c]||c)+' '+cnt[c]).join(' · ') || '검출 없음';
       // 법 조문 접기 (결과에서 law_refs 있으면 사용)
       let lawHtml = '';
       if(data.law_refs && data.law_refs.length){
