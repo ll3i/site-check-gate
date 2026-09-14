@@ -1490,16 +1490,20 @@ figure.result-card{margin:0;break-inside:avoid}
     const now = new Date();
     reportDate.textContent = now.getFullYear()+'. '+(now.getMonth()+1)+'. '+now.getDate();
 
-    // KPI 집계
+    // KPI 집계 — 프레임 risk_level 우선, 없으면 RULE 기반
     let nShots = frames.length, nKept = 0, nBad = 0, nWarn = 0;
     frames.forEach(f => {
       const kept = (f.detections || []).filter(d => d.conf >= TH(d.label));
       nKept += kept.length;
-      kept.forEach(d => {
-        const r = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]].r : 0;
-        if(r >= 3) nBad++;
-        else if(r === 2) nWarn++;
-      });
+      if(f.risk_level === '위험') { nBad++; }
+      else if(f.risk_level === '주의') { nWarn++; }
+      else {
+        kept.forEach(d => {
+          const r = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]].r : 0;
+          if(r >= 3) nBad++;
+          else if(r === 2) nWarn++;
+        });
+      }
     });
     reportKpiRow.innerHTML = `
       <div class="kpi"><div class="k">점검 이미지</div><div class="v">${nShots}</div></div>
@@ -1508,20 +1512,28 @@ figure.result-card{margin:0;break-inside:avoid}
       <div class="kpi"><div class="k">주의</div><div class="v orange">${nWarn}</div></div>
     `;
 
-    // 요약 테이블
+    // 요약 테이블 — 프레임 risk_level 우선
     let sumHtml = '';
     frames.forEach((f,i) => {
       const kept = (f.detections||[]).filter(d => d.conf >= TH(d.label));
-      const bad = kept.filter(d => { const r = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]].r : 0; return r>=3; });
       const top = {};
       kept.forEach(d => { const c = d.label; top[c] = (top[c]||0)+1; });
       const topStr = Object.keys(top).sort((a,b)=>top[b]-top[a]).slice(0,3)
         .map(c => (KO[c]||c)+' '+top[c]).join(' · ') || '검출 없음';
+      const rl = f.risk_level;
+      let riskCell = '';
+      if(rl === '위험') riskCell = '<td class="num bad">위험</td>';
+      else if(rl === '주의') riskCell = '<td class="num warn">주의</td>';
+      else {
+        const bad = kept.filter(d => { const r = CLS2RULE[d.label] ? RULE[CLS2RULE[d.label]].r : 0; return r>=3; });
+        if(bad.length) riskCell = '<td class="num bad">'+bad.length+'</td>';
+        else riskCell = '<td class="num">—</td>';
+      }
       sumHtml += '<tr>'+
         '<td>'+escapeHtml(f.info?.name || '프레임 '+(i+1))+'</td>'+
         '<td class="num">1</td>'+
         '<td class="num">'+kept.length+'</td>'+
-        '<td class="num '+(bad.length?'bad':'')+'">'+(bad.length||'—')+'</td>'+
+        riskCell+
         '<td class="muted">'+escapeHtml(topStr)+'</td>'+
         '</tr>';
     });
@@ -1582,57 +1594,99 @@ figure.result-card{margin:0;break-inside:avoid}
     // 하단 액션: 초안 다운로드 + 검증 투입
     reportActions.style.display = 'flex';
     reportActions.innerHTML = '';
+
+    // ── 초안 다운로드 버튼 ──────────────────────────────────────────────────
     const dlBtn = document.createElement('button');
     dlBtn.className = 'btn primary';
     dlBtn.textContent = '점검 보고서 초안 다운로드 (.md)';
     dlBtn.addEventListener('click', function(){
-      // 서버가 별도 엔드포인트를 제공하면 fetch; 없으면 안내
-      fetch('/jobs/'+(WATCH.jobId||'demo')+'/draft_md')
-        .then(r => r.text())
-        .then(t => {
-          const blob = new Blob([t], {type:'text/markdown;charset=utf-8'});
+      // draft_md 확보: WATCH.jobId 있으면 /jobs/{id}, 없으면 /inspect/demo
+      const src = WATCH.jobId ? '/jobs/'+WATCH.jobId : '/inspect/demo';
+      fetch(src)
+        .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+        .then(data => {
+          const md = data.draft_md;
+          if(!md || typeof md !== 'string'){
+            showErrorBanner('초안(draft_md)을 가져올 수 없습니다. (서버 응답 누락)');
+            return;
+          }
+          const blob = new Blob([md], {type:'text/markdown;charset=utf-8'});
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
-          a.href = url; a.download = '안전점검_초안_'+(WATCH.jobId||'demo')+'.md';
-          a.click(); URL.revokeObjectURL(url);
+          a.href = url;
+          a.download = '안전점검_초안_'+(WATCH.jobId||'demo')+'.md';
+          a.click();
+          URL.revokeObjectURL(url);
         })
-        .catch(() => showErrorBanner('초안(draft_md)을 제공할 수 없습니다. (서버 설정 필요)'));
+        .catch(() => showErrorBanner('초안(draft_md)을 가져올 수 없습니다. (서버 연결 오류)'));
     });
     reportActions.appendChild(dlBtn);
 
+    // ── 검증 투입 버튼 ──────────────────────────────────────────────────────
     const toVerifyBtn = document.createElement('button');
     toVerifyBtn.className = 'btn';
     toVerifyBtn.textContent = '이 초안을 보고서 검증에 넣기';
     toVerifyBtn.addEventListener('click', function(){
-      // 검증 탭으로 이동 + 모드 전환
-      activateTab('verify', true);
-      mode.kind = 'verify';
-      // 검증 탭 start 버튼이 활성화되도록 문서/사진 상태 구성
-      state.doc = null;
-      state.photos = WATCH.frames.map((_,i)=>({name:'프레임'+(i+1)+'.jpg'}));
-      // 검증 탭의 UI 업데이트를 트리거 (renderChips/updateStartButton 호출)
-      // 검증 탭 스크립트는 별도의 IIFE지만, 전역 state/mode 공유
-      // 여기서 바로 검증 시작 절차를 밟는다.
-      startVerifyFromReport();
+      // 초안 초안 먼저 확보 (실패 시 배너, 성공 시 검증 흐름 진행)
+      const src = WATCH.jobId ? '/jobs/'+WATCH.jobId : '/inspect/demo';
+      fetch(src)
+        .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+        .then(data => {
+          const md = data.draft_md;
+          if(!md || typeof md !== 'string'){
+            showErrorBanner('초안(draft_md)이 없어서 검증에 넣을 수 없습니다.');
+            return;
+          }
+          // 검증 탭으로 이동 + 모드 전환
+          activateTab('verify', true);
+          mode.kind = 'verify';
+          // 검증 탭 시작 버튼이 켜지도록 상태 구성
+          state.doc = new File([md], '초안_'+ (WATCH.jobId||'demo') +'.md', {type:'text/markdown;charset=utf-8'});
+          state.photos = WATCH.frames.map((_,i)=>({name:'프레임'+(i+1)+'.jpg'}));
+          // 검증 탭 UI 갱신 (renderChips / updateVerifyStartButton)
+          if(typeof renderVerifyChips === 'function') renderVerifyChips();
+          if(typeof updateVerifyStartButton === 'function') updateVerifyStartButton();
+          // 검증 시작: POST /jobs (document=초안 Blob) → mode.kind='verify' 유지
+          startVerifyJobWithDraft();
+        })
+        .catch(() => showErrorBanner('초안(draft_md)을 가져올 수 없습니다. (서버 연결 오류)'));
     });
     reportActions.appendChild(toVerifyBtn);
   }
 
-  // ── 리포트 탭에서 검증으로 넘기는 흐름 (mode.kind 전환 3곳 중 하나) ─────────
-  function startVerifyFromReport(){
-    // 검증 탭 업로드 영역 활성화 + 진행 진입
-    const vStartBtn = $('verifyStartBtn');
-    // 검증 탭의 state는 공유된 state 객체를 쓰므로, photos 가 이미 들어있음.
-    // 검증용 start 흐름: verifyStartBtn 클릭 시뮬레이션 대신 직접 시작
-    if(state.photos.length === 0){
-      showErrorBanner('검증에 넣을 사진 데이터가 없습니다. 관제 탭에서 먼저 분석해주세요.');
+  // ── 리포트에서 검증으로: 초안 Blob을 document 로 POST /jobs ─────────────────
+  function startVerifyJobWithDraft(){
+    if(!state.doc){
+      showErrorBanner('검증 문서가 준비되지 않았습니다.');
       return;
     }
-    // 검증 탭의 기존 검증 시작 로직 재사용: startVerifyJob()
-    // (전역에 선언되어 있음)
-    if(typeof startVerifyJob === 'function'){
-      startVerifyJob();
-    }
+    const formData = new FormData();
+    formData.append('document', state.doc);
+    state.photos.forEach(p => formData.append('photos', p));
+    if(state.notice) formData.append('notice', state.notice);
+
+    const btn = $('verifyStartBtn');
+    btn.disabled = true;
+    btn.textContent = '검사 시작 중…';
+
+    fetch('/jobs', { method:'POST', body:formData })
+      .then(r => r.json())
+      .then(data => {
+        if(data.error || data.detail){
+          btn.disabled = false;
+          btn.textContent = state.photos.length > 0 ? '검사 시작 (문서 + 사진)' : '검사 시작';
+          showErrorBanner('검사 시작 실패: '+(data.error || data.detail));
+          return;
+        }
+        jobId = data.job_id;
+        enterVerifyProgress();
+        pollJob();
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.textContent = state.photos.length > 0 ? '검사 시작 (문서 + 사진)' : '검사 시작';
+        showErrorBanner('요청 실패: '+err.message);
+      });
   }
 
   // ═════════════════════════════════════════════════════════════════════════════
