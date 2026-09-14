@@ -1175,8 +1175,8 @@ figure.result-card{margin:0;break-inside:avoid}
 
     // 배경 이미지 (annotated 이미지 사용, 없으면 원본)
     const imgSrc = WATCH.jobId
-      ? '/jobs/'+WATCH.jobId+'/annotated/'+idx
-      : '/watch/demo/annotated/'+idx;
+      ? '/jobs/'+WATCH.jobId+'/annotated/'+(idx+1)
+      : '/watch/demo/annotated/'+(idx+1);
     if(imgSrc){
       watchStageImg.src = imgSrc;
     } else {
@@ -1232,8 +1232,8 @@ figure.result-card{margin:0;break-inside:avoid}
                 (riskOf(fr) >= 3 ? ' danger' : '');
       const img = document.createElement('img');
       img.src = WATCH.jobId
-        ? '/jobs/'+WATCH.jobId+'/annotated/'+i
-        : '/watch/demo/annotated/'+i;
+        ? '/jobs/'+WATCH.jobId+'/annotated/'+(i+1)
+        : '/watch/demo/annotated/'+(i+1);
       img.alt = '프레임 '+(i+1);
       t.appendChild(img);
       const idx = document.createElement('span');
@@ -1516,8 +1516,8 @@ figure.result-card{margin:0;break-inside:avoid}
       const vcol = urgent ? '#c2181f' : bad.length ? '#c2410c' : '#0f7a52';
       const verdict = urgent ? '긴급' : bad.length ? '부적합' : '적합';
       const imgSrc = WATCH.jobId
-        ? '/jobs/'+WATCH.jobId+'/annotated/'+i
-        : '/watch/demo/annotated/'+i;
+        ? '/jobs/'+WATCH.jobId+'/annotated/'+(i+1)
+        : '/watch/demo/annotated/'+(i+1);
       let boxesHtml = '';
       kept.slice(0,14).forEach((d, j) => {
         const col = vcol;
