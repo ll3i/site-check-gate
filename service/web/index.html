@@ -1645,7 +1645,7 @@ figure.result-card{margin:0;break-inside:avoid}
           mode.kind = 'verify';
           // 검증 탭 시작 버튼이 켜지도록 상태 구성
           state.doc = new File([md], '초안_'+ (WATCH.jobId||'demo') +'.md', {type:'text/markdown;charset=utf-8'});
-          state.photos = WATCH.frames.map((_,i)=>({name:'프레임'+(i+1)+'.jpg'}));
+          state.photos = [];
           // 검증 탭 UI 갱신 (renderChips / updateVerifyStartButton)
           if(typeof renderVerifyChips === 'function') renderVerifyChips();
           if(typeof updateVerifyStartButton === 'function') updateVerifyStartButton();
