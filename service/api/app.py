@@ -538,7 +538,33 @@ async def create_watch_job(
     }
 
 
-# ── GET /jobs/{job_id}/annotated/{n} ─────────────────────────────────────────
+# ── GET /watch/video ──────────────────────────────────────────────────────────
+@app.get("/watch/video", include_in_schema=False)
+async def watch_video():
+    """관제 데모 영상(demo_video.mp4)을 FileResponse로 서빙.
+    
+    Range 요청 지원 (FileResponse 기본 동작).
+    """
+    video_path = ASSETS_DIR / "vision" / "demo_video.mp4"
+    if not video_path.is_file():
+        raise HTTPException(status_code=500, detail={"error": "관제 영상이 없습니다."})
+    media_type, _ = mimetypes.guess_type(str(video_path))
+    return FileResponse(str(video_path), media_type=media_type or "video/mp4")
+
+
+# ── GET /watch/video/timeline ──────────────────────────────────────────────────
+@app.get("/watch/video/timeline", include_in_schema=False)
+async def watch_video_timeline():
+    """demo_video.mp4 기반 타임라인(demo_video_timeline.json)을 서빙.
+    
+    build_video_timeline.py 로 생성된 실측 데이터.
+    """
+    timeline_path = ASSETS_DIR / "vision" / "demo_video_timeline.json"
+    if not timeline_path.is_file():
+        raise HTTPException(status_code=500, detail={"error": "타임라인 데이터가 없습니다. build_video_timeline.py를 먼저 실행하세요."})
+    return json.loads(timeline_path.read_text(encoding="utf-8"))
+
+
 @app.get("/jobs/{job_id}/annotated/{frame_n}")
 async def get_job_annotated(job_id: str, frame_n: int):
     """분석 완료된 작업의 n번째 프레임/사진에 대한 annotated(주석) 이미지를 서빙.

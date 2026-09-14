@@ -123,9 +123,12 @@ class TestInspectModeConstants:
     def test_label_map_law(self):
         for lb, entry in LABEL_MAP.items():
             assert "law" in entry
-            law_name, article = entry["law"]
-            assert isinstance(law_name, str)
-            assert isinstance(article, int)
+            law = entry["law"]
+            # law은 (법령명, 조) 튜플이거나 None(보호구 착용 등 참고 검출)
+            if law is not None:
+                law_name, article = law
+                assert isinstance(law_name, str)
+                assert isinstance(article, int)
 
 
 class TestInspectOnePhoto:

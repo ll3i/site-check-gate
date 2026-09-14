@@ -54,12 +54,24 @@ LABEL_MAP: Dict[str, Dict[str, Any]] = {
     "weld_defect": {"risk": "위험", "category": "시설 결함(용접 불량)",  "law": ("산업안전보건법", 38)},
     "weld_bad":    {"risk": "위험", "category": "시설 결함(용접 불량)",  "law": ("산업안전보건법", 38)},
     "cable_damage":{"risk": "위험", "category": "전기 위험(케이블 손상)","law": ("산업안전보건법", 38)},
+    # --- 보호구 미착용 (위험) — 산업안전보건법 제38조 ---
+    "no_helmet":  {"risk": "위험", "category": "보호구 미착용(안전모)",   "law": ("산업안전보건법", 38)},
+    "no_gloves":  {"risk": "위험", "category": "보호구 미착용(안전장갑)", "law": ("산업안전보건법", 38)},
+    "no_goggles": {"risk": "위험", "category": "보호구 미착용(보안경)",   "law": ("산업안전보건법", 38)},
+    "no_shoes":   {"risk": "위험", "category": "보호구 미착용(안전화)",   "law": ("산업안전보건법", 38)},
+    "no_mask":    {"risk": "위험", "category": "보호구 미착용(호흡보호구)","law": ("산업안전보건법", 38)},
     # --- 주의 계통 (방치 적재물·폐기물) ---
     "cardboard": {"risk": "주의", "category": "통로·적치 위험(방치물)", "law": ("산업안전보건법", 38)},
     "plastic":   {"risk": "주의", "category": "통로·적치 위험(방치물)", "law": ("산업안전보건법", 38)},
     "glass":     {"risk": "주의", "category": "통로·적치 위험(방치물)", "law": ("산업안전보건법", 38)},
     "metal":     {"risk": "주의", "category": "통로·적치 위험(방치물)", "law": ("산업안전보건법", 38)},
     "paper":     {"risk": "주의", "category": "통로·적치 위험(방치물)", "law": ("산업안전보건법", 38)},
+    # --- 보호구 착용 (참고 검출, 위험 아님) ---
+    "helmet":  {"risk": "참고", "category": "보호구 착용(안전모)",   "law": None},
+    "gloves":  {"risk": "참고", "category": "보호구 착용(안전장갑)", "law": None},
+    "goggles": {"risk": "참고", "category": "보호구 착용(보안경)",   "law": None},
+    "shoes":   {"risk": "참고", "category": "보호구 착용(안전화)",   "law": None},
+    "mask":    {"risk": "참고", "category": "보호구 착용(호흡보호구)","law": None},
 }
 
 # ---------------------------------------------------------------------------
@@ -258,12 +270,23 @@ def _classify_risk(labeled: List[Dict[str, Any]]) -> str:
 
 def _build_action(risk_level: str, labeled: List[Dict[str, Any]]) -> str:
     """위험도 + 검출 내용에 기반한 한 줄 권고."""
+    # 보호구 미착용 라벨 목록 (PPE 특화 액션 필요)
+    ppe_no_labels = frozenset({"no_helmet", "no_gloves", "no_goggles", "no_shoes", "no_mask"})
+
     if risk_level == "위험":
         cats = set()
+        has_ppe = False
         for item in labeled:
             if item["entry"]:
                 cats.add(item["entry"]["category"])
+                if item["det"].get("label") in ppe_no_labels:
+                    has_ppe = True
         cat_list = ", ".join(sorted(cats))
+        if has_ppe:
+            return (
+                f"[{risk_level}] {cat_list} — "
+                "작업중지 후 보호구 착용 (산업안전보건법 제38조 참조)."
+            )
         return f"[{risk_level}] {cat_list} — 즉시 안전조치 및 보수·정비 필요 (산업안전보건법 제38조 참조)."
     if risk_level == "주의":
         cats = set()

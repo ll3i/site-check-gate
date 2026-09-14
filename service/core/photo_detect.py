@@ -36,7 +36,7 @@ def _import_yolo() -> Any:
 # ---------------------------------------------------------------------------
 # 허용된 domain 목록 — 여기에 없는 domain이 들어오면 오류 (의도적 교차 실행 방지)
 # ---------------------------------------------------------------------------
-ALLOWED_DOMAINS = frozenset({"defect", "gauge", "cleaning"})
+ALLOWED_DOMAINS = frozenset({"defect", "gauge", "cleaning", "safety"})
 WEIGHTS_DIR = "assets/vision/weights"
 
 
