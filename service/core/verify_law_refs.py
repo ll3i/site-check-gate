@@ -358,6 +358,37 @@ def _load_snapshot(law_key: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+def _build_suggestions(snap: Dict[str, Any], target_article: int) -> List[Dict[str, Any]]:
+    """같은 법령 스냅샷에서 실존 조문 중 번호가 근접한 2개를 결정론 추천.
+
+    반환 예: [{\"조\": \"제38조\", \"제목\": \"안전조치\"}, {\"조\": \"제39조\", \"제목\": \"보건조치\"}]
+    LLM 금지.
+    """
+    articles = snap.get("조문")
+    if not isinstance(articles, list) or not articles:
+        return []
+    candidates: List[Tuple[int, Dict[str, Any]]] = []
+    for art in articles:
+        jo_str = str(art.get("조", "")).strip()
+        m = re.match(r"제(\d+)" r"조(?:\s*의\s*(\d+))?", jo_str)
+        if not m:
+            continue
+        art_num = int(m.group(1))
+        dist = abs(art_num - target_article)
+        # 자기 자신(같은 번호)은 제외
+        if dist == 0:
+            continue
+        candidates.append((dist, art))
+    candidates.sort(key=lambda x: x[0])
+    top2 = candidates[:2]
+    out: List[Dict[str, Any]] = []
+    for _dist, art in top2:
+        jo_str = str(art.get("조", "")).strip()
+        title = art.get("제목") or ""
+        out.append({"조": jo_str, "제목": title})
+    return out
+
+
 def lookup_article(
     law_name: str,
     article: int,
@@ -428,6 +459,7 @@ def lookup_article(
 
     if found is None:
         # 조 번호가 존재하지 않음 → ❌ 환각 조항
+        suggestions = _build_suggestions(snap, article)
         return {
             "law_name": law_name,
             "article": article,
@@ -441,6 +473,7 @@ def lookup_article(
                 "실존하지 않는 조항을 인용했을 가능성."
             ),
             "snapshot": snap,
+            "suggestions": suggestions,
         }
 
     # 조는 있음. 항까지 요청했으면 항 존재 여부 확인.

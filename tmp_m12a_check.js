@@ -690,19 +690,14 @@ figure.result-card{margin:0;break-inside:avoid}
        ========================================================= -->
   <section class="tab-panel" id="verify">
     <div class="verify-shell">
-    <header class="verify-header">
-      <p class="verify-header-line">보고서를 올리면 — <em>보고해도 되는지, 무엇을 고쳐야 하는지</em> 알려드립니다</p>
-    </header>
+      <header class="verify-header">
+        <p class="verify-header-line">보고서를 올리면 — <em>보고해도 되는지, 무엇을 고쳐야 하는지</em> 알려드립니다</p>
+      </header>
 
-    <div class="main-pad">
-      <!-- 업로드 (주 CTA = 보고서 검증) + 대기 안내 3줄 -->
-      <main id="verifyUploadArea">
-        <div style="background:#f7f7f8;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--gray);line-height:1.6">
-          <div>📄 <b>PDF·DOCX·TXT</b> 지원</div>
-          <div>📷 현장 사진을 함께 올리면 인용 주장 대조에 활용</div>
-          <div>⏱ 보통 <b>1~2분</b> 소요</div>
-        </div>
-        <div class="big-buttons">
+      <div class="main-pad">
+        <!-- 업로드 (주 CTA = 보고서 검증) -->
+        <main id="verifyUploadArea">
+          <div class="big-buttons">
             <label class="big-btn" for="verifyDocInput">📄 보고서 검증하기</label>
             <input type="file" id="verifyDocInput" accept=".pdf,.docx,.txt,.hwp">
 
@@ -2505,29 +2500,6 @@ figure.result-card{margin:0;break-inside:avoid}
     const status = gate.status || '확인 필요';
     const reason = gate.reason || '';
 
-    // ── 한 줄 요약 헤드라인 ──────────────────────────────────────────────
-    const actionCount = ((r.law_section && r.law_section.items) || [])
-      .filter(it => it.verdict === '해당 조 없음').length
-      + ((r.photo_section && r.photo_section.matches) || [])
-        .filter(m => m.verdict === '뒷받침 안 함').length
-      + ((r.match_results || [])).filter(mr => mr.verdict === '뒷받침 안 함' && realRefIds.has(mr.ref_id)).length
-      + ((r.subcontract_section && r.subcontract_section.results) || [])
-        .filter(item => item.label === '위험 신호').length;
-
-    const headlineP = document.createElement('p');
-    headlineP.style.cssText = 'font-size:16px;font-weight:700;letter-spacing:-.02em;margin:0 0 12px;padding:0 2px;line-height:1.5';
-    if(actionCount > 0){
-      headlineP.textContent = actionCount + '건만 고치면 보고 가능합니다';
-      headlineP.style.color = 'var(--orange-fg)';
-    } else if(status === '제출 가능'){
-      headlineP.textContent = '바로 보고 가능한 문서입니다';
-      headlineP.style.color = 'var(--green-fg)';
-    } else {
-      headlineP.textContent = '확인만 남았습니다';
-      headlineP.style.color = 'var(--yellow-fg)';
-    }
-    verifyResultScreen.appendChild(headlineP);
-
     // 게이트 배너
     const statusMap = {
       '제출 가능':{ cls:'submittable', icon:'✅', label:'보고 가능' },
@@ -2571,7 +2543,6 @@ figure.result-card{margin:0;break-inside:avoid}
           evidence:item.note ? item.note : '해당 조문이 실재하지 않음',
           action:'법령명·조문 재확인 후 보고서 수정',
           tags:['환각 조항'],
-          suggestions: item.suggestions || [],
         });
       }
     });
@@ -2705,15 +2676,6 @@ figure.result-card{margin:0;break-inside:avoid}
             '<div style="font-size:12px;margin-bottom:2px;"><b>인용 문헌:</b> '+escapeHtml(item.refTitle)+'</div>'+
             (item.quote ? '<div style="font-size:12px;">quote: '+escapeHtml(item.quote)+'</div>' : '')+
             (item.reason ? '<div style="font-size:12px;color:#555;margin-top:2px;">사유: '+escapeHtml(item.reason)+'</div>' : '');
-        } else if(item.suggestions && item.suggestions.length > 0){
-          const sugStr = item.suggestions.map(s => {
-            const t = s.제목 ? s.제목 + ' ' : '';
-            return s.조 + '(' + t + ')';
-          }).join(' · ');
-          evidenceHtml =
-            escapeHtml(item.evidence) +
-            '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--blue);font-weight:600;">'+
-            '「혹시 이 조항?」 ' + escapeHtml(sugStr) + '</div>';
         } else {
           evidenceHtml = item.evidence ? escapeHtml(item.evidence) : '';
         }
@@ -2978,52 +2940,6 @@ figure.result-card{margin:0;break-inside:avoid}
     });
     actions.appendChild(saveBtn);
     actions.appendChild(rescanBtn);
-
-    // ── 「지적사항 복사」 클립보드 버튼 ─────────────────────────────────────
-    const copyBtn = document.createElement('button');
-    copyBtn.textContent = '지적사항 복사';
-    copyBtn.addEventListener('click', function() {
-      const gateStatus = gate.status || '확인 필요';
-      const gateReason = gate.reason || '';
-      // 고칠 것: actionItems 가 있으면 각 항 제목 + 문제 + 조치 를 번호 목록으로
-      const fixLines = actionItems.map((it, idx) => {
-        return (idx + 1) + '. ' + (it.title || '') + ' — ' + (it.problem || '') + ' → ' + (it.action || '');
-      });
-      // 확인 요약: checkItems(전 참고 섹션) 요약
-      const checkCount = checkItems.length;
-      const checkSummary = checkCount > 0
-        ? '확인 필요 ' + checkCount + '건 (참고 섹션 참조)'
-        : '확인 필요 항목 없음';
-      // URL: 현재 페이지 URL
-      const url = window.location.href;
-      const plain = [
-        '【게이트 판정】 ' + gateStatus + (gateReason ? ' — ' + gateReason : ''),
-        '',
-        '【고칠 것】',
-        ...fixLines,
-        '',
-        '【확인 필요 요약】 ' + checkSummary,
-        '',
-        '【URL】 ' + url,
-      ].join('\n');
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(plain).then(() => {
-          const orig = copyBtn.textContent;
-          copyBtn.textContent = '복사됨 \u2713';
-          copyBtn.disabled = true;
-          setTimeout(() => {
-            copyBtn.textContent = orig;
-            copyBtn.disabled = false;
-          }, 2000);
-        }).catch(() => {
-          showErrorBanner('복사에 실패했습니다. 다시 시도하세요.');
-        });
-      } else {
-        showErrorBanner('이 브라우저는 클립보드 복사를 지원하지 않습니다.');
-      }
-    });
-    actions.appendChild(copyBtn);
-
     verifyResultScreen.appendChild(actions);
   }
 
